@@ -1,0 +1,4 @@
+readFile({file=>"base.net"})
+simulate({method=>"ode",t_start=>0,t_end=>600,n_steps=>1})
+setParameter("Ligand_isPresent",1)
+simulate({method=>"ode",t_start=>0,t_end=>60,sample_times=>[0,30,60],prefix=>"ex5"})

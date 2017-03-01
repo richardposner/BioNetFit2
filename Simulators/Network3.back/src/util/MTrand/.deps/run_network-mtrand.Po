@@ -1,0 +1,4 @@
+util/MTrand/run_network-mtrand.o: util/MTrand/mtrand.cpp \
+  util/MTrand/mtrand.h
+
+util/MTrand/mtrand.h:

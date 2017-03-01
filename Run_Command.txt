@@ -1,0 +1,19 @@
+
+cd bin
+./BioNetFit.exe -a run -t master -c examples/ex5/ex5.conf -v
+./BioNetFit.exe -a run -t master -c examples/exMut/exMut.conf -v
+cd..
+
+
+
+to run a particle
+./BioNetFit -v -t particle -p 1 -a run -g 1 -c ex5_751652519.sconf -e examples/ex5/ex5.exp -n 1
+
+./BioNetFit -v -t particle -p 1 -a run -g 1 -c exMutM1_0.sconf -e examples/exMut/exMutM1.exp -n 1
+./BioNetFit -v -t particle -p 1 -a run -g 1 -c exMutM1_751652519.sconf -e examples/exMut/exMutM1.exp -n 1
+./BioNetFit -v -t particle -p 2 -a run -g 1 -c exMutM2_1481765933.sconf -e examples/exMut/exMutM2.exp -n 1
+
+./BioNetFit -v -t particle -p 3 -a run -g 1 -c exMutM1_0.sconf -e examples/exMut/exMutM1.exp -n 2 
+
+
+

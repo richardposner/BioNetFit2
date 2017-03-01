@@ -1,0 +1,53 @@
+1- Fix windows compile issues/Sygwin environment  [Done]
+
+2- Develop compile procedure [Partially Done]
+
+3- Fix windows run time issues [done]
+
+4- Implement random simulator to generate a random gdat file sromm the exp file for fastewr run [Done]
+
+5- Check using nfsim by BNGL file (Converting Bngl to xml and call NFSIM)
+
+6- Check Network generation for ODE (using BNG2.pl) [Done]
+
+7- implement multiple files [Done]
+
+8- Consolidate models and Free parameters [Done]
+
+9- Develop stand alone particle test mode [only for test] [Done]
+
+10- Fix smooth run and bootstrapping implementations for multiple files  [Done]
+
+11- Send the right model and ref exp file to slaves to rub subparticles [Done].
+
+12- The slave sends free parameter values based on his model that can be different than the global models
+[Partially Done: implemented, but needs to be tested]
+
+13- Modify Fitting options for multiple files. 
+The slave sends the result of fitting value for each subparticle, the master should combine them. 
+Implement the function update_fitCalcs();
+
+
+14- modify Swarm::processParamsPSO() 
+	The params order is based on free parameters in the corresonding model, reorder based on the global list
+
+15-	modifty function order_params()
+	The params order is based on free parameters in the corresonding model, reorder based on the global list
+
+16- modify generateBestFitModel: adjust paramSet based on the model
+	
+	
+
+
+14- Simulated anealing synchronous mode is not develped.
+
+15-Test resume mode for multiple files
+
+16-Test actual simulators
+
+17-Implement Asynchronous mode for Simulated Anealing
+
+18-Test All optimization methods
+
+19-Check cluster operation
+

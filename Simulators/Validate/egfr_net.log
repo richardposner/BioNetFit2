@@ -1,0 +1,120 @@
+[validate egfr_net]
+ -> processing model file with BioNetGen
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/BNG2.pl --no-nfsim --outdir /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.bngl
+[child process ID is: 28050]
+BioNetGen version 2.2.6
+Reading from file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.bngl (level 0)
+Read 48 parameters.
+Read 5 molecule types.
+Read 6 species.
+Read 23 reaction rule(s).
+Read 15 observable(s).
+ACTION: generate_network( egfr_net )
+Iteration   0:     6 species      0 rxns  0.00e+00 CPU s
+Iteration   1:     7 species      3 rxns  1.00e-02 CPU s
+Iteration   2:     8 species      5 rxns  0.00e+00 CPU s
+Iteration   3:    10 species      8 rxns  1.00e-02 CPU s
+Iteration   4:    19 species     21 rxns  4.00e-02 CPU s
+Iteration   5:    37 species     76 rxns  1.00e-01 CPU s
+Iteration   6:    69 species    213 rxns  2.50e-01 CPU s
+Iteration   7:   131 species    494 rxns  5.70e-01 CPU s
+Iteration   8:   295 species   1260 rxns  1.73e+00 CPU s
+Iteration   9:   356 species   3088 rxns  4.59e+00 CPU s
+Iteration  10:   356 species   3749 rxns  2.04e+00 CPU s
+Cumulative CPU time for each rule
+Rule   1:    48 reactions 1.10e-01 CPU s 2.29e-03 CPU s/rxn
+Rule   2:   600 reactions 2.27e+00 CPU s 3.78e-03 CPU s/rxn
+Rule   3:   144 reactions 2.60e-01 CPU s 1.81e-03 CPU s/rxn
+Rule   4:    96 reactions 1.60e-01 CPU s 1.67e-03 CPU s/rxn
+Rule   5:   156 reactions 2.40e-01 CPU s 1.54e-03 CPU s/rxn
+Rule   6:   104 reactions 1.60e-01 CPU s 1.54e-03 CPU s/rxn
+Rule   7:    96 reactions 2.20e-01 CPU s 2.29e-03 CPU s/rxn
+Rule   8:   104 reactions 1.80e-01 CPU s 1.73e-03 CPU s/rxn
+Rule   9:   312 reactions 6.20e-01 CPU s 1.99e-03 CPU s/rxn
+Rule  10:   312 reactions 7.00e-01 CPU s 2.24e-03 CPU s/rxn
+Rule  11:   312 reactions 7.30e-01 CPU s 2.34e-03 CPU s/rxn
+Rule  12:   208 reactions 3.90e-01 CPU s 1.88e-03 CPU s/rxn
+Rule  13:   208 reactions 4.40e-01 CPU s 2.12e-03 CPU s/rxn
+Rule  14:   208 reactions 5.30e-01 CPU s 2.55e-03 CPU s/rxn
+Rule  15:   208 reactions 6.00e-01 CPU s 2.88e-03 CPU s/rxn
+Rule  16:   208 reactions 5.00e-01 CPU s 2.40e-03 CPU s/rxn
+Rule  17:   208 reactions 5.40e-01 CPU s 2.60e-03 CPU s/rxn
+Rule  18:   208 reactions 5.00e-01 CPU s 2.40e-03 CPU s/rxn
+Rule  19:     2 reactions 5.00e-02 CPU s 2.50e-02 CPU s/rxn
+Rule  20:     2 reactions 4.00e-02 CPU s 2.00e-02 CPU s/rxn
+Rule  21:     1 reactions 1.00e-02 CPU s 1.00e-02 CPU s/rxn
+Rule  22:     2 reactions 4.00e-02 CPU s 2.00e-02 CPU s/rxn
+Rule  23:     2 reactions 5.00e-02 CPU s 2.50e-02 CPU s/rxn
+Total   :  3749 reactions 9.34e+00 CPU s 2.49e-03 CPU s/rxn
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.net.
+CPU TIME: generate_network 9.51 s.
+Set concentration of species egf(r) to value 0
+CPU TIME: setConcentration 0.01 s.
+ACTION: simulate( method=>"cvode" )
+Network simulation using cvode
+WARNING: writeFile(): Overwriting existing file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.net.
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.net.
+Running run_network on hopedragon
+full command: /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/bin/run_network_x86_64-linux -o /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net -p cvode -a 1e-08 -r 1e-08 -b -c --cdat 1 --fdat 0 -g /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.net 10000 10
+[simulation PID is: 28052]
+run_network 3.0
+Read 48 parameters
+Read 356 species
+Read 15 group(s) from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.net
+Read 0 function(s)
+Read 3749 reaction(s)
+3749 reaction(s) have nonzero rate
+Initialization took 0.04 CPU seconds
+Propagating with cvode using GMRES
+Time course of concentrations written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.cdat.
+Time course of groups written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.gdat.
+Propagation took 2.00e-02 CPU seconds
+Program times:  0.06 CPU s 0.00 clock s 
+Simulation reached steady state by t_end=100000
+Updating species concentrations from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.cdat
+CPU TIME: simulate_ode 0.22 s.
+Set concentration of species egf(r) to value egf_tot
+CPU TIME: setConcentration 0.00 s.
+Wrote SBML to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net_sbml.xml.
+CPU TIME: writeSBML 0.12 s.
+ACTION: simulate( method=>"cvode" )
+Network simulation using cvode
+WARNING: writeFile(): Overwriting existing file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.net.
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.net.
+Running run_network on hopedragon
+full command: /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/bin/run_network_x86_64-linux -o /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net -p cvode -a 1e-08 -r 1e-08 -b --cdat 1 --fdat 0 -g /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.net 1 120
+[simulation PID is: 28054]
+run_network 3.0
+Read 48 parameters
+Read 356 species
+Read 15 group(s) from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.net
+Read 0 function(s)
+Read 3749 reaction(s)
+3749 reaction(s) have nonzero rate
+Initialization took 0.03 CPU seconds
+Propagating with cvode using GMRES
+Time course of concentrations written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.cdat.
+Time course of groups written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.gdat.
+Propagation took 2.40e-01 CPU seconds
+Program times:  0.27 CPU s 0.00 clock s 
+Updating species concentrations from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.cdat
+CPU TIME: simulate_ode 0.49 s.
+Finished processing file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.bngl.
+CPU TIME: total 10.40 s.
+-------------------------------------------------------------------------------
+ -> checking species trajectory
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Perl2/verify.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.cdat /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/egfr_net.cdat
+[child process ID is: 28055]
+/home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Perl2/verify.pl is comparing /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.cdat and /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/egfr_net.cdat
+PASSED!!  norm error (1.018992E-10) <= threshold error (1.000000E-07).
+-------------------------------------------------------------------------------
+ -> checking observable trajectory
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Perl2/verify.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.gdat /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/egfr_net.gdat
+[child process ID is: 28056]
+/home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Perl2/verify.pl is comparing /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/egfr_net.gdat and /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/egfr_net.gdat
+PASSED!!  norm error (8.807630E-10) <= threshold error (1.000000E-07).
+-------------------------------------------------------------------------------
+egfr_net passed all validation tests.

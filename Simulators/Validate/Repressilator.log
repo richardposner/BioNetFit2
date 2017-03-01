@@ -1,0 +1,100 @@
+[validate Repressilator]
+ -> processing model file with BioNetGen
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/BNG2.pl --no-nfsim --outdir /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.bngl
+[child process ID is: 28191]
+BioNetGen version 2.2.6
+Reading from file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.bngl (level 0)
+Read 13 parameters.
+Read 10 molecule types.
+Read 10 species.
+Read 4 observable(s).
+Read 21 reaction rule(s).
+ACTION: generate_network( Repressilator )
+Iteration   0:    10 species      0 rxns  0.00e+00 CPU s
+Iteration   1:    13 species     15 rxns  2.00e-02 CPU s
+Iteration   2:    16 species     24 rxns  2.00e-02 CPU s
+Iteration   3:    16 species     30 rxns  1.00e-02 CPU s
+Cumulative CPU time for each rule
+Rule   1:     2 reactions 1.00e-02 CPU s 5.00e-03 CPU s/rxn
+Rule   2:     2 reactions 1.00e-02 CPU s 5.00e-03 CPU s/rxn
+Rule   3:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule   4:     2 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule   5:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule   6:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule   7:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule   8:     2 reactions 1.00e-02 CPU s 5.00e-03 CPU s/rxn
+Rule   9:     2 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule  10:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule  11:     2 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule  12:     1 reactions 1.00e-02 CPU s 1.00e-02 CPU s/rxn
+Rule  13:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule  14:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule  15:     2 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule  16:     2 reactions 1.00e-02 CPU s 5.00e-03 CPU s/rxn
+Rule  17:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule  18:     2 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule  19:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule  20:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule  21:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Total   :    30 reactions 5.00e-02 CPU s 1.67e-03 CPU s/rxn
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net.
+CPU TIME: generate_network 0.06 s.
+ACTION: simulate( method=>"cvode" )
+Network simulation using cvode
+WARNING: writeFile(): Overwriting existing file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net.
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net.
+Running run_network on hopedragon
+full command: /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/bin/run_network_x86_64-linux -o /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator -p cvode -a 1e-12 -r 1e-12 --cdat 1 --fdat 0 -g /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net 100 400
+[simulation PID is: 28193]
+run_network 3.0
+Read 34 parameters
+Read 16 species
+Read 4 group(s) from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net
+Read 0 function(s)
+Read 30 reaction(s)
+30 reaction(s) have nonzero rate
+Initialization took 0.00 CPU seconds
+Propagating with cvode using dense LU
+Time course of concentrations written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.cdat.
+Time course of groups written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.gdat.
+Propagation took 4.00e-02 CPU seconds
+Program times:  0.04 CPU s 1.00 clock s 
+Updating species concentrations from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.cdat
+CPU TIME: simulate_ode 0.05 s.
+Finished processing file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.bngl.
+CPU TIME: total 0.15 s.
+-------------------------------------------------------------------------------
+ -> checking species in .NET file
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_species.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/Repressilator.net
+[child process ID is: 28194]
+Testing Species..
+command:  /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_species.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/Repressilator.net 
+/home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net and /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/Repressilator.net passed species test.
+
+-------------------------------------------------------------------------------
+ -> checking reactions in .NET file
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_rxn.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/Repressilator.net
+[child process ID is: 28195]
+Testing Reaction Network..
+command:  /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_rxn.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/Repressilator.net 
+/home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.net and /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/Repressilator.net passed reaction network test.
+
+-------------------------------------------------------------------------------
+ -> checking species trajectory
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Perl2/verify.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.cdat /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/Repressilator.cdat
+[child process ID is: 28196]
+/home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Perl2/verify.pl is comparing /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.cdat and /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/Repressilator.cdat
+PASSED!!  norm error (1.429835E-10) <= threshold error (1.000000E-07).
+-------------------------------------------------------------------------------
+ -> checking observable trajectory
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Perl2/verify.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.gdat /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/Repressilator.gdat
+[child process ID is: 28197]
+/home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Perl2/verify.pl is comparing /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/Repressilator.gdat and /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/Repressilator.gdat
+PASSED!!  norm error (1.565910E-09) <= threshold error (1.000000E-07).
+-------------------------------------------------------------------------------
+Repressilator passed all validation tests.

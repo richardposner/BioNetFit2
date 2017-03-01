@@ -1,0 +1,75 @@
+[validate isomerization]
+ -> processing model file with BioNetGen
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/BNG2.pl --no-nfsim --outdir /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization.bngl
+[child process ID is: 28140]
+BioNetGen version 2.2.6
+Reading from file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization.bngl (level 0)
+Read 3 parameters.
+Read 1 molecule types.
+Read 1 species.
+Read 3 observable(s).
+Read 1 reaction rule(s).
+ACTION: generate_network( isomerization )
+Iteration   0:     1 species      0 rxns  0.00e+00 CPU s
+Iteration   1:     2 species      1 rxns  0.00e+00 CPU s
+Iteration   2:     2 species      2 rxns  0.00e+00 CPU s
+Cumulative CPU time for each rule
+Rule   1:     2 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Total   :     2 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization.net.
+CPU TIME: generate_network 0.00 s.
+ACTION: simulate( method=>"ssa" )
+Network simulation using ssa
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_burnin.net.
+Running run_network on hopedragon
+full command: /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/bin/run_network_x86_64-linux -o /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_burnin -p ssa -h 1392303606 --cdat 1 --fdat 0 -g /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_burnin.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_burnin.net 10000 1
+[simulation PID is: 28142]
+run_network 3.0
+Read 3 parameters
+Read 2 species
+Read 3 group(s) from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_burnin.net
+Read 0 function(s)
+Read 2 reaction(s)
+2 reaction(s) have nonzero rate
+rxn_rate_update_interval=1
+Average number of update rxns is 2.00
+Initialization took 0.00 CPU seconds
+Stochastic simulation using direct Gillespie algorithm
+TOTAL STEPS: 67058           
+Time course of concentrations written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_burnin.cdat.
+Time course of groups written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_burnin.gdat.
+Propagation took 1.00e-02 CPU seconds
+Program times:  0.01 CPU s 0.00 clock s 
+Updating species concentrations from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_burnin.cdat
+CPU TIME: simulate_ssa 0.02 s.
+ACTION: simulate( method=>"ssa" )
+Network simulation using ssa
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_ssa_equil.net.
+Running run_network on hopedragon
+full command: /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/bin/run_network_x86_64-linux -o /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_ssa_equil -p ssa -h 1705308072 --cdat 1 --fdat 0 -g /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_ssa_equil.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_ssa_equil.net 100 10000
+[simulation PID is: 28144]
+run_network 3.0
+Read 3 parameters
+Read 2 species
+Read 3 group(s) from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_ssa_equil.net
+Read 0 function(s)
+Read 2 reaction(s)
+2 reaction(s) have nonzero rate
+rxn_rate_update_interval=1
+Average number of update rxns is 2.00
+Initialization took 0.00 CPU seconds
+Stochastic simulation using direct Gillespie algorithm
+TOTAL STEPS: 6668436         
+Time course of concentrations written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_ssa_equil.cdat.
+Time course of groups written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_ssa_equil.gdat.
+Propagation took 1.19e+00 CPU seconds
+Program times:  1.19 CPU s 1.00 clock s 
+Updating species concentrations from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization_ssa_equil.cdat
+CPU TIME: simulate_ssa 1.20 s.
+Finished processing file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isomerization.bngl.
+CPU TIME: total 1.23 s.
+-------------------------------------------------------------------------------
+ -> checking SSA equilibrium distribution
+-------------------------------------------------------------------------------
+isomerization passed all validation tests.

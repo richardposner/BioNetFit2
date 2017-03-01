@@ -1,0 +1,112 @@
+[validate isingspin_localfcn]
+ -> processing model file with BioNetGen
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/BNG2.pl --no-nfsim --outdir /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn.bngl
+[child process ID is: 28114]
+BioNetGen version 2.2.6
+Reading from file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn.bngl (level 0)
+SpeciesLabel method set to HNauty.
+Read 4 parameters.
+Read 1 molecule types.
+Read 1 species.
+Read 5 energy patterns(s).
+Read 9 observable(s).
+Read 2 functions.
+Read 1 reaction rule(s).
+ACTION: generate_network( isingspin_localfcn )
+Iteration   0:     1 species      0 rxns  0.00e+00 CPU s
+Iteration   1:     2 species      1 rxns  2.10e-01 CPU s
+Iteration   2:     6 species      8 rxns  2.90e-01 CPU s
+Iteration   3:    18 species     42 rxns  9.90e-01 CPU s
+Iteration   4:    32 species    126 rxns  2.82e+00 CPU s
+Iteration   5:    46 species    248 rxns  3.22e+00 CPU s
+Iteration   6:    58 species    370 rxns  3.20e+00 CPU s
+Iteration   7:    62 species    454 rxns  2.77e+00 CPU s
+Iteration   8:    63 species    488 rxns  9.20e-01 CPU s
+Iteration   9:    64 species    495 rxns  2.90e-01 CPU s
+Iteration  10:    64 species    496 rxns  2.40e-01 CPU s
+Cumulative CPU time for each rule
+Rule   1:   496 reactions 1.50e+01 CPU s 3.01e-02 CPU s/rxn
+Total   :   496 reactions 1.50e+01 CPU s 3.01e-02 CPU s/rxn
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn.net.
+CPU TIME: generate_network 15.02 s.
+ACTION: simulate( method=>"ssa" )
+Network simulation using ssa
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_burnin.net.
+Running run_network on hopedragon
+full command: /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/bin/run_network_x86_64-linux -o /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_burnin -p ssa -h 389135019 --cdat 1 --fdat 0 -g /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_burnin.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_burnin.net 10000 10
+[simulation PID is: 28135]
+run_network 3.0
+Read 36 parameters
+Read 64 species
+Read 9 group(s) from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_burnin.net
+Read 0 function(s)
+Read 496 reaction(s)
+496 reaction(s) have nonzero rate
+rxn_rate_update_interval=1
+Average number of update rxns is 16.85
+Initialization took 0.02 CPU seconds
+Stochastic simulation using direct Gillespie algorithm
+TOTAL STEPS: 204826          
+Time course of concentrations written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_burnin.cdat.
+Time course of groups written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_burnin.gdat.
+Propagation took 1.50e-01 CPU seconds
+Program times:  0.17 CPU s 0.00 clock s 
+Updating species concentrations from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_burnin.cdat
+CPU TIME: simulate_ssa 0.24 s.
+Saved current species concentrations with label "DEFAULT"
+CPU TIME: saveConcentrations 0.00 s.
+ACTION: simulate( method=>"ssa" )
+Network simulation using ssa
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_ssa_equil.net.
+Running run_network on hopedragon
+full command: /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/bin/run_network_x86_64-linux -o /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_ssa_equil -p ssa -h 1531807417 --cdat 0 --fdat 0 -g /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_ssa_equil.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_ssa_equil.net 1000 5000
+[simulation PID is: 28137]
+run_network 3.0
+Suppressing concentrations (.cdat) output
+Read 36 parameters
+Read 64 species
+Read 9 group(s) from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_ssa_equil.net
+Read 0 function(s)
+Read 496 reaction(s)
+496 reaction(s) have nonzero rate
+rxn_rate_update_interval=1
+Average number of update rxns is 16.85
+Initialization took 0.01 CPU seconds
+Stochastic simulation using direct Gillespie algorithm
+TOTAL STEPS: 10300414        
+Time course of concentrations written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_ssa_equil.cdat.
+Time course of groups written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_ssa_equil.gdat.
+Propagation took 8.86e+00 CPU seconds
+Program times:  8.87 CPU s 8.00 clock s 
+Updating species concentrations from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn_ssa_equil.cdat
+CPU TIME: simulate_ssa 8.94 s.
+Reset species concentrations to "DEFAULT" saved values.
+CPU TIME: resetConcentrations 0.00 s.
+ACTION: simulate_nf( )
+WARNING: simulate_nf(): skipping simulation, 'no-nfsim' flag is true.
+CPU TIME: simulate_nf 0.00 s.
+Finished processing file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn.bngl.
+CPU TIME: total 24.27 s.
+-------------------------------------------------------------------------------
+ -> checking species in .NET file
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_species.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/isingspin_localfcn.net
+[child process ID is: 28138]
+Testing Species..
+command:  /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_species.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/isingspin_localfcn.net 
+/home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn.net and /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/isingspin_localfcn.net passed species test.
+
+-------------------------------------------------------------------------------
+ -> checking reactions in .NET file
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_rxn.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/isingspin_localfcn.net
+[child process ID is: 28139]
+Testing Reaction Network..
+command:  /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_rxn.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/isingspin_localfcn.net 
+/home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/isingspin_localfcn.net and /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/isingspin_localfcn.net passed reaction network test.
+
+-------------------------------------------------------------------------------
+ -> checking SSA equilibrium distribution
+-------------------------------------------------------------------------------
+isingspin_localfcn passed all validation tests.

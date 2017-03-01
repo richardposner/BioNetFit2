@@ -1,0 +1,79 @@
+[validate toy-jim]
+ -> processing model file with BioNetGen
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/BNG2.pl --no-nfsim --outdir /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim.bngl
+[child process ID is: 28291]
+BioNetGen version 2.2.6
+Reading from file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim.bngl (level 0)
+Read 16 parameters.
+Read 5 species.
+Adding P as allowed state of component Y of molecule K
+Read 8 reaction rule(s).
+Read 9 observable(s).
+ACTION: generate_network( toy-jim )
+Iteration   0:     5 species      0 rxns  0.00e+00 CPU s
+Iteration   1:     8 species      3 rxns  0.00e+00 CPU s
+Iteration   2:    12 species     12 rxns  2.00e-02 CPU s
+Iteration   3:    17 species     29 rxns  3.00e-02 CPU s
+Iteration   4:    18 species     51 rxns  6.00e-02 CPU s
+Iteration   5:    24 species     58 rxns  3.00e-02 CPU s
+Iteration   6:    25 species     97 rxns  9.00e-02 CPU s
+Iteration   7:    25 species    101 rxns  1.00e-02 CPU s
+Cumulative CPU time for each rule
+Rule   1:     8 reactions 2.00e-02 CPU s 2.50e-03 CPU s/rxn
+Rule   2:    20 reactions 7.00e-02 CPU s 3.50e-03 CPU s/rxn
+Rule   3:    36 reactions 6.00e-02 CPU s 1.67e-03 CPU s/rxn
+Rule   4:    28 reactions 6.00e-02 CPU s 2.14e-03 CPU s/rxn
+Rule   5:     1 reactions 1.00e-02 CPU s 1.00e-02 CPU s/rxn
+Rule   6:     1 reactions 1.00e-02 CPU s 1.00e-02 CPU s/rxn
+Rule   7:     6 reactions 1.00e-02 CPU s 1.67e-03 CPU s/rxn
+Rule   8:     1 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Total   :   101 reactions 2.40e-01 CPU s 2.38e-03 CPU s/rxn
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim.net.
+CPU TIME: generate_network 0.24 s.
+ACTION: simulate( method=>"cvode" )
+Network simulation using cvode
+Wrote network in net format to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim_equil.net.
+Running run_network on hopedragon
+full command: /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/bin/run_network_x86_64-linux -o /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim_equil -p cvode -a 1e-10 -r 1e-08 -b -c --cdat 1 --fdat 0 -g /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim_equil.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim_equil.net 100 10
+[simulation PID is: 28293]
+run_network 3.0
+Read 16 parameters
+Read 25 species
+Read 9 group(s) from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim_equil.net
+Read 0 function(s)
+Read 101 reaction(s)
+101 reaction(s) have nonzero rate
+Initialization took 0.00 CPU seconds
+Propagating with cvode using GMRES
+Time course of concentrations written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim_equil.cdat.
+Time course of groups written to file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim_equil.gdat.
+Propagation took 0.00e+00 CPU seconds
+Program times:  0.00 CPU s 0.00 clock s 
+Simulation reached steady state by t_end=1000
+Updating species concentrations from /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim_equil.cdat
+CPU TIME: simulate_ode 0.01 s.
+Wrote SBML to /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim_sbml.xml.
+CPU TIME: writeSBML 0.00 s.
+Finished processing file /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim.bngl.
+CPU TIME: total 0.27 s.
+-------------------------------------------------------------------------------
+ -> checking species in .NET file
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_species.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/toy-jim.net
+[child process ID is: 28294]
+Testing Species..
+command:  /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_species.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/toy-jim.net 
+/home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim.net and /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/toy-jim.net passed species test.
+
+-------------------------------------------------------------------------------
+ -> checking reactions in .NET file
+running command:
+/usr/bin/perl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_rxn.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/toy-jim.net
+[child process ID is: 28295]
+Testing Reaction Network..
+command:  /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/compare_rxn.pl /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim.net /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/toy-jim.net 
+/home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/toy-jim.net and /home/proto/Dropbox/BioNetGen-2_2_6/Linux/BioNetGen-2.2.6-testing/Validate/DAT_validate/toy-jim.net passed reaction network test.
+
+-------------------------------------------------------------------------------
+toy-jim passed all validation tests.

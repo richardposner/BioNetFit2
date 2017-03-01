@@ -1,0 +1,57 @@
+BioNetGen version 2.2.6
+Reading from file c:/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base.bngl (level 0)
+Read 17 parameters.
+Read 2 molecule types.
+Read 2 species.
+Read 6 observable(s).
+Read 1 functions.
+Read 6 reaction rule(s).
+ACTION: generate_network( base )
+Iteration   0:     2 species      0 rxns  0.00e+00 CPU s
+Iteration   1:     4 species      2 rxns  0.00e+00 CPU s
+Iteration   2:     7 species      7 rxns  0.00e+00 CPU s
+Iteration   3:    12 species     20 rxns  1.60e-02 CPU s
+Iteration   4:    15 species     42 rxns  3.10e-02 CPU s
+Iteration   5:    15 species     54 rxns  1.60e-02 CPU s
+Cumulative CPU time for each rule
+Rule   1:    20 reactions 3.20e-02 CPU s 1.60e-03 CPU s/rxn
+Rule   2:     3 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule   3:    10 reactions 1.60e-02 CPU s 1.60e-03 CPU s/rxn
+Rule   4:     3 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Rule   5:     8 reactions 1.50e-02 CPU s 1.87e-03 CPU s/rxn
+Rule   6:    10 reactions 0.00e+00 CPU s 0.00e+00 CPU s/rxn
+Total   :    54 reactions 6.30e-02 CPU s 1.17e-03 CPU s/rxn
+Wrote network in net format to c:/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base.net.
+CPU TIME: generate_network 0.06 s.
+ACTION: simulate( method=>"cvode" )
+Network simulation using cvode
+WARNING: writeFile(): Overwriting existing file c:/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base.net.
+Wrote network in net format to c:/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base.net.
+Running run_network on PC-Home
+full command: /cygdrive/c/Dropbox/VCProjects/BioNetFitTemp/temp/Simulators/bin/run_network_x86_64-cygwin -o c:/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g c:/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base.net c:/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base.net 600 1
+[simulation PID is: 10152]
+run_network 3.0
+Read 10 parameters
+      0 [main] run_network_x86_64-cygwin 1028 find_fast_cwd: WARNING: Couldn't compute FAST_CWD pointer.  Please report this problem to
+the public mailing list cygwin@cygwin.com
+cygwin warning:
+  MS-DOS style path detected: c:/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base.net
+  Preferred POSIX equivalent is: /cygdrive/c/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base.net
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+Invalid value 2.1e-9*f at line 5.
+Invalid value EGF_conc_nM*1e-9 at line 7.
+Invalid value EGF_conc*(NA*Vecf) at line 8.
+Invalid value f*1.0e5 at line 9.
+Invalid value km1/KD1 at line 12.
+Invalid value (K2RT*km2)/EGFR_copy_number at line 15.
+Invalid value kp2*0.2 at line 16.
+parameters list not read because of errors.
+Invalid value EGF_copy_number at line 25.
+Invalid value EGFR_copy_number at line 26.
+species list not read because of errors.
+ERROR: Couldn't read rates array.
+ABORT: /cygdrive/c/Dropbox/VCProjects/BioNetFitTemp/temp/Simulators/bin/run_network_x86_64-cygwin -o c:/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g c:/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base.net c:/Dropbox/VCProjects/BioNetFitTemp/temp/output/test_ex5/base.net 600 1
+  did not run successfully.
+  at line 141

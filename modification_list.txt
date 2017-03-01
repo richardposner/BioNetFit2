@@ -1,0 +1,519 @@
+Now the subparticles that belong to the same particle are choosing the same value for free parameters, so now the models that belong to the same particle are comaparable to each other.
+In attachment is an example of how the summarized results look like. Results for each particle are printed in one line, where Fit_M1 is the fit value for the Mutant 1 model, and Fit_M2 is the fit for the Mutant2 model.
+
+Now the summary output looks like this
+
+Particle        Fit_M1          Fit_M2          K2RT            KD1             kdephos         km1             km2             kphos           
+Particle_1      0               0               109.933         0.232433        49.9569         61.7505         295.042         0.015322        
+Particle_2      0               0               16.0642         72.1204         0.00341         0.005356        0.122982        0.34023         
+Particle_3      0               0               2.33497         0.022382        0.228324        0.460925        0.051315        0.007391        
+Particle_4      0               0               315.317         0.006366        0.014037        0.036348        0.019306        0.144866        
+Particle_5      0               0               0.044512        0.0019          904.756         0.003021        0.007694        0.003005        
+Particle_6      0               0               0.006496        595.8           62.8584         0.261852        0.003242        68.2037         
+Particle_7      0               0               0.834497        161.385         3.59374         0.01942         0.001152        1.22719         
+Particle_8      0               0               0.130787        54.6434         272.242         0.001834        531.606         0.030876        
+Particle_9      0               0               0.01745         15.7432         0.016618        0.142323        202.856         0.601761        
+Particle_10     0               191.638         2.48236         4.62998         1.08295         0.011964        79.4543         0.012613        
+
+
+
+
+In Particle
+
+- Now BioNetFit will force the subparticles that belong to the same particle to have the same parameter values
+
+- Added new code to the function setParam
+
+	//Raquel: this code check with the master whether the parameter exists in model
+	for (auto p = swarm_->options.models.at(mid)->getFreeParams_().begin(); p != swarm_->options.models.at(mid)->getFreeParams_().end(); ++p) {
+		if(p->first == myParams.first) {
+				//cout << "Raquel myParams first: " << myParams.first << " second: " << myParams.second << endl;
+				simParams_.at(mid).insert(myParams);//Raquel: if it does exist, set the param value
+		}//Raquel: otherwise, do nothing
+	}
+
+- Added new code to the function generateParams
+
+#ifdef VER2
+			//code for forcing the subparticles to have the same values
+			for (int mid = 0; mid < models.size(); mid++){
+				if (models.at(mid)){
+					setParam(paramPair, mid);
+
+				}
+			}
+#else
+
+
+In Evaluate.cpp and Evaluate.hh: New code added, see files Evaluate.cpp and Evaluate.hh for more updates
+
+- Added a new function for comparing results, given a list of constraints provided by the user
+
+
+- Code for Evaluate.cpp:
+
+
+//Raquel: added new function for comparing results given a list of constraints Frebuary 1st, 2017
+#include "Evaluate.hh"
+
+
+
+using namespace std;
+
+//Raquel: this function splits the result line into a vector of strings
+vector<string> splitResults(const string &s, char delim) {
+    stringstream ss;
+    ss.str(s);
+    string item;
+    vector<string> elems;
+    while (getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+
+//Raquel: this function apply the logical test based on logical operators parsed from the constraint file
+int constraintFunction(double value1, string constraintOperator, double value2){
+
+    bool result;
+
+    if(constraintOperator == "=" || constraintOperator == "=="){
+      result = (value1 == value2); return result;
+    }
+
+    if(constraintOperator == ">"){
+      result = (value1 > value2); return result;
+    }
+
+    if(constraintOperator == "<"){
+       result = (value1 < value2); return result;
+    }
+
+    if(constraintOperator == ">="){
+      result = (value1 >= value2); return result;
+    }
+
+    if(constraintOperator == "<="){
+       result = (value1 <= value2); return result;
+    }
+
+    if(constraintOperator == "!="){
+       result = (value1 != value2); return result;
+    }
+   //0 means false
+   //1 means true
+   //-1 means that the logial operator was not found in this function
+   return -1;
+
+}
+
+//Raquel: this function will parse the results, apply the logical operations for testing for constraints
+//Raquel: this function will write TRUE or FALSE in the output, depending on whether the constraints are fulfilled
+int evaluateResults(string inputFile1, string inputFile2, string consFile) {
+  ifstream simResult1;
+  ifstream simResult2;
+  ifstream constraintFile;
+
+  /*
+  if(argc != 4){
+     cout << endl << endl;
+     cout << "Usage: ./evaluate_results result_file1.txt result_file2.txt constraint_file.cons";
+     cout << endl << endl;
+     return 1;
+  }
+*/
+
+  simResult1.open (inputFile1);
+  simResult2.open (inputFilefile2);
+  constraintFile.open (consFile);
+
+  int count = 0;
+  vector<string> constraintValue1;
+  vector<string> constraintValue2;
+  vector<string> constraintOp;
+  vector<string> variableNames;
+  vector<string> variableValues;
+  string constraintItem;
+
+
+  map< string, map <int, double> > namesValues;
+
+  string constraints("<>=!");
+  size_t pos = 0;
+  size_t newpos;
+  size_t newpos2;
+
+  string line;
+
+  string tmpStr;
+
+//just to test if the constraing function works
+//int test = constraintFunction(0, "=", 0);
+//cout << "test result is: " << test << endl; //the result should be 1
+
+  //tests if input files exist
+  if (!simResult1.is_open()){cout << "Error! Can't find simulation result file 1.\n"; return 1;}
+  if (!simResult2.is_open()){cout << "Error! Can't find simulation result file 2.\n"; return 1;}
+  if (!constraintFile.is_open()){cout << "Error! Can't find test file.\n"; return 1; }
+
+  //reads test constraints file
+  cout << "Reading constraints file..." << endl;
+
+  while ( getline (constraintFile,line) ){
+
+      //parse constraints using a logical expression parser
+      //continue here
+      //constraintValue1[0] = line.substr(0, line.find(constraints));
+
+        newpos = line.find_first_of(constraints, pos);
+        constraintValue1.push_back(line.substr(pos, newpos));
+
+        newpos2 = line.find_last_of(constraints);
+        constraintValue2.push_back(line.substr(newpos2+1));
+
+        //cout << "newpos " << newpos << " newpos2 " << newpos2 << endl;
+
+        if(newpos == newpos2){
+	constraintOp.push_back(line.substr(newpos,1));
+
+        }else{constraintOp.push_back(line.substr(newpos,newpos2-newpos+1));}
+
+        //cout << constraintValue1[count] << "\t" <<  constraintOp[count] << "\t" << constraintValue2[count] << endl;
+
+
+        count++;
+
+
+  }
+
+  constraintFile.close();
+
+
+  cout << "Done reading constraints file." << endl;
+
+
+
+
+
+
+
+  //get variable/collumn names
+  cout << "Reading Result File 1..." << endl;
+  getline (simResult1,line);
+  variableNames = splitResults(line, ' ');
+
+  for (int i = 0; i < variableNames.size(); i++){
+      if (variableNames[i].empty() || variableNames[i]=="#"){
+         //cout << "Found empty string at " << i << endl;
+         variableNames.erase(variableNames.begin()+i);
+         i--;
+      }
+   }
+
+/*
+  //debug
+  for(int i = 0; i < variableNames.size(); i++){
+      cout << i << ": !!!!" << variableNames[i] << "@@@@" << endl;
+
+  }
+*/
+
+  //get variable values
+  count = 0;
+  while ( getline (simResult1,line) ){
+
+      //cout << line << '\n';
+
+      variableValues =  splitResults(line, ' ');
+
+      for(int i = 0; i < variableValues.size(); i++){
+          if (variableValues[i].empty()){
+             //cout << "Found empty string at " << i << endl;
+             variableValues.erase(variableValues.begin()+i);
+             i--;
+          }
+
+       }
+
+       //start making the map here
+       //make a map with the variable names (string) vs their index (int), pointing to values (double)
+       //example map[variableNames[i]][count] = variableValues[i];
+       for(int i = 0; i < variableNames.size(); i++){
+
+          if(variableNames[i] != "Iteration" || variableNames[i] != "iteration" || variableNames[i] != "time" || variableNames[i] != "Time"){
+             tmpStr = static_cast<string>(variableValues[i]);
+             namesValues[variableNames[i]][count] = atof(tmpStr.c_str());
+             //cout << "tmpStr: " << tmpStr << endl;
+             //cout << "name: " << variableNames[i] << "; value at " << count << ": " << namesValues[variableNames[i]][count]  << endl;
+          }
+
+
+       }
+
+
+  count++;
+
+  }
+
+
+  simResult1.close();
+
+
+  cout << "Done reading Result File 1." << endl;
+
+
+
+
+
+
+
+
+  //get variable/collumn names
+  cout << "Reading Result File 2..." << endl;
+  getline (simResult2,line);
+  variableNames = splitResults(line, ' ');
+
+  for (int i = 0; i < variableNames.size(); i++){
+      if (variableNames[i].empty() || variableNames[i]=="#"){
+         //cout << "Found empty string at " << i << endl;
+         variableNames.erase(variableNames.begin()+i);
+         i--;
+      }
+   }
+
+/*//debug
+  for(int i = 0; i < variableNames.size(); i++){
+      cout << i << ": !!!!" << variableNames[i] << "@@@@" << endl;
+
+  }
+*/
+  //get variable values
+  count = 0;
+  while ( getline (simResult2,line) ){
+
+      //cout << line << '\n';
+
+      variableValues =  splitResults(line, ' ');
+
+      for(int i = 0; i < variableValues.size(); i++){
+          if (variableValues[i].empty()){
+             //cout << "Found empty string at " << i << endl;
+             variableValues.erase(variableValues.begin()+i);
+             i--;
+          }
+
+       }
+
+       //start making the map here
+       //make a map with the variable names (string) vs their index (int), pointing to values (double)
+       //example map[variableNames[i]][count] = variableValues[i];
+
+      for(int i = 0; i < variableNames.size(); i++){
+
+          if(variableNames[i] != "Iteration"){
+
+             tmpStr = static_cast<string>(variableValues[i]);
+             namesValues[variableNames[i]][count] = atof(tmpStr.c_str());
+            // cout << "tmpStr: " << tmpStr << endl;
+            // cout << "name: " << variableNames[i] << "; value at " << count << ": " << namesValues[variableNames[i]][count]  << endl;
+          }
+
+
+      }
+
+
+  count++;
+
+  }
+
+
+  simResult2.close();
+
+
+  cout << "Done reading Result File 2." << endl;
+
+
+int result;
+
+ //Now test if the constraints are fulfilled
+ //And return a list of iterations where they were fulfilled
+ cout << "Iteration" << "\t" << "Constraint" << "\t" << "Result(0=FALSE;1=TRUE)" << endl;
+
+ for(int i = 0; i < constraintValue1.size(); i++){
+     //constraintFunction(0, "=", 0);
+     //cout << "@@@" << constraintValue1[i] << "@@@map size" << namesValues[constraintValue1[i]].size() << endl;
+     //cout << constraintValue1[i] << "\t" <<  constraintOp[i] << "\t" << constraintValue2[i] << endl;
+
+     for (int j = 0; j < namesValues[constraintValue1[i]].size(); j++){
+         //cout << namesValues[constraintValue1[i]][j] << " " << constraintOp[i] << " " << namesValues[constraintValue2[i]][j];
+         result = constraintFunction(namesValues[constraintValue1[i]][j], constraintOp[i], namesValues[constraintValue2[i]][j]);
+         //cout << " = " << result << "; iteration = " << j << " constraints = " << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << endl;
+
+
+         cout << j+1 << "\t";
+         cout << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << "\t";
+         cout << result << endl;
+     }
+
+
+ }
+
+
+
+
+
+
+//namesValues[variableNames[i]][count]
+
+  return 0;
+}
+
+
+- New code added in Evaluate.hh
+
+//Raquel: added new file
+//Name: evaluateResults.hh
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <map>
+#include <stdlib.h>
+
+using namespace std;
+
+int constraintFunction(double value1, string constraintOperator, double value2);
+
+void evaluateResults(string);
+
+vector<string> splitResults(const string &s, char delim);
+
+
+
+
+In Utils
+
+-	Fixed Linux compatibility issue that was caused by wrong absolute file path.
+
+-	Added the following code to the Utils.cpp code, mainpath function:
+
+		#ifndef WIN_VER //Raquel: added this block to solve compatibility issues with Linux
+			path p = canonical("./"); //gets full path with linux sintax
+			curdirstr = p.string(); //convert it to string
+		#endif
+
+-	Added the following line to the Utils.cpp code, function convertToAbsPath:
+
+		#ifndef WIN_VER //Raquel: added this block to solve compatibility issues with Linux
+			path fullPath2 = canonical(relPath); //Raquel: retrieves full path for relative directory
+			fullPath = fullPath2.string(); //Raquel: converts path to string
+		#endif
+	
+
+
+
+
+
+In Swarm
+
+
+
+- Added new code to fix the alignment problem with the parameter values, maping associations between parameters and their values for each particle, and reorganizing them based on their associations
+
+- New code added to outputRunSummary function:
+
+//Raquel: new set of variables
+	int counter; //Raquel: this will count the index of the parameter value for a given parameter
+	int particleCounter; //Raquel: This will count the total number of particles
+	vector<string> paramList; //Raquel: This is the global list of parameters
+	int paramCounter; //Raquel: this is the index of the parameter name
+
+	map<unsigned int, map<unsigned int, map<string, double>>> alignedResults;   //Raquel: Particle -> Model -> Parameter -> value
+
+
+//Raquel: starting new code that I made to fix the alignment problem
+//Raquel: this loop will go through all models, particles, parameters, and parameter values, associating them correctly in a new map
+		paramCounter = 0;
+		 for (unsigned int i=0; i< options.models.size(); i++ ){//loops through models
+			 cout<<" Model ["<<i<<"]: " << options.models.at(i)->getName()<<endl<<"              ";
+			 counter = 0;
+		 	 for (auto it1 = options.models.at(i)->freeParams_.begin(); it1 != options.models.at(i)->freeParams_.end(); ++it1){//loop through parameters
+
+		 		    cout<<" Free Parameter: " << it1->first << endl;
+
+		 		    if((find(paramList.begin(), paramList.end(), it1->first)) == paramList.end()){
+		 		    	paramList.insert(paramList.end(), it1->first);
+		 		    	paramCounter++;
+
+		 		    }
+		 		    particleCounter = 0;
+
+		 		    for(auto it2 = subparticleCurrParamSets_.begin(); it2!=subparticleCurrParamSets_.end(); ++it2){//loops through subparticle IDs
+		 		    	particleCounter++;
+		 		      	for(auto it3 = it2->second.begin(); it3 != it2->second.end(); ++it3){//loops through model IDs
+		 		    		if(it3->first==i){
+		 		    			if (options.verbosity >=3){
+		 		    				cout << "parameter for index " <<  counter  << " : "  << it3->second[counter] << endl;
+		 		    			}
+		 		    			alignedResults[it2->first][i][it1->first] = it3->second[counter];
+		 		    			// Particle -> Model -> Parameter -> value
+		 		    		}
+		 		    	}
+
+		 		    }
+					counter++; //free param counter
+		 	 }
+			 cout << endl;
+		 }
+
+
+ 		 cout << left << setw(16) << "Particle" << left << setw(16) << "Model";
+
+		 for(int i = 0; i < paramList.size(); i++){
+			 cout << left << setw(16) << paramList[i];
+
+		 }
+		 cout << endl;
+
+		 int foundModel;
+
+int foundParam;
+
+//Raquel: this will print the output in the correct order, aligned
+//Raquel TODO: save this printed output to the output file, and calculate overall fit, merging the fits for each parameter
+		 for(auto ri1 = alignedResults.begin(); ri1 != alignedResults.end(); ++ri1){//loop through particles
+
+			 for (auto ri2 = ri1->second.begin(); ri2 != ri1->second.end(); ++ri2){//loop through models
+				 //str =
+				 //str = ;
+				 cout << "Model_";
+				 cout << left << setw(10) << +ri2->first;
+
+				 cout << "Particle_";
+				 cout << left << setw(7) << ri1->first;
+
+				 for(int i = 0; i < paramList.size(); i++){
+					 foundParam = 0;
+					 for(auto ri3 = ri2->second.begin(); ri3 != ri2->second.end(); ++ri3){//loop through parameters
+
+						 if(paramList[i] == ri3->first){
+							 cout << left << setw(16) << ri3->second;
+							 foundParam = 1;
+						 }
+
+					 }
+					 if(foundParam == 0){
+						 cout << left << setw(16) << "NA";
+					 }
+				 }
+
+				 cout << endl;
+
+			 }
+
+		 }
+
+//Raquel: here ends the block of code to fiz the alignment problem with the parameter values
+

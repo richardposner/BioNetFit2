@@ -1,0 +1,110 @@
+Merge the fits from each subparticle
+
+Setting.hh and GenFit2.hh
+
+uncoment Ver2 to go to previous version
+
+add comments for each change I make
+
+
+
+the -h option changed totally
+
+
+
+
+GenFit2.hh
+
+
+
+mid (model id) (01010101)
+
+subparid (12345678)
+
+Utils.hh convert the numbers of the particles
+
+doswarm (swarm size is now the number subparticles)
+
+nSubPar variables
+
+
+runSSA needs implamation (but not highest priority)
+
+
+use the
+runSGA()
+
+
+Swarm.hh -> set exp path, get exp (file name)
+
+
+update_cur_particle_part (make sure the particles are finished when subparticles from that one is finished)
+
+
+model now is a vector (pointer before)
+
+
+
+consolidate models, remove the reduntant free parameters, generates vector of strings of al free parameters, its a vector of map objects
+
+
+runGeneration
+check resources available, launches subparticles, until all of the subparticles are finished
+
+
+
+Setting.hh STANDALONE_PARTICLE.... uncoment, if you want debug test info
+
+
+Swarm.cpp
+keep TEST_SIMULATOR active
+
+work with subpartcle ids
+
+
+change simulator -> just go to the config file
+
+
+
+checkMasterMessage() in Swarm.cpp
+review the subparticles, we need to work only with subpar now.
+
+sconfig files, has the model information
+
+[1:1-0]
+subparticle:pardicle-model
+
+
+running particles multiple times and taking averages
+runningSubParticleIteration -> smooth fit
+
+
+
+The output shows
+m2	k2 k3
+m1      k1 k3
+global Fit k1 k2 l3
+
+the parameters are not aligned, align them to the global list (with all free parameters)
+
+subparticleCurrParamSets stores 
+ it is implemented for the GA
+
+implement for all the others
+
+finish fit
+
+killAllParticles change to subparticles
+
+fitCalc for one subparticle
+outputs result for one subparticle
+
+define fir_weights=1,2
+one weight per model
+
+Add fit model 1, fit model 2, fit all
+
+
+take a look 
+
+bngl to xml?
