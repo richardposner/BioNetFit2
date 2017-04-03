@@ -1,0 +1,56 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1348\cocoasubrtf170
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 \
+\
+FROM THE CONFIG FILE\
+\
+# The free parameters. These are generated on a random log scale between 0.001 and 1000.\
+loguniform_var=KD1__FREE__ 0.001 1000\
+loguniform_var=km1__FREE__ 0.001 1000\
+loguniform_var=K2RT__FREE__ 0.001 1000\
+loguniform_var=km2__FREE__ 0.001 1000\
+loguniform_var=kphos__FREE__ 0.001 1000\
+loguniform_var=kdephos__FREE__ 0.001 1000\
+\
+***********\
+\
+These are the correct values for the parameters (from example 5 starting point)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 \
+\
+	# Convert from nM to Molar\
+	EGF_conc = EGF_conc_nM * 1e-9 # M\
+\
+	EGF_copy_number = EGF_conc*(NA*Vecf) # [=] number of molecules per cell\
+\
+	# receptor copy number\
+	EGFR_copy_number  f*1.0e5 # [=] num\
+\
+KD1 5.0 # [=] nM \
+km1 0.1 # [=] /s \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 kp2=K2RT*km2/EGFR_copy_number # [=] /nM/s\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 km2 0.01 # [=] /s\
+kphos 0.2 # [=] /s\
+kdephos 0.1 # [=] /s\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 kp3=kp2*0.2\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 \
+********************\
+\
+These are the outputs from BIOnet fit 1\
+\
+    KD1__FREE__ 5.92599705e-01\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0     K2RT__FREE__ 1.12188953e+01\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0     kdephos__FREE__ 1.59234811e+00\
+    km1__FREE__ 7.83140139e-03\
+    km2__FREE__ 0.0179107743424136\
+    kphos__FREE__ 3.02102168e+00}

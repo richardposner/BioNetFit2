@@ -195,18 +195,21 @@ end model
 
 # Generate the network
 # razi commented, needed only for some simulation types including ODE, generate_network();
-#generate_network();
+generate_network();
 
 # Simulate for 600 seconds to reach equilibrium
 #original simulator option was ode, razi changes for test simulate({method=>"ode",t_start=>0,t_end=>600,n_steps=>1,suffix=>"equil"})
-simulate({method=>"random",t_start=>0,t_end=>600,n_steps=>1,suffix=>"equil"})
+#simulate({method=>"random",t_start=>0,t_end=>600,n_steps=>1,suffix=>"equil"})
 
 
 # Set Ligand_isPresent to 1 to enable ligand binding by means of the "func()" function
 setParameter("Ligand_isPresent",1)
 
 # Simulate for 60 seconds. This simulation output is fit to the data in example3.exp
-#razi changed the simulation command for a faster run, originally it was: simulate({method=>"ode",t_start=>0,t_end=>60,sample_times=>[0,5,10,15,20,25,30,35,40,45,50,55,60],prefix=>"ex5"})
-#simulation option ode, nfsim, random, #simulate({method=>"ode",t_start=>0,t_end=>60,sample_times=>[0,30,60],prefix=>"ex5"})
-#razi are testing this simulate({method=>"nfsim",t_start=>0,t_end=>60,sample_times=>[0,30,60],prefix=>"ex5"})
-simulate({method=>"random",t_start=>0,t_end=>60,sample_times=>[0,30,60],prefix=>"ex5"})
+#razi changed the simulation command for a faster run, originally it was: 
+simulate({method=>"ode",t_start=>0,t_end=>60,sample_times=>[0,5,10,15,20,25,30,35,40,45,50,55,60],prefix=>"ex5"})
+#simulation option ode, nfsim, random, 
+#simulate({method=>"ode",t_start=>0,t_end=>60,sample_times=>[0,30,60],prefix=>"ex5"})
+#razi are testing this 
+#simulate({method=>"nfsim",t_start=>0,t_end=>60,sample_times=>[0,30,60],prefix=>"ex5"})
+#simulate({method=>"random",t_start=>0,t_end=>60,sample_times=>[0,30,60],prefix=>"ex5"})

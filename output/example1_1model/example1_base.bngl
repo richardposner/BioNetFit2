@@ -1,0 +1,3 @@
+readFile({file=>"/home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/example1_base.net"})
+simulate({method=>"ode",t_start=>0,t_end=>600,n_steps=>20,print_functions=>1})
+simulate({method=>"ode",t_start=>0,t_end=>60,sample_times=>[0,5,10,15,20,25,30,35,40,45,50,55,60],prefix=>"example1"})

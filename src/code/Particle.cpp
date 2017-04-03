@@ -648,7 +648,8 @@ if (swarm_->options.verbosity >= 3) cout<<"doParticle-4 now lets check messages.
 			cout << "RAQUEL before if" << endl;
 		if (swarm_->options.fitType == "ga") {
 			cout << "RAQUEL Entering check messages GA" << endl;
-			checkMessagesGenetic();
+			//checkMessagesGenetic(); //Raquel: changed this function to fix the problem of not proceeding to the next generation
+			checkMessagesGenetic(mid);
 			cout << "RAQUEL done check messages" << endl;
 		}
 		else if (swarm_->options.fitType == "pso") {
@@ -776,6 +777,7 @@ void subParticle::runModel(unsigned int iteration, bool localSearch) {
 			mdl->outputModelWithParams(parParticle->simParams_.at(mid), path, bnglFilename, suffix, false, false, false, false, false);
 		}
 	}
+	cout << "RAQUEL GENERATION: " << parParticle->currentGeneration_ << " path" << path << endl;
 
 	// Generate .gdat pipes if we're using pipes
 
@@ -827,6 +829,7 @@ cout<<"\nsubParticle::runModel: Tries to generate file from file :" << exp_file<
 cout<<"\nsubParticle::runModel: Finished generating file: "<< gdat_path << "   from file :" << exp_file<<"\n.";// mypause();
 
 		ret = generate_gdat_file(exp_file, gdat_path, pID);
+		cout << "RAQUEL ret: " << ret << endl;
 	}else
 	{
 //if (mid==1) return; //razi for test uncomment
@@ -883,6 +886,8 @@ cout<<"\nsubParticle::runModel: Finished generating file: "<< gdat_path << "   f
 	}
 	else {
 		// If our return code is not 0, tell the master that the simulation failed
+		cout << "RAQUEL ret " << ret << endl;
+
 		cout << "subParticle::runModel: I failed completing runmodel ..." << endl; //mypause();
 		swp->swarmComm->sendToSwarm(int(subParID), 0, SIMULATION_FAIL, true, swp->swarmComm->univMessageSender);
 	}
@@ -938,7 +943,7 @@ cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
 					string bnglFilename = swarm_->getModelName(mid, false)+"_" + toString(id_) + "_" + toString(i) + ".bngl";
 					string bnglFullPath = path + bnglFilename;
 					string suffix = toString(id_) + "_" + toString(i);
-
+					cout << "RAQUEL CREATING BNGL: " << bnglFullPath << endl;
 					// And generate our models
 					if (swarm_->options.models.at(mid)->getHasGenerateNetwork()){
 						// If we're using ODE solver, output .net and .bngl
@@ -948,6 +953,9 @@ cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
 						// If we're using network free simulation, output .bngl
 						mdl->outputModelWithParams(simParams_.at(mid), path, bnglFilename, suffix, false, false, false, false, false);
 					}
+
+					cout << "RAQUEL BNGL generated: " <<  bnglFullPath << " id_ " << toString(id_) << " i " << toString(i) << " subParID " << subParID << endl;
+
 				}
 
 				// Tell the master we have our new params and are ready for the next generation
@@ -1432,7 +1440,8 @@ void Particle::finalizeSim(unsigned int mid) {
 
 void Particle::smoothRuns(unsigned int mid) {
 	unsigned int subParID = calcsubParID(mid);
-	if ((mid<0)|| (mid >= swarm_->getNumModels()) || (!getSubParticle(mid)) || (!models.at(mid)) || (dataFiles_.at(mid).empty())){
+	//if ((mid<0)|| (mid >= swarm_->getNumModels()) || (!getSubParticle(mid)) || (!models.at(mid)) || (dataFiles_.at(mid).empty())){
+	if ((mid<0)|| (mid >= swarm_->getNumModels()) || (!models.at(mid)) || (dataFiles_.at(mid).empty())){ //Raquel: the test !getSubParticle(mid) is not working correctly
 
 
 	if (mid<0)  cout<<"E1\n";
@@ -1931,7 +1940,8 @@ void Particle::runModel(unsigned int iteration, bool localSearch) {
 	cout<<"Particle::runModel: simulation completed. collect data ...\n";
 
 	// Check for simulation command success
-	if (ret == 0) { // TODO: Need to check for simulation status when using pipes. Going by return code doesn't work there because we're using the & operator
+	//Raquel: changed this temporarily
+	if (ret == 0 || ret==-1 || ret==256) { // TODO: Need to check for simulation status when using pipes. Going by return code doesn't work there because we're using the & operator
 		// really not sure how we can do this easily
 		cout<<"Particle::runModel: completing runmodel: success ...\n";
 		string outputSuffix;
@@ -1972,7 +1982,7 @@ void Particle::checkMessagesGenetic() {
 
 		smhRange = swarm_->swarmComm->univMessageReceiver.equal_range(SEND_FINAL_PARAMS_TO_PARTICLE);
 		if (smhRange.first != smhRange.second) {
-			//cout << id_ << " found final " << endl;
+			cout << "RAQUEL id_ " << id_ << "found final " << endl;
 			for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {
 				//Timer tmr;
 
@@ -2005,10 +2015,11 @@ void Particle::checkMessagesGenetic() {
 						// If we're using network free simulation, output .bngl
 						model_->outputModelWithParams(simParams_, path, bnglFilename, suffix, false, false, false, false, false);
 					}
+
 				}
 
 				// Tell the master we have our new params and are ready for the next generation
-				//cout << id_ << " telling master we're finished " << endl;
+				cout << id_ << "RAQUEL: telling master we're finished " << endl;
 				swarm_->swarmComm->sendToSwarm(id_, 0, DONE_BREEDING, false, swarm_->swarmComm->univMessageSender);
 
 				//double t = tmr.elapsed();
@@ -2063,7 +2074,7 @@ void Particle::checkMessagesPSO() {
 
 
 		if (swarm_->options.verbosity >= 3) {
-			//cout << "Found " << numMessages << " messages" << endl;
+			cout << "Found " << numMessages << " messages" << endl;
 
 			/*
 			for (auto sm = swarm_->swarmComm->univMessageReceiver.begin(); sm != swarm_->swarmComm->univMessageReceiver.end(); ++sm) {

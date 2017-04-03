@@ -105,7 +105,7 @@ int evaluateResults(string inputFile1, string inputFile2, map<int,string> constr
   if (!simResult2.is_open()){cout << "Error! Can't find simulation result file 2.\n"; return 1;}
 
   //reads test constraints file
-  cout << "Reading constraints file..." << endl;
+//  cout << "Reading constraints file..." << endl;
 
 
   for(auto it = constraints.begin(); it!=constraints.end(); ++it){
@@ -126,7 +126,7 @@ int evaluateResults(string inputFile1, string inputFile2, map<int,string> constr
 
         }else{constraintOp.push_back(line.substr(newpos,newpos2-newpos+1));}
 
-        cout << constraintValue1[count] << "\t" <<  constraintOp[count] << "\t" << constraintValue2[count] << endl;
+        //cout << constraintValue1[count] << "\t" <<  constraintOp[count] << "\t" << constraintValue2[count] << endl;
 
 
         count++;
@@ -145,7 +145,7 @@ int evaluateResults(string inputFile1, string inputFile2, map<int,string> constr
 
 
   //get variable/collumn names
-  cout << "Reading Result File 1..." << endl;
+  //cout << "Reading Result File 1..." << endl;
   getline (simResult1,line);
   variableNames1 = splitResults(line, ' ');
 
@@ -226,7 +226,7 @@ int evaluateResults(string inputFile1, string inputFile2, map<int,string> constr
   simResult1.close();
 
 
-  cout << "Done reading Result File 1." << endl;
+  //cout << "Done reading Result File 1." << endl;
 
 
 
@@ -236,7 +236,7 @@ int evaluateResults(string inputFile1, string inputFile2, map<int,string> constr
 
 
   //get variable/collumn names
-  cout << "Reading Result File 2..." << endl;
+  //cout << "Reading Result File 2..." << endl;
   getline (simResult2,line);
   variableNames2 = splitResults(line, ' ');
 
@@ -317,14 +317,14 @@ int evaluateResults(string inputFile1, string inputFile2, map<int,string> constr
   simResult2.close();
 
 
-  cout << "Done reading Result File 2." << endl;
+  //cout << "Done reading Result File 2." << endl;
 
 
 int result;
 
  //Now test if the constraints are fulfilled
  //And return a list of iterations or time points and whether they were fulfilled
- cout << "Time" << "\t" << "Constraint" << "\t" << "Result(0=FALSE;1=TRUE)" << endl;
+ //cout << "Time" << "\t" << "Constraint" << "\t" << "Result(0=FALSE;1=TRUE)" << endl;
  outFile << "Time" << "\t" << "Constraint" << "\t" << "Result(0=FALSE;1=TRUE)" << endl;
  for(int i = 0; i < constraintValue1.size(); i++){
      //constraintFunction(0, "=", 0);
@@ -337,14 +337,14 @@ int result;
          //cout << " = " << result << "; iteration = " << j << " constraints = " << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << endl;
 
          if(variableNames1[0]=="time" || variableNames1[0]=="Time"){
-             cout << namesValues1[variableNames1[0]][j] << "\t";
+             //cout << namesValues1[variableNames1[0]][j] << "\t";
              outFile << namesValues1[variableNames1[0]][j] << "\t";
          }else{
-        	 cout << j+1 << "\t";
+        	 //cout << j+1 << "\t";
         	 outFile << j+1 << "\t";
          }
-         cout << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << "\t";
-         cout << result << endl;
+         //cout << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << "\t";
+         //cout << result << endl;
          outFile << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << "\t";
          outFile << result << endl;
      }

@@ -1,0 +1,4 @@
+readFile({file=>"/home/raquel/Posdoc_Posner/BioNetFit/output/test5M_2models/11/new_example5_3_2_1.net"})
+simulate({method=>"ode",t_start=>0,t_end=>600,n_steps=>1,suffix=>"2_1"})
+setParameter("Ligand_isPresent",1)
+simulate({method=>"ode",t_start=>0,t_end=>60,sample_times=>[0,5,10,15,20,25,30,35,40,45,50,55,60],prefix=>"example5_3",suffix=>"2_1"})

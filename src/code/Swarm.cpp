@@ -806,6 +806,7 @@ void Swarm::doSwarm() {
 		if (options.synchronicity) {
 			if (options.fitType == "ga") {
 				runSGA();
+				cout << "RAQUEL finished GA" << endl;
 			}
 			else if (options.fitType == "pso") {
 				runSPSO();
@@ -912,6 +913,7 @@ bool Swarm::checkStopCriteria() {
 			cout << "Checking if we've reached max generation. Current is " << (currentGeneration - 1) << " and max is " << options.maxGenerations << endl;
 		}
 		if (options.maxGenerations && currentGeneration > options.maxGenerations) {
+			cout << "RAQUEL: Stopped because currentGeneration > maxGenerations" << endl;
 			return true;
 		}
 	}
@@ -936,7 +938,7 @@ bool Swarm::checkStopCriteria() {
 			if () {
 			}
 	 */
-
+	cout << "RAQUEL: Returning FALSE to Stop Criteria." << endl;
 	return false;
 }
 
@@ -1338,6 +1340,7 @@ void Swarm::processParticlesPSO(vector<unsigned int> particles, bool newFlight) 
 		}
 
 		// Finally, send the parameters
+
 		swarmComm->sendToSwarm(0, *particle, SEND_FINAL_PARAMS_TO_PARTICLE, false, nextPositionsStr);
 	}
 }
@@ -1617,6 +1620,7 @@ void Swarm::launchSubParticle(unsigned int pID, unsigned int mid, bool nextGen) 
 
 	//calculate new particle number
 	unsigned int subParID = (pID - 1)* options.models.size()+ mid + 1;
+	cout << "RAQUEL launchSUB suParID: " << subParID << endl;
 
 #ifdef TEST_SIMULATOR
 //	if (subParID!=3){
@@ -1673,9 +1677,9 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 	//a particle is considered completed of all its subparticles are finished. XXXX
 
 
-
 	sp=0;
 	finishedParticles_.clear();
+	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
 	while (numFinishedParticles < options.swarmSize) { //razi: loop over particles, each particle includes nModels subPArticles
 
 		if (runningSubParticles_.size()< options.parallelCount) {//razi: make sure the number of subparticles don't exceed parallel count limit
@@ -1684,15 +1688,18 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 			mid = fcalcMID(sp, nModels);
 
 			launchSubParticle(p, mid, false);
+			//launchParticle(p, false);
+
 		}
 		// Check for any messages from particles
 		usleep(10000);
 		checkMasterMessages();
 
 		numFinishedParticles = finishedParticles_.size();
+		//cout << "RAQUEL rungeneration numFinishedParticles " << numFinishedParticles << endl;
 	}
 	finishedParticles_.clear();
-
+	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
 
 
 
@@ -2779,21 +2786,40 @@ void Swarm::runSGA() {
 
 	bool stopCriteria = false;
 	while (!stopCriteria){
+		cout << "RAQUEL: starting runGeneration" << endl;
 		runGeneration();
+		cout << "RAQUEL: finished runGeneration" << endl;
+		cout << "RAQUEL: starting checkStopCriteria" << endl;
 		stopCriteria = checkStopCriteria();
+		cout << "RAQUEL: STOP CRITERIA value" << stopCriteria << endl;
+		cout << "RAQUEL: starting saveSwarmState" << endl;
+
 		saveSwarmState();
+		cout << "RAQUEL: finished saveSwarmState" << endl;
 
 		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
 		if (options.deleteOldFiles) {
+			cout << "RAQUEL: starting cleanupFiles" << endl;
+
 			cleanupFiles(currentDirectory.c_str());
+			cout << "RAQUEL: finished cleanupFiles" << endl;
+
 		}
 
 		if (!stopCriteria) {
 			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+			cout << "RAQUEL: starting outputRunSummary from runSGA" << endl;
+
 			outputRunSummary(outputPath);
+			cout << "RAQUEL: finished outputRunSummary from runSGA" << endl;
+			cout << "RAQUEL: starting breedGenerationGA from runSGA" << endl;
+
 			breedGenerationGA();
+			cout << "RAQUEL: finished breedGenerationGA from runSGA" << endl;
+
 		}
 	}
+	cout << "RAQUEL: got out from WHILE STOP CRITERIA" << endl;
 }
 
 void Swarm::runSPSO() {
@@ -4075,6 +4101,8 @@ void Swarm::generateBestFitModel(string outputDir) {
 	for (unsigned int mid =0; mid < options.models.size(); mid++){
 		options.models[mid]->outputModelWithParams(paramSet, outputDir, (options.jobName + ".bngl"), "", false, false, false, false, false);
 	}
+
+	cout << "RAQUEL: finished saving " << options.jobName << ".bngl" << endl;
 }
 
 void Swarm::outputRunSummary(string outputPath) {
@@ -4284,11 +4312,11 @@ int result = 0;
 
 					 path = options.models.at(i)->getName();
 					 basename1 = getFilename(path);
-					 inputFile1 = outdir + basename1 + "_" + toString(it->first) + "_" + toString(currentGeneration-1) + ".gdat";
+					 inputFile1 = outdir + basename1 + "_" + toString(it->first) + "_" + "1" + ".gdat";
 
 					 path = options.models.at(j)->getName();
 					 basename2 = getFilename(path);
-					 inputFile2 = outdir + basename2 + "_" + toString(it->first) + "_" + toString(currentGeneration-1) + ".gdat";
+					 inputFile2 = outdir + basename2 + "_" + toString(it->first) + "_" + "1" + ".gdat";
 
 					 cout << "infile 1: " << inputFile1 << endl;
 					 cout << "infile 2: " << inputFile2 << endl;
@@ -4782,6 +4810,16 @@ vector<double> Swarm::crossoverParticleDE(unsigned int particle, vector<double> 
 
 
 void Swarm::breedGenerationGA(vector<unsigned int> children) {
+	//check all messages that are sent by the master
+	//send double messages in case you have subparticles
+	//one message per subparticle, one subparticle per model
+	//use functions in the Util
+	//function parse model, creates the file qith the contents of the model
+	//children
+
+	//later:
+	//where the parameters are comming from, full list of consolidate
+
 	// TODO: Need to take into consideration failed particles? Definitely need to in first generation.
 	if (options.verbosity >= 3) {
 		cout << "Breeding generation, generation:" << currentGeneration <<"  swarm size:"<<options.swarmSize<<"   keep size:"<< options.keepParents<<"  children size:"<< children.size()<< " " <<endl;
@@ -4861,7 +4899,8 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	// If we want to keep any parents unchanged, send unchanged param sets to children.
 	// We start with the global best fit params and iterate through the fit list from there.
 	unsigned int childCounter = 1;
-
+	int subParID = 0;
+	int nModels = options.models.size();
 	// Only keep parents if we're doing an entire generation at once
 	if (children.size() == options.swarmSize) {
 		auto parent = allGenFits.begin();
@@ -4877,33 +4916,25 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 
 			cout << "Sending unchanged params to " << children[childCounter - 1] << " counter: " << childCounter << endl;
 			//swarmComm->sendToSwarm(0, childCounter, SEND_FINAL_PARAMS_TO_PARTICLE, false, params);
-			swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, params);
+			for (unsigned int mid = 0; mid < options.models.size(); ++mid){
 
+
+				subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
+
+				cout << "Sending to SubPar: " << subParID << endl;
+				swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, params);
+
+			}
 			++parent;
 			++childCounter;
 
-			cout << "Raquel: Sent " << childCounter << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
+			cout << "Raquel: (keep parents loop) Sent " << childCounter << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
 
 		}
 
 	}
 
-	//Raquel debugging start
-	unsigned int numFinishedBreeding1 = 0;
 
-		while (numFinishedBreeding1 < (childCounter - 1)) {
-	cout << "checking for FIRST DONEBREED" << endl;
-			unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
-
-	//		int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
-
-			numFinishedBreeding1 += numMessages;
-	cout << numFinishedBreeding1 << endl;
-	cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding1 << endl;
-
-		}
-
-	//Raquel debuging end
 
 	float parentPairs;
 	//cout << "children.size(): " << children.size() << endl;
@@ -5054,16 +5085,38 @@ cout << "free param id:" << pi << "."<<endl;
 		}
 
 cout << "sending to " << children[childCounter - 1] << endl;
-		swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c1Vec);
+
+	for (unsigned int mid = 0; mid < options.models.size(); ++mid){
+
+
+		subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
+		cout << "Sending to SubPar: " << subParID << endl;
+
+		swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, c1Vec);
+
+	}
+
+//		swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c1Vec);
 		++childCounter;
-		cout << "Raquel: Sent " << childCounter << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
+		cout << "Raquel: (mutate loop1)  Sent " << childCounter << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
 
 		// Make sure we don't send to too many parents (only relevant in last breeding with odd number of parents)
 		if ( !( (fmod(parentPairs * 2, 2)) == 1 && parentPairs - i == 0.5 ) ) {
 cout << "sending to " << children[childCounter - 1] << endl;
-			swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
+
+	for (unsigned int mid = 0; mid < options.models.size(); ++mid){
+
+
+		subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
+		cout << "Sending to SubPar: " << subParID << endl;
+
+
+		swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
+
+	}
+	//		swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
 			++childCounter;
-			cout << "Raquel: Sent " << childCounter << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
+			cout << "Raquel: (mutate loop2) Sent " << childCounter-1 << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
 
 
 
@@ -5090,6 +5143,10 @@ for(int veci = 0; veci < c2Vec.size(); veci++){
 	//particleCurrParamSets_ = particleNewParamSets;
 //cout<<"Swarm::breedGenerationGA-AAA9\n.";
 
+//	for (auto it = particleNewParamSets.begin(); it != particleNewParamSets.end(); ++it) {
+//		cout << "RAQUEL NEW PARAMS " << it->first << "sec " << it->second << endl;
+//	}
+
 	// Replace any changed param sets in the master set
 	for (auto child = particleNewParamSets.begin(); child != particleNewParamSets.end(); ++child) {
 		particleCurrParamSets_[child->first] = child->second;
@@ -5100,14 +5157,10 @@ for(int veci = 0; veci < c2Vec.size(); veci++){
 cout << "waiting for " << childCounter - 1 << endl;
 
 
-cout << "RAQUEL: total number of running particles " << runningSubParticles_.size() << endl;
+//cout << "RAQUEL: children size " << children.size() << endl;
+//cout << "RAQUEL: swarm size" << options.swarmSize << endl;
+//cout << "RAQUEL: failed particles " << failedParticles_.size() << endl;
 
-cout << "RAQUEL: children size " << children.size() << endl;
-cout << "RAQUEL: swarm size" << options.swarmSize << endl;
-cout << "RAQUEL: failed particles " << failedParticles_.size() << endl;
-std::vector<unsigned int> test = Swarm::update_finished_running_particles();
-
-cout << "RAQUEL: finished subparticles updated " << test.size() << endl;
 unsigned int numFinishedBreeding = 0;
 
 	while (numFinishedBreeding < (childCounter - 1)) {
@@ -5123,6 +5176,8 @@ cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
 	}
 
 cout << "done?" << endl;
+
+
 //cout<<"Swarm::breedGenerationGA-AAA10\n.";
 }
 
@@ -5875,7 +5930,6 @@ bool Swarm::checkStopCriteria() {
 			if () {
 			}
 	 */
-
 	return false;
 }
 
@@ -6566,7 +6620,7 @@ void Swarm::launchParticle(unsigned int pID, bool nextGen) {
 }
 
 
-
+/*
 void Swarm::runGeneration () {
 	// TODO: Implement walltime
 	if(options.verbosity >= 1) {
@@ -6599,6 +6653,8 @@ void Swarm::runGeneration () {
 		finishedParticles = checkMasterMessages();
 		numFinishedParticles += finishedParticles.size();
 		finishedParticles.clear();
+		cout << "RAQUEL finishedParticles " << numFinishedParticles << endl;
+		cout << "RAQUEL numLaunchedParticles " << numLaunchedParticles << endl
 	}
 	if ( options.verbosity >=3){ cout<< "running a swarm generation finished ....\n";}
 
@@ -6608,6 +6664,7 @@ void Swarm::runGeneration () {
 	}
 	currentGeneration += 1;
 }
+*/
 
 void Swarm::cleanupFiles(const char * path) {
 	// TODO: Should we fork to do this? ...yes.
@@ -7612,19 +7669,36 @@ void Swarm::runSGA() {
 
 	bool stopCriteria = false;
 	while (!stopCriteria){
+		cout << "RAQUEL: Started runGeneration();" << endl;
 		runGeneration();
+		cout << "RAQUEL: Finished runGeneration();" << endl;
+
+		cout << "RAQUEL: Started checkStopCriteria();" << endl;
 		stopCriteria = checkStopCriteria();
+		cout << "RAQUEL: Stop criteria value is " << stopCriteria << endl;
+
+		cout << "RAQUEL: Finished checkStopCriteria();" << endl;
+		cout << "RAQUEL: Started saveSwarmState();" << endl;
 		saveSwarmState();
+		cout << "RAQUEL: Finished saveSwarmState();" << endl;
+
 
 		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
 		if (options.deleteOldFiles) {
+			cout << "RAQUEL: Started cleanupFiles();" << endl;
 			cleanupFiles(currentDirectory.c_str());
+			cout << "RAQUEL: Finished cleanupFiles();" << endl;
+
 		}
 
 		if (!stopCriteria) {
 			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+			cout << "RAQUEL: Started outputRunSummary();" << endl;
 			outputRunSummary(outputPath);
+			cout << "RAQUEL: Finished outputRunSummary();" << endl;
+			cout << "RAQUEL: started breedGenerationGA();" << endl;
 			breedGenerationGA();
+			cout << "RAQUEL: finished breedGenerationGA();" << endl;
 		}
 	}
 }
@@ -9381,6 +9455,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 
 	if (children.size() == 0) {
 		for (unsigned int i = 1; i <= options.swarmSize; ++i) {
+
 			children.push_back(i);
 		}
 	}
@@ -9422,7 +9497,9 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	}
 
 	if (weightSum == 0) {
+		cout << "RAQUEL: STOP CRITERIA -> ALL PARTICLES CONVERGED TO THE SAME FIT VALUE, running finishFit()" << endl;
 		finishFit();
+		cout << "RAQUEL: finished finishFit()" << endl;
 		outputError("Your population has converged. Quitting.");
 	}
 
@@ -9448,7 +9525,10 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	unsigned int childCounter = 1;
 
 	// Only keep parents if we're doing an entire generation at once
+	//if (children.size() == options.swarmSize) {
 	if (children.size() == options.swarmSize) {
+
+
 		auto parent = allGenFits.begin();
 		for (unsigned int p = 1; p <= options.keepParents; ++p) {
 
@@ -9461,9 +9541,11 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 			}
 
 			//cout << "Sending unchanged params to " << childCounter << endl;
-			swarmComm->sendToSwarm(0, childCounter, SEND_FINAL_PARAMS_TO_PARTICLE, false, params);
-			++parent;
-			++childCounter;
+			for (unsigned int i=0; i< options.models.size(); i++ ){//loops through models
+				swarmComm->sendToSwarm(0, childCounter, SEND_FINAL_PARAMS_TO_PARTICLE, false, params);
+				++parent;
+				++childCounter;
+			}
 		}
 	}
 
@@ -9580,14 +9662,17 @@ cout << "free param id:" << pi << "."<<endl;
 		}
 
 cout << "sending to " << children[childCounter - 1] << endl;
-		swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c1Vec);
-		++childCounter;
-
+		for (unsigned int i=0; i< options.models.size(); i++ ){//loops through models
+			swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c1Vec);
+			++childCounter;
+		}
 		// Make sure we don't send to too many parents (only relevant in last breeding with odd number of parents)
 		if ( !( (fmod(parentPairs * 2, 2)) == 1 && parentPairs - i == 0.5 ) ) {
 cout << "sending to " << children[childCounter - 1] << endl;
-			swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
-			++childCounter;
+			for (unsigned int i=0; i< options.models.size(); i++ ){//loops through models
+				swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
+				++childCounter;
+			}
 		}
 
 cout << "The loop completed for parentpairs:" << i+1<<"/"<<parentPairs<<"."<< endl;
@@ -9606,6 +9691,7 @@ cout << "The loop completed for parentpairs:" << i+1<<"/"<<parentPairs<<"."<< en
 cout << "waiting for " << childCounter - 1 << endl;
 	while (numFinishedBreeding < (childCounter - 1)) {
 cout << "checking for DONEBREED" << endl;
+
 		unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
 		//int numMessages = swarmComm->recvMessage(-1, 0, -1, false, swarmComm->univMessageReceiver);
 

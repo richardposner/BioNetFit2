@@ -313,7 +313,7 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 					clearSwarmMessage(smessage);
 				}
 				else {
-					std::cout << "putting it back in the queue..." << std::endl;
+					//std::cout << "putting it back in the queue..." << std::endl;
 					sendToSwarm(senderID, receiverID, tag, false, smessage.message);
 				}
 			}
@@ -323,106 +323,33 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 		}
 	}
 	else {
-		cout << "RAQUEL entering recvMessage entering while loop" << endl;
-		cout << "RAQUEL receiver ID: " << receiverID << " senderID: " << senderID << endl;
+		//cout << "RAQUEL entering recvMessage entering while loop" << endl;
+		//cout << "RAQUEL receiver ID: " << receiverID << " senderID: " << senderID << endl;
 		unsigned int priority = 0;
 
 		while(1) {
-			cout << "RAQUEL inside recvMessage entered while loop" << endl;
+			//cout << "RAQUEL inside recvMessage entered while loop" << endl;
 
 			message_queue::size_type recvd_size;
 
 			//std::cout << "rcv loop" << std::endl;
 			if (block) {
-std::cout << "trying a blocking receive to " << receiverID << " from " << senderID << std::endl;
-//wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+//std::cout << "trying a blocking receive to " << receiverID << " from " << senderID << std::endl;
 
-/*
-			swarmMessage smessage;
-
-// Set tag to tell master we need a list of running particles
-			smessage.tag = toString(GET_RUNNING_PARTICLES);
-			//std::cout << "trying to get list of running particles.." << std::endl;
-
-			// Serialize the message
-			std::string serializedMessage = serializeSwarmMessage(smessage);
-			serializedMessage.resize(1000);
-
-			std::cout << "RAQUEL: trying to receive list of running particles.." << std::endl;
-
-			smq_[0]->send(serializedMessage.data(), sizeof(serializedMessage), 0);
-
-			// This swarmMessage will hold the list of running particles received from master
-
-			message_queue::size_type recvd_size;
-
-			// Receive and de-serialize the message
-			std::stringstream iss;
-			serializedMessage.clear();
-			serializedMessage.resize(1000);
-			unsigned int priority;
-
-			smq_[0]->receive(&serializedMessage[0], 1000, recvd_size, priority);
-
-			serializedMessage.resize(recvd_size);
-			swarmMessage rsmessage = deserializeSwarmMessage(serializedMessage);
-
-			cout << "RAQUEL: received list of running particles.. Number: " << rsmessage.message.size() << endl;
-*/
-//wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 				smq_[receiverID]->receive(&serializedMessage[0], 1000, recvd_size, priority);
 
 
 				block = false;
-std::cout << "blocking receive to " << receiverID << " from " << senderID << " succeeded with recv_size of " << recvd_size << " and message of " << serializedMessage << std::endl;
+//std::cout << "blocking receive to " << receiverID << " from " << senderID << " succeeded with recv_size of " << recvd_size << " and message of " << serializedMessage << std::endl;
 			}
 			else {
 
-
-	/*
-				//wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-
-							swarmMessage smessage;
-
-				// Set tag to tell master we need a list of running particles
-							smessage.tag = toString(GET_RUNNING_PARTICLES);
-							//std::cout << "trying to get list of running particles.." << std::endl;
-
-							// Serialize the message
-							std::string serializedMessage = serializeSwarmMessage(smessage);
-							serializedMessage.resize(1000);
-
-							std::cout << "RAQUEL: trying to receive list of running particles.." << std::endl;
-
-							smq_[0]->send(serializedMessage.data(), sizeof(serializedMessage), 0);
-
-							// This swarmMessage will hold the list of running particles received from master
-
-							message_queue::size_type recvd_size;
-
-							// Receive and de-serialize the message
-							std::stringstream iss;
-							serializedMessage.clear();
-							serializedMessage.resize(1000);
-							unsigned int priority;
-
-							smq_[0]->receive(&serializedMessage[0], 1000, recvd_size, priority);
-
-							serializedMessage.resize(recvd_size);
-							swarmMessage rsmessage = deserializeSwarmMessage(serializedMessage);
-
-							cout << "RAQUEL: received list of running particles.. Number: " << rsmessage.message.size() << endl;
-*/
-				//wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-
-
-
-std::cout << "trying a non-blocking receive to " << receiverID << " from " << senderID << std::endl;
+//std::cout << "trying a non-blocking receive to " << receiverID << " from " << senderID << std::endl;
 				bool hasMessage = smq_[receiverID]->try_receive(&serializedMessage[0], 1000, recvd_size, priority);
 
-std::cout << "non-blocking receive to " << receiverID << " from " << senderID << " succeeded with recv_size of " << recvd_size << " and bool of " << hasMessage << std::endl;
+//std::cout << "non-blocking receive to " << receiverID << " from " << senderID << " succeeded with recv_size of " << recvd_size << " and bool of " << hasMessage << std::endl;
 				if (!hasMessage) {
-std::cout << "breaking" << std::endl;
+//std::cout << "breaking" << std::endl;
 					break;
 				}
 			}
@@ -438,21 +365,21 @@ std::cout << "breaking" << std::endl;
 sleep(1);
 
 			//razi: uncomment later
-			std::cout << "smessage not empty: " << smessage.tag << std::endl;
-			std::cout << "tag: " << tag << ":" << smessage.tag << std::endl;
-			std::cout << "sender: " << tag << ":" << smessage.sender << std::endl;
-			std::cout << "id: " << tag << ":" << smessage.id << std::endl;
+			//std::cout << "smessage not empty: " << smessage.tag << std::endl;
+			//std::cout << "tag: " << tag << ":" << smessage.tag << std::endl;
+			//std::cout << "sender: " << tag << ":" << smessage.sender << std::endl;
+			//std::cout << "id: " << tag << ":" << smessage.id << std::endl;
 
 			// Make sure our message matches the sender, tag, and id we requested
 			if ( (tag == -1 || stoi(smessage.tag) == tag) && (senderID == -1 || senderID == smessage.sender) && (messageID == -1 || messageID == smessage.id)) {
 				// Insert the message into our message holder and increment numMessages
 				messageHolder.insert(std::pair<int, swarmMessage>(stoi(smessage.tag), smessage));
-std::cout << "storing pair with tag of " << stoi(smessage.tag) << std::endl;
+//std::cout << "storing pair with tag of " << stoi(smessage.tag) << std::endl;
 				++numMessages;
 
 				// If user doesn't want to erase the message, put it back in the queue
 				if (!eraseMessage) {
-					std::cout << "noerase" << std::endl;
+					//std::cout << "noerase" << std::endl;
 					sendToSwarm(senderID, receiverID, tag, false, smessage.message);
 				}
 			}
@@ -460,7 +387,7 @@ std::cout << "storing pair with tag of " << stoi(smessage.tag) << std::endl;
 				// If this isn't our message, put it back in the queue. This will go SLOW
 				// unless we use a different queue for every particle
 
-std::cout << "putting it back in the queue..." << std::endl;
+//std::cout << "putting it back in the queue..." << std::endl;
 				sendToSwarm(smessage.sender, receiverID, stoi(smessage.tag), false, smessage.message, smessage.id);
 
 				if (!block) {
@@ -469,7 +396,7 @@ std::cout << "putting it back in the queue..." << std::endl;
 			}
 		}
 	}
-	cout << "RAQUEL inside recvMessage exiting with num messages: " << numMessages << endl;
+	//cout << "RAQUEL inside recvMessage exiting with num messages: " << numMessages << endl;
 
 	return numMessages;
 

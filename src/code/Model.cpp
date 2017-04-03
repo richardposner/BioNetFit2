@@ -165,6 +165,8 @@ void Model::parseModel() {
 
 void Model::outputModelWithParams(map<string, double> params, string path, string filename, string suffix, bool stopAtNetGen=false, bool onlyActions=false, bool netAndBngl=false, bool usePipe=false, bool isNetFile=false) {
 
+	cout << "RAQUEL outputmodel path " << path << " filename: " << filename << endl;
+
 	if (netAndBngl) {
 		// First output the .bngl file (containing only action commands)
 		outputModelWithParams(params, path, filename, suffix, false, true, false, false, false);
@@ -176,16 +178,17 @@ void Model::outputModelWithParams(map<string, double> params, string path, strin
 	}
 
 	// Erase file if it already exists
-	string fullPath = path + "/" + filename;
+	string fullPath = path + filename;
 	if (checkIfFileExists(fullPath)) {
 		unlink(fullPath.c_str());
 	}
 
 	if (!usePipe) {
 		unlink(fullPath.c_str());
-
+		cout << "RAQUEL outputmodel inside !usepipe " << filename  << endl;
 		ofstream outFile;
 		outFile.open(fullPath);
+		cout << "RAQUEL outputmodel fullPath is: " << fullPath << endl;
 		boost::smatch matches;
 
 		if (outFile.is_open()) {
@@ -193,7 +196,7 @@ void Model::outputModelWithParams(map<string, double> params, string path, strin
 				bool inParameterBlock = true;
 				int numParamsToReplace = params.size();
 				int numReplacedParams = 0;
-
+				cout << "Raquel param size is: " << params.size() << endl;
 				for (auto line = netContents_.begin(); line != netContents_.end(); ++line) {
 					if (*line == "end parameters" || numReplacedParams == numParamsToReplace) {
 						inParameterBlock = false;

@@ -1,0 +1,4 @@
+readFile({file=>"/home/raquel/Posdoc_Posner/BioNetFit/output/test_ex5Mut_realSim/9/exMutM1_1_1.net"})
+simulate({method=>"ode",t_start=>0,t_end=>600,n_steps=>1,suffix=>"1_1"})
+setParameter("Ligand_isPresent",1)
+simulate({method=>"ode",t_start=>0,t_end=>60,sample_times=>[0,5,10,15,20,25,30,35,40,45,50,55,60],prefix=>"exMutM1",suffix=>"1_1"})

@@ -1,0 +1,64 @@
+BioNetGen version 2.2.6
+Reading from file /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.bngl (level 0)
+Reading from file /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.net (level 1)
+Read 47 parameters.
+Warning: Parameter 'Clusters' is referenced but not defined
+  at line 58
+  (if parameter is defined in a subsequent block,
+  then this warning can be safely ignored.)
+Read 8 functions.
+Adding o as allowed state of component cd of molecule EGFR
+Adding p as allowed state of component Y of molecule EGFR
+Read 923 species.
+Read 11918 reaction(s).
+WARNING: Found 'groups' block before 'observables': creating observables.
+Read 8 group(s).
+Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.net.
+CPU TIME: readFile 1.22 s.
+ACTION: simulate( method=>"cvode" )
+Network simulation using cvode
+Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1_1_1.net.
+Running run_network on raquel-Precision-5510
+full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 1 -g /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1_1_1.net 30 20
+[simulation PID is: 7253]
+run_network 3.0
+Activating functions output (to .gdat)
+Read 47 parameters
+Read 923 species
+Read 8 group(s) from /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1_1_1.net
+Read 8 function(s)
+Read 11918 reaction(s)
+11918 reaction(s) have nonzero rate
+Initialization took 0.06 CPU seconds
+Propagating with cvode using dense LU
+Time course of concentrations written to file /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1_1_1.cdat.
+Time course of groups written to file /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1_1_1.gdat.
+Time course of functions written to file /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1_1_1.gdat.
+Propagation took 1.45e+01 CPU seconds
+Program times:  14.55 CPU s 15.00 clock s 
+Updating species concentrations from /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1_1_1.cdat
+CPU TIME: simulate 14.81 s.
+ACTION: simulate( method=>"cvode" )
+Network simulation using cvode
+WARNING: writeFile(): Overwriting existing file /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.net.
+Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.net.
+Running run_network on raquel-Precision-5510
+full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.net 0 5 10 15 20 25 30 35 40 45 50 55 60 60
+[simulation PID is: 7255]
+run_network 3.0
+Read 47 parameters
+Read 923 species
+Read 8 group(s) from /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.net
+Read 8 function(s)
+Read 11918 reaction(s)
+11918 reaction(s) have nonzero rate
+Initialization took 0.08 CPU seconds
+Propagating with cvode using dense LU
+Time course of concentrations written to file /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.cdat.
+Time course of groups written to file /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.gdat.
+Propagation took 2.01e+00 CPU seconds
+Program times:  2.09 CPU s 2.00 clock s 
+Updating species concentrations from /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.cdat
+CPU TIME: simulate 2.40 s.
+Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/example1_1model/1/example1_1_1.bngl.
+CPU TIME: total 18.43 s.
