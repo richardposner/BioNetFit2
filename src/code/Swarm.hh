@@ -124,7 +124,7 @@ public:
 	void setsConf(std::string sConf, unsigned int mid);
 	std::string getsConf(unsigned int mid) { return sConf_.at(mid); }
 
-	void Swarm::resultChecking(); //Raquel: result checking function added
+	vector<pair<int,float>> Swarm::resultChecking(); //Raquel: result checking function added
 
 #else
 	void addExp(std::string path);

@@ -1,3 +1,92 @@
+May 10, 2017
+
+Model consolidation function had a critical bug when running for more than 2 models
+When there are more then 3 input models, the function will try to delete the redundant free parameters that are shared among different models
+The last deletion step in the model consolidation look will cause a memory acces violation, making the program crash
+This problem was solved by creating a new map of parameters that will store only one copy of each free parameter
+After verifying all the free parameters, the new map will overwrite the original map that contained redundant free parameters
+
+
+Here are the portions of the model consolidation function that were changed:
+
+
+
+void Swarm::consolidate_model_params(){
+
+	cout<<"consolidating " << this->getNumModels()<<" models."<<endl;
+
+	if (options.models.size() <1){
+		if(options.verbosity >= 4) cout<<"No need to consolidate models. Less than two models exist"<<endl;
+		return;
+	}
+
+/* Bug Note by Raquel
+ * There was a bug in the consolidation function bellow
+ * When you have more then 2 models that share equal paramaters, the command:
+ * delete options.models.at(j)->freeParams_[fj->first];
+ * will try to delete the free parameter from the list more then once
+ * this will cause an error of memory access violation
+ * I solved this problem by creating a new map containing only the unique parameters
+ */
+//Raquel: created the uniqueList and uniqueIndex to solve the problem
+//Raquel: removed the map delete function, replaced that operation bay a map overwrite operation
+
+	map<string,FreeParam*> uniqueList;
+	int uniqueIndex = 0;
+	//remove dulicate free parameters
+	unsigned int i,j, k, cnt=0;
+	for (i=0; i <options.models.size()-1; i++){  //k-1 first models
+		//cout << "in the first loop" << endl;
+		for (j=i+1; j <options.models.size(); j++){  //the subsequent model to the end
+			//cout << "in the second loop" << endl;
+			for (auto fi=options.models.at(i)->freeParams_.begin(); fi!=options.models.at(i)->freeParams_.end(); ++fi){
+				//cout << "in the thrid loop" << endl;
+				for (auto fj=options.models.at(j)->freeParams_.begin(); fj!=options.models.at(j)->freeParams_.end(); ++fj){
+					//cout << "in the fourth loop" << endl;
+					if(fi->first.compare(fj->first)==0){  //common free parameters
+						//cout << "in the if if the fourth loop" << endl;
+						cnt++;
+						if(options.verbosity >= 4)
+							cout<<"Common free parameters found.  Param:"<< fi->first <<"  model1:" <<options.models.at(i)->getName() <<"   model2:" << options.models.at(j)->getName() <<endl;
+						//cout << "before deleting" << endl;
+
+						if ( uniqueList.find(fj->first) == uniqueList.end() ) {
+							cout << fj->first << endl;
+							//delete options.models.at(j)->freeParams_[fj->first]; //delete free param objecyt in j
+							uniqueList[fj->first] = fj->second;
+							uniqueIndex++;
+							//cout << "Found parameter " << fj->first << endl;
+						  // found
+						} else {
+							  // not found
+								//cout << "parameter already found: " << fj->first << endl;
+
+						}
+						//cout << "after delete" << endl;
+						//options.models.at(j)->freeParams_[fj->first] = options.models.at(i)->freeParams_[fi->first];  //map to i
+						fj->second = fi->second;
+					}
+				}
+			}
+		}
+	}
+	//cout << "Found " << uniqueIndex << " unique parameters" << endl;
+	//Raquel changed the way that the function find unique parameters
+	for (i=0; i <options.models.size(); i++){
+		options.models.at(i)->freeParams_ = uniqueList;
+	}
+
+	if(options.verbosity >= 4) cout<<"Removing duplicate free parameters is finished. "<<cnt<<" duplicate free parameters are deleted."<<endl;
+
+
+
+
+
+
+
+
+--------------------------------------------------------
+
 Now the subparticles that belong to the same particle are choosing the same value for free parameters, so now the models that belong to the same particle are comaparable to each other.
 In attachment is an example of how the summarized results look like. Results for each particle are printed in one line, where Fit_M1 is the fit value for the Mutant 1 model, and Fit_M2 is the fit for the Mutant2 model.
 

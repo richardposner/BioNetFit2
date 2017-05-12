@@ -1,0 +1,105 @@
+# Created by BioNetGen 2.2.6
+begin parameters
+    1 f                 0.1  # Constant
+    2 NA                6.02214e23  # Constant
+    3 Vecf              1.9e-9*f  # ConstantExpression 1.9e-10
+    4 EGF_conc_nM       1.0  # Constant
+    5 EGF_conc          EGF_conc_nM*1e-9  # ConstantExpression 1e-09
+    6 EGF_copy_number   EGF_conc*(NA*Vecf)  # ConstantExpression 114420.66
+    7 EGFR_copy_number  f*1.0e5  # ConstantExpression 10000
+    8 KD1               0.023670  # Constant
+    9 km1               0.020562  # Constant
+   10 kp1               km1/KD1  # ConstantExpression 0.868694550063371
+   11 K2RT              0.959916  # Constant
+   12 km2               0.018019  # Constant
+   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 1.7296726404e-06
+   14 kp3               kp2*0.2  # ConstantExpression 3.4593452808e-07
+   15 kphos             1.449086  # Constant
+   16 kdephos           0.011024  # Constant
+   17 Ligand_isPresent  1  # Constant
+   18 _rateLaw1         km2*0.2  # ConstantExpression 0.0036038
+end parameters
+begin functions
+    1 func() kp1*Ligand_isPresent
+end functions
+begin species
+    1 L(r) 1.144206600000e+05
+    2 R(Y~0,l,r) 5.283078713678e+03
+    3 L(r!1).R(Y~0,l!1,r) 0.000000000000e+00
+    4 R(Y~0,l,r!1).R(Y~0,l,r!1) 1.786480589264e+00
+    5 L(r!1).R(Y~0,l!1,r!2).R(Y~0,l,r!2) 0.000000000000e+00
+    6 L(r!1).L(r!2).R(Y~0,l!1,r!3).R(Y~0,l!2,r!3) 0.000000000000e+00
+    7 R(Y~0,l,r!1).R(Y~P,l,r!1) 3.229835273810e+01
+    8 L(r!1).R(Y~0,l!1,r!2).R(Y~P,l,r!2) 0.000000000000e+00
+    9 L(r!1).R(Y~0,l,r!2).R(Y~P,l!1,r!2) 0.000000000000e+00
+   10 R(Y~P,l,r) 9.947943342571e+02
+   11 L(r!1).L(r!2).R(Y~0,l!2,r!3).R(Y~P,l!1,r!3) 0.000000000000e+00
+   12 R(Y~P,l,r!1).R(Y~P,l,r!1) 1.826978642663e+03
+   13 L(r!1).R(Y~P,l!1,r) 0.000000000000e+00
+   14 L(r!1).R(Y~P,l!1,r!2).R(Y~P,l,r!2) 0.000000000000e+00
+   15 L(r!1).L(r!2).R(Y~P,l!2,r!3).R(Y~P,l!1,r!3) 0.000000000000e+00
+end species
+begin reactions
+    1 1,2 3 func #
+    2 2,2 4 0.5*kp3 #
+    3 1,4 5 2*func #
+    4 3 1,2 km1 #
+    5 3,3 6 0.5*kp2 #
+    6 4 2,2 _rateLaw1 #
+    7 4 7 2*kphos #
+    8 1,5 6 func #
+    9 1,7 8 func #
+   10 1,7 9 func #
+   11 5 1,4 km1 #
+   12 6 1,5 2*km1 #
+   13 5 2,3 _rateLaw1 #
+   14 6 3,3 _rateLaw1 #
+   15 7 2,10 _rateLaw1 #
+   16 5 9 kphos #
+   17 5 8 kphos #
+   18 6 11 2*kphos #
+   19 7 12 kphos #
+   20 7 4 kdephos #
+   21 1,8 11 func #
+   22 1,9 11 func #
+   23 1,10 13 func #
+   24 1,12 14 2*func #
+   25 8 1,7 km1 #
+   26 9 1,7 km1 #
+   27 11 1,8 km1 #
+   28 11 1,9 km1 #
+   29 8 3,10 _rateLaw1 #
+   30 9 2,13 _rateLaw1 #
+   31 11 3,13 _rateLaw1 #
+   32 12 10,10 _rateLaw1 #
+   33 2,10 7 kp3 #
+   34 10,10 12 0.5*kp3 #
+   35 8 14 kphos #
+   36 9 14 kphos #
+   37 11 15 kphos #
+   38 8 5 kdephos #
+   39 9 5 kdephos #
+   40 10 2 kdephos #
+   41 11 6 kdephos #
+   42 12 7 2*kdephos #
+   43 1,14 15 func #
+   44 13 1,10 km1 #
+   45 14 1,12 km1 #
+   46 15 1,14 2*km1 #
+   47 3,13 11 kp2 #
+   48 13,13 15 0.5*kp2 #
+   49 14 10,13 _rateLaw1 #
+   50 15 13,13 _rateLaw1 #
+   51 13 3 kdephos #
+   52 14 8 kdephos #
+   53 14 9 kdephos #
+   54 15 11 2*kdephos #
+end reactions
+begin groups
+    1 Ltot                 1,3,5,2*6,8,9,2*11,13,14,2*15
+    2 freeL                1
+    3 Rtot                 2,3,2*4,2*5,2*6,2*7,2*8,2*9,10,2*11,2*12,13,2*14,2*15
+    4 Rdim                 4,5,6,7,8,9,11,12,14,15
+    5 RLbonds              3,5,2*6,8,9,2*11,13,14,2*15
+    6 pR                   7,8,9,10,11,2*12,13,2*14,2*15
+end groups

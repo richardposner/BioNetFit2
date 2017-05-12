@@ -7,15 +7,15 @@ begin parameters
     5 EGF_conc          EGF_conc_nM*1e-9  # ConstantExpression 1e-09
     6 EGF_copy_number   EGF_conc*(NA*Vecf)  # ConstantExpression 126464.94
     7 EGFR_copy_number  f*1.0e5  # ConstantExpression 10000
-    8 KD1               39.803392  # Constant
-    9 km1               0.001585  # Constant
-   10 kp1               km1/KD1  # ConstantExpression 3.9820726836547e-05
-   11 K2RT              0.072804  # Constant
-   12 km2               215.059936  # Constant
-   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 0.0015657223580544
-   14 kp3               kp2*0.2  # ConstantExpression 0.00031314447161088
-   15 kphos             2.190259  # Constant
-   16 kdephos           5.096763  # Constant
+    8 KD1               0.605479  # Constant
+    9 km1               40.558852  # Constant
+   10 kp1               km1/KD1  # ConstantExpression 66.9863892884807
+   11 K2RT              0.002515  # Constant
+   12 km2               4.814480  # Constant
+   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 1.21084172e-06
+   14 kp3               kp2*0.2  # ConstantExpression 2.42168344e-07
+   15 kphos             0.010477  # Constant
+   16 kdephos           0.013863  # Constant
    17 Ligand_isPresent  1  # Constant
 end parameters
 begin functions
@@ -23,17 +23,17 @@ begin functions
 end functions
 begin species
     1 L(r) 1.264649400000e+05
-    2 R(Y~0,l,r) 9.800807593350e+03
+    2 R(Y~0,l,r) 9.991200779440e+03
     3 L(r!1).R(Y~0,l!1,r) 0.000000000000e+00
-    4 R(Y~0,l,r!1).R(Y~0,l,r!1) 6.858637805769e+01
+    4 R(Y~0,l,r!1).R(Y~0,l,r!1) 2.499732988711e+00
     5 L(r!1).R(Y~0,l!1,r!2).R(Y~0,l,r!2) 0.000000000000e+00
     6 L(r!1).L(r!2).R(Y~0,l!1,r!3).R(Y~0,l!2,r!3) 0.000000000000e+00
-    7 R(Y~0,l,r!1).R(Y~P,l,r!1) 2.148413624998e+00
+    7 R(Y~0,l,r!1).R(Y~P,l,r!1) 1.271223693516e-02
     8 L(r!1).R(Y~0,l!1,r!2).R(Y~P,l,r!2) 0.000000000000e+00
     9 L(r!1).R(Y~0,l,r!2).R(Y~P,l!1,r!2) 0.000000000000e+00
-   10 R(Y~P,l,r) 5.767640679841e+01
+   10 R(Y~P,l,r) 3.774274380302e+00
    11 L(r!1).L(r!2).R(Y~0,l!2,r!3).R(Y~P,l!1,r!3) 0.000000000000e+00
-   12 R(Y~P,l,r!1).R(Y~P,l,r!1) 2.320244228575e-02
+   12 R(Y~P,l,r!1).R(Y~P,l,r!1) 2.786146477505e-05
    13 L(r!1).R(Y~P,l!1,r) 0.000000000000e+00
    14 L(r!1).R(Y~P,l!1,r!2).R(Y~P,l,r!2) 0.000000000000e+00
    15 L(r!1).L(r!2).R(Y~P,l!2,r!3).R(Y~P,l!1,r!3) 0.000000000000e+00

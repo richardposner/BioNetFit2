@@ -223,6 +223,8 @@ int evaluateResults(string inputFile1, string inputFile2, map<int,string> constr
   }
 
 
+  //cout << "FOUND LINES IN THE RESULT FILE: " << count << endl;
+
   simResult1.close();
 
 
@@ -321,37 +323,62 @@ int evaluateResults(string inputFile1, string inputFile2, map<int,string> constr
 
 
 int result;
-
- //Now test if the constraints are fulfilled
+//added new model checking method
+int fulfilledConstrants = 0;
+int first = 0;
+//Now test if the constraints are fulfilled
  //And return a list of iterations or time points and whether they were fulfilled
  //cout << "Time" << "\t" << "Constraint" << "\t" << "Result(0=FALSE;1=TRUE)" << endl;
- outFile << "Time" << "\t" << "Constraint" << "\t" << "Result(0=FALSE;1=TRUE)" << endl;
+ //outFile << "Time" << "\t" << "Constraint" << "\t" << "Result(0=FALSE;1=TRUE)" << endl; //old mode
+	outFile << "Time" << "\t" << "Constraints_fulfilled" << endl;
  for(int i = 0; i < constraintValue1.size(); i++){
      //constraintFunction(0, "=", 0);
      //cout << "@@@" << constraintValue1[i] << "@@@map size" << namesValues1[constraintValue1[i]].size() << endl;
      //cout << constraintValue1[i] << "\t" <<  constraintOp[i] << "\t" << constraintValue2[i] << endl;
 
-     for (int j = 0; j < namesValues1[constraintValue1[i]].size(); j++){
+     for (int j = 0; j < namesValues1[variableNames1[i]].size(); j++){
+    	 //Raquel: added this if to check only the last time point
+         if(j==namesValues1[variableNames1[i]].size()-1){
+          //cout << "FOUND LAST TIME POINT j= " << j << " value " << namesValues1[variableNames1[0]][j] << endl;
          //cout << namesValues[constraintValue1[i]][j] << " " << constraintOp[i] << " " << namesValues[constraintValue2[i]][j];
          result = constraintFunction(namesValues1[constraintValue1[i]][j], constraintOp[i], namesValues2[constraintValue2[i]][j]);
          //cout << " = " << result << "; iteration = " << j << " constraints = " << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << endl;
 
-         if(variableNames1[0]=="time" || variableNames1[0]=="Time"){
+    	 if(result==1){
+
+    		 fulfilledConstrants++;
+
+    	 }
+         if( (variableNames1[0]=="time" || variableNames1[0]=="Time") && first==0){
              //cout << namesValues1[variableNames1[0]][j] << "\t";
              outFile << namesValues1[variableNames1[0]][j] << "\t";
+             first = 1;
          }else{
+        	 if(first==0){
+        		 outFile << j+1 << "\t";
+        		 first = 1;
+        	 }
         	 //cout << j+1 << "\t";
-        	 outFile << j+1 << "\t";
+
          }
          //cout << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << "\t";
-         //cout << result << endl;
-         outFile << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << "\t";
-         outFile << result << endl;
+         //cout << result << endl; //old mode
+         //outFile << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << "\t"; //old mode
+         //outFile << result << endl; //old mode
+
+
+
+
+         }
+
      }
+
+
 
 
  }
 
+ outFile << fulfilledConstrants << endl;
 
 
 outFile.close();
@@ -359,5 +386,5 @@ outFile.close();
 
 //namesValues[variableNames[i]][count]
 
-  return 0;
+  return fulfilledConstrants;
 }

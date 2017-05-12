@@ -255,17 +255,46 @@ void Swarm::consolidate_model_params(){
 		return;
 	}
 
+/* Bug Note by Raquel
+ * There was a bug in the consolidation function bellow
+ * When you have more then 2 models that share equal paramaters, the command:
+ * delete options.models.at(j)->freeParams_[fj->first];
+ * will try to delete the free parameter from the list more then once
+ * this will cause an error of memory access violation
+ * I solved this problem by creating a new map containing only the unique parameters
+ */
+	map<string,FreeParam*> uniqueList;
+	int uniqueIndex = 0;
 	//remove dulicate free parameters
 	unsigned int i,j, k, cnt=0;
 	for (i=0; i <options.models.size()-1; i++){  //k-1 first models
+		//cout << "in the first loop" << endl;
 		for (j=i+1; j <options.models.size(); j++){  //the subsequent model to the end
+			//cout << "in the second loop" << endl;
 			for (auto fi=options.models.at(i)->freeParams_.begin(); fi!=options.models.at(i)->freeParams_.end(); ++fi){
+				//cout << "in the thrid loop" << endl;
 				for (auto fj=options.models.at(j)->freeParams_.begin(); fj!=options.models.at(j)->freeParams_.end(); ++fj){
+					//cout << "in the fourth loop" << endl;
 					if(fi->first.compare(fj->first)==0){  //common free parameters
+						//cout << "in the if if the fourth loop" << endl;
 						cnt++;
 						if(options.verbosity >= 4)
 							cout<<"Common free parameters found.  Param:"<< fi->first <<"  model1:" <<options.models.at(i)->getName() <<"   model2:" << options.models.at(j)->getName() <<endl;
-						delete options.models.at(j)->freeParams_[fj->first];   //delete free param objecyt in j
+						//cout << "before deleting" << endl;
+
+						if ( uniqueList.find(fj->first) == uniqueList.end() ) {
+							cout << fj->first << endl;
+							//delete options.models.at(j)->freeParams_[fj->first]; //delete free param objecyt in j
+							uniqueList[fj->first] = fj->second;
+							uniqueIndex++;
+							//cout << "Found parameter " << fj->first << endl;
+						  // found
+						} else {
+							  // not found
+								//cout << "parameter already found: " << fj->first << endl;
+
+						}
+						//cout << "after delete" << endl;
 						//options.models.at(j)->freeParams_[fj->first] = options.models.at(i)->freeParams_[fi->first];  //map to i
 						fj->second = fi->second;
 					}
@@ -273,6 +302,12 @@ void Swarm::consolidate_model_params(){
 			}
 		}
 	}
+	//cout << "Found " << uniqueIndex << " unique parameters" << endl;
+	//Raquel changed the way that the function find unique parameters
+	for (i=0; i <options.models.size(); i++){
+		options.models.at(i)->freeParams_ = uniqueList;
+	}
+
 	if(options.verbosity >= 4) cout<<"Removing duplicate free parameters is finished. "<<cnt<<" duplicate free parameters are deleted."<<endl;
 
 	//razi make full list of union of free parameters
@@ -1564,7 +1599,7 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 
 	//razi: TODO: modify, the params order is based on free parameters in the corresonding model, reorder based on the global list
 
-	outputError("Needs modifications.");
+	//outputError("Needs modifications: for models that have different numbers of free parameters, we need to check if the values are in the correct order.");
 
 	// If this is the particle's first iteration, we need to store its params
 	if (particleIterationCounter_[pID][0] == 1) {   //razi: later check consistency, models parameters
@@ -4195,6 +4230,11 @@ int pcounter = 0; //index of the particles
 int fcounter; //index of the fit results
 //Raquel: this will print the output in the correct order, aligned
 //Raquel TODO: save this printed output to the output file, and calculate overall fit, merging the fits for each parameter
+//int fmid;
+int fpid;
+//int pmid;
+//int psub;
+
 		 for(auto ri1 = alignedResults.begin(); ri1 != alignedResults.end(); ++ri1){//loop through particles
 
 
@@ -4212,15 +4252,24 @@ int fcounter; //index of the fit results
 				 outputFile << "Particle_";
 				 outputFile << left << setw(7) << ri1->first;
 
+				 //psub = fcalcsubParID(pcounter, pmid, options.models.size());
+				 //pmid = fcalcMID(psub,options.models.size());
+
+				 //Raquel: this fcounter will be equal to the subparticle ID
 				 fcounter = 0;
 				 for (auto fits = allGenFits.begin(); fits != allGenFits.end(); ++fits){//loops through the fit resuts
 					 fcounter++;
 
-					 if(pcounter==fcounter || pcounter+1==fcounter){
+					 //fmid = fcalcMID(fcounter,options.models.size());
+					 fpid = fcalcParID(fcounter, options.models.size());
+
+					 if(fpid==pcounter){
 						 cout << left << setw(16) << fits->first;
 						 outputFile << left << setw(16) << fits->first;
 
 					 }
+
+					 //cout << "fcounter " << fcounter << " pcounter " << pcounter << endl;
 
 				 }
 
@@ -4252,9 +4301,225 @@ int fcounter; //index of the fit results
 
 		 }
 
+		 //this variable will store the number of constraints fulfilled per subparticle
+		 vector<pair<int,float>> constraintsCount;
 
-		 resultChecking();
+		 constraintsCount = resultChecking();
 
+		 //sort results from the larger number of constraints to the smaller
+		 sort(constraintsCount.begin(), constraintsCount.end(), [](const pair<int,float> &left, const pair<int,float> &right){return left.second > right.second;});
+
+
+		 cout << "SubParID\tConstraints" << endl;
+		 int constraintRank=0;
+		 int previous=-1;
+
+		 vector<pair<int,float>> subParRankCons;
+
+		 //rank the results based on the number of constraints
+		 for (int i = 0 ; i < constraintsCount.size(); i++){
+		     cout << constraintsCount[i].first << " " << constraintsCount[i].second << "\n";
+		     if(previous!=constraintsCount[i].second){
+		    	 constraintRank++;
+		     }
+		     subParRankCons.push_back(make_pair(constraintsCount[i].first, constraintRank));
+		     previous=constraintsCount[i].second;
+		 }
+
+		 cout << "SubParID\tRank" << endl;
+
+		 for (int i = 0 ; i < subParRankCons.size(); i++){
+		     cout << subParRankCons[i].first << " " << subParRankCons[i].second << "\n";
+		 }
+
+		 vector<pair<int,float>> fitCount;
+
+		 fcounter = 0;
+
+		 for (auto itr = allGenFits.begin(); itr != allGenFits.end(); ++itr){
+			 fcounter++;
+			 for (int j = 0 ; j < constraintsCount.size(); j++){
+
+				 if(fcounter==constraintsCount[j].first){
+
+					 fitCount.push_back(make_pair(fcounter,itr->first));
+
+
+				 }
+			 }
+
+		 }
+
+
+
+		 //sort results from the smaller fit to the larger fit
+		 sort(fitCount.begin(), fitCount.end(), [](const pair<int,float> &left, const pair<int,float> &right){return left.second < right.second;});
+
+
+		 cout << "SubParID\tFit" << endl;
+		 int fitRank=0;
+		 float previousFit=-1;
+
+		 vector<pair<int,float>> subParRankFit;
+
+		 //rank the results based on the Fit value
+		 for (int i = 0 ; i < fitCount.size(); i++){
+		     cout << fitCount[i].first << " " << fitCount[i].second << "\n";
+		     if(previousFit!=fitCount[i].second){
+		    	 fitRank++;
+		     }
+		     subParRankFit.push_back(make_pair(fitCount[i].first, fitRank));
+		     previousFit=fitCount[i].second;
+		 }
+
+		 cout << "SubParID\tRank" << endl;
+
+		 for (int i = 0 ; i < subParRankFit.size(); i++){
+		     cout << subParRankFit[i].first << " " << subParRankFit[i].second << "\n";
+		 }
+
+
+
+		 vector<pair<int,float>> finalScore;
+		 float weight = 0.90;
+		 float scoreTmp = 0;
+
+
+		 //this loop will combine both scores based on fit ranks and fulfilled constraints ranks
+		 for (int i = 0 ; i < subParRankCons.size(); i++){
+
+
+			 for (int j = 0 ; j < subParRankFit.size(); j++){
+
+
+
+				 if(subParRankCons[i].first == subParRankFit[j].first){
+
+					 scoreTmp = (subParRankCons[i].second + (subParRankFit[j].second * 0.90));
+					 finalScore.push_back(make_pair(subParRankCons[i].first, scoreTmp));
+
+				 }
+
+			 }
+
+
+		 }
+
+
+		 sort(finalScore.begin(), finalScore.end(), [](const pair<int,float> &left, const pair<int,float> &right){return left.second < right.second;});
+
+
+		 cout << "SubParID\tFinal_Rank_Score" << endl;
+		 fitRank=0;
+		 previousFit=-1;
+
+		 vector<pair<int,float>> subParRankFinal;
+
+		 //rank the results based on the Fit value
+		 for (int i = 0 ; i < finalScore.size(); i++){
+		     cout << finalScore[i].first << " " << finalScore[i].second << "\n";
+		     if(previousFit!=finalScore[i].second){
+		    	 fitRank++;
+		     }
+		     subParRankFinal.push_back(make_pair(finalScore[i].first, fitRank));
+		     previousFit=finalScore[i].second;
+		 }
+
+		 cout << "SubParID\tFinal_Rank" << endl;
+
+		 for (int i = 0 ; i < subParRankFinal.size(); i++){
+		     cout << subParRankFinal[i].first << " " << subParRankFinal[i].second << "\n";
+		 }
+
+
+
+		 //Print the reranked results
+
+		 string outdir = options.outputDir + "/" + options.jobName + "/" + toString(currentGeneration-1) + "/";
+
+		 string outname = outdir + "Ranked_results.txt";
+
+
+		 ofstream outFile;
+
+		 outFile.open(outname);
+
+		 cout << "Particle\tModel\tFit_Rank\tConstraint_Rank\tFinal_Rank" << endl;
+		 outFile << "Particle\tModel\tFit_Rank\tConstraint_Rank\tFinal_Rank" << endl;
+
+		 int maxPar = fcalcParID(allGenFits.size(), options.models.size());
+
+		 int mid;
+		 int pid;
+
+		 for (int i = 0 ; i < subParRankFinal.size(); i++){
+
+			 for (int j = 0 ; j < subParRankFit.size(); j++){
+
+				 for (int k = 0 ; k < subParRankCons.size(); k++){
+
+					 if(subParRankFinal[i].first==subParRankFit[j].first && subParRankFinal[i].first==subParRankCons[k].first){
+
+						 mid = fcalcMID(subParRankFinal[i].first,options.models.size());
+						 pid = fcalcParID(subParRankFinal[i].first, options.models.size());
+
+						 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << endl;
+						 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << endl;
+
+
+					 }
+
+
+
+				 }
+
+
+			 }
+
+
+
+		 }
+
+
+		 /*
+		 //rank results
+		 int maxPar = fcalcParID(allGenFits.size(), options.models.size());
+
+
+		 vector<pair<int,float>> sortedFits;
+		 for (auto itr = allGenFits.begin(); itr != allGenFits.end(); ++itr){
+			 sortedFits.push_back(*itr);
+		 }
+
+
+		 sort (sortedFits.begin(),sortedFits.end());
+		 cout << "sorted result" << endl;
+		 for (int i = 0 ; i < sortedFits.size(); i++){
+		     cout << sortedFits[i].first << " " << sortedFits[i].second << "\n";
+		 }
+
+		 for(int i=1; i <= maxPar; i++ ){
+
+			 fcounter = 0;
+			 for (auto fits = allGenFits.begin(); fits != allGenFits.end(); ++fits){//loops through the fit resuts
+				 fcounter++;
+
+				 fmid = fcalcMID(fcounter,options.models.size());
+				 fpid = fcalcParID(fcounter, options.models.size());
+
+				 if(i==fmid){
+					 cout << left << setw(16) << fits->first;
+					 outputFile << left << setw(16) << fits->first;
+
+				 }
+
+				 //cout << "fcounter " << fcounter << " pcounter " << pcounter << endl;
+
+			 }
+
+
+		 }
+		*/
 
 //Raquel: here ends the block of code to fix the alignment problem with the parameter values
 /*
@@ -4287,7 +4552,7 @@ int fcounter; //index of the fit results
 
 
 //Raquel: result checking function, will call Evaluate.cpp
-void Swarm::resultChecking(){
+vector<pair<int,float>> Swarm::resultChecking(){
 int result = 0;
 	string outdir = options.outputDir + "/" + options.jobName + "/" + toString(currentGeneration-1) + "/";
 
@@ -4299,6 +4564,12 @@ int result = 0;
 	string basename2;
 
 	string outname;
+
+	vector<pair<int,float>> constraintsCount;
+
+	int pnumber;
+	int mnumber;
+	int subnumber;
 
 	 for(auto it = subparticleCurrParamSets_.begin(); it!=subparticleCurrParamSets_.end(); ++it){
 		 //cout << "it :" << it->first << endl;
@@ -4321,13 +4592,25 @@ int result = 0;
 					 cout << "infile 1: " << inputFile1 << endl;
 					 cout << "infile 2: " << inputFile2 << endl;
 					 //		std::map<int,string> constraints_; //Raquel: added constraint options support
-					 outname = outdir + basename1 + "_vs_" + basename2 + ".txt";
+					 outname = outdir + basename1 + "_vs_" + basename2 + "_" + toString(it->first) + ".txt";
 					 //add outname as the fourth input
 					 result = evaluateResults(inputFile1,inputFile2,options.constraints_, outname);
+
+
+					 pnumber = it->first;
+					 mnumber = j;
+
+
+					 subnumber = fcalcsubParID(pnumber, mnumber, options.models.size());
+
+					 constraintsCount.push_back (make_pair (subnumber,(float)result));
 
 				 }
 
 			 }
+
+			 //Raquel: added this break so only the first model(wild type), is compared versus the others for now
+			break;
 
 		 }
 
@@ -4338,6 +4621,8 @@ int result = 0;
 		 cout << "Iteration: " << it2->first << endl;
 
 	 }
+
+	 return constraintsCount;
 
 }
 
