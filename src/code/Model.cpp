@@ -167,6 +167,12 @@ void Model::outputModelWithParams(map<string, double> params, string path, strin
 
 	cout << "RAQUEL outputmodel path " << path << " filename: " << filename << endl;
 
+	//Raquel added this check step to make sure that the simulation path really exists
+	if (!checkIfFileExists(path)) {
+		runCommand("mkdir " + path);
+	}
+
+
 	if (netAndBngl) {
 		// First output the .bngl file (containing only action commands)
 		outputModelWithParams(params, path, filename, suffix, false, true, false, false, false);

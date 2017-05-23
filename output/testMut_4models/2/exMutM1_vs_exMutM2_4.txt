@@ -1,2 +1,2 @@
 Time	Constraints_fulfilled
-60	2
+60	3

@@ -10,31 +10,31 @@ begin parameters
     8 KD1               161.385487  # Constant
     9 km1               0.036348  # Constant
    10 kp1               km1/KD1  # ConstantExpression 0.000225224713049941
-   11 K2RT              315.316905  # Constant
-   12 km2               0.019306  # Constant
-   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 0.000608750816793
-   14 kp3               kp2*0.2  # ConstantExpression 0.0001217501633586
-   15 kphos             0.144866  # Constant
+   11 K2RT              0.834497  # Constant
+   12 km2               0.001152  # Constant
+   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 9.61340544e-08
+   14 kp3               kp2*0.2  # ConstantExpression 1.922681088e-08
+   15 kphos             1.227189  # Constant
    16 kdephos           0.014037  # Constant
    17 Ligand_isPresent  1  # Constant
-   18 _rateLaw1         km2*0.2  # ConstantExpression 0.0038612
+   18 _rateLaw1         km2*0.2  # ConstantExpression 0.0002304
 end parameters
 begin functions
     1 func() kp1*Ligand_isPresent
 end functions
 begin species
     1 L(r) 1.144206600000e+05
-    2 R(Y~0,l,r) 1.369271786744e+02
+    2 R(Y~0,l,r) 9.017785848893e+03
     3 L(r!1).R(Y~0,l!1,r) 0.000000000000e+00
-    4 R(Y~0,l,r!1).R(Y~0,l,r!1) 4.156909528242e+01
+    4 R(Y~0,l,r!1).R(Y~0,l,r!1) 3.838587068677e-01
     5 L(r!1).R(Y~0,l!1,r!2).R(Y~0,l,r!2) 0.000000000000e+00
     6 L(r!1).L(r!2).R(Y~0,l!1,r!3).R(Y~0,l!2,r!3) 0.000000000000e+00
-    7 R(Y~0,l,r!1).R(Y~P,l,r!1) 7.881351860118e+02
+    7 R(Y~0,l,r!1).R(Y~P,l,r!1) 1.143012070582e+01
     8 L(r!1).R(Y~0,l!1,r!2).R(Y~P,l,r!2) 0.000000000000e+00
     9 L(r!1).R(Y~0,l,r!2).R(Y~P,l!1,r!2) 0.000000000000e+00
-   10 R(Y~P,l,r) 4.105919246344e+02
+   10 R(Y~P,l,r) 1.391776326018e+01
    11 L(r!1).L(r!2).R(Y~0,l!2,r!3).R(Y~P,l!1,r!3) 0.000000000000e+00
-   12 R(Y~P,l,r!1).R(Y~P,l,r!1) 3.896536166562e+03
+   12 R(Y~P,l,r!1).R(Y~P,l,r!1) 4.723342144823e+02
    13 L(r!1).R(Y~P,l!1,r) 0.000000000000e+00
    14 L(r!1).R(Y~P,l!1,r!2).R(Y~P,l,r!2) 0.000000000000e+00
    15 L(r!1).L(r!2).R(Y~P,l!2,r!3).R(Y~P,l!1,r!3) 0.000000000000e+00

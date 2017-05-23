@@ -489,21 +489,21 @@ int main(int argc, char *argv[]) {
 
 
 		if (s->currentGeneration == 1) {
-//cout<<"6-GenFit:Particle:   generate params."<<endl; mypause();
+cout<<"6-GenFit:Particle:   generate params."<<endl; mypause();
 			p->generateParams();
-//cout<<"6-2GenFit:Particle:   generate params."<<endl; mypause();
+cout<<"6-2GenFit:Particle:   generate params."<<endl; mypause();
 		}
 
 		if (s->options.useCluster) {
 			setenv("OMPI_MCA_mpi_warn_on_fork","0",1);
 		}
 
-//cout<<"7-GenFit:Particle:   doParticle started."<<endl; mypause();
+cout<<"7-GenFit:Particle:   doParticle started."<<endl; mypause();
 		p->doParticle(mid);
-//cout<<"8-GenFit:Particle:   doParticle finished."<<endl; mypause();
+cout<<"8-GenFit:Particle:   doParticle finished."<<endl; mypause();
 	}
 
-//cout<<"GenFit: Fitting Finished Kill Pheromones."<<endl;
+cout<<"GenFit: Fitting Finished Kill Pheromones."<<endl;
 	s->swarmComm->~Pheromones();
 	//if (verbose) s->printDetails();
 	return 0;

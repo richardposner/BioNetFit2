@@ -9,13 +9,13 @@ Read 54 reaction(s).
 WARNING: Found 'groups' block before 'observables': creating observables.
 Read 6 group(s).
 Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM1_1_1.net.
-CPU TIME: readFile 0.01 s.
+CPU TIME: readFile 0.00 s.
 ACTION: simulate( method=>"cvode" )
 Network simulation using cvode
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM1_1_1_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM1_1_1_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM1_1_1_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM1_1_1_1_1.net 600 1
-[simulation PID is: 4828]
+[simulation PID is: 11897]
 run_network 3.0
 Read 17 parameters
 Read 15 species
@@ -40,7 +40,7 @@ WARNING: writeFile(): Overwriting existing file /home/raquel/Posdoc_Posner/BioNe
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM1_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM1_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM1_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM1_1_1.net 0 5 10 15 20 25 30 35 40 45 50 55 60 60
-[simulation PID is: 4830]
+[simulation PID is: 11899]
 run_network 3.0
 Read 17 parameters
 Read 15 species
@@ -55,7 +55,7 @@ Time course of groups written to file /home/raquel/Posdoc_Posner/BioNetFit/outpu
 Propagation took 0.00e+00 CPU seconds
 Program times:  0.00 CPU s 0.00 clock s 
 Updating species concentrations from /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM1_1_1.cdat
-CPU TIME: simulate 0.00 s.
+CPU TIME: simulate 0.01 s.
 Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM1_1_1.bngl.
 CPU TIME: total 0.02 s.
 BioNetGen version 2.2.6
@@ -69,13 +69,13 @@ Read 54 reaction(s).
 WARNING: Found 'groups' block before 'observables': creating observables.
 Read 6 group(s).
 Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM2_1_1.net.
-CPU TIME: readFile 0.00 s.
+CPU TIME: readFile 0.01 s.
 ACTION: simulate( method=>"cvode" )
 Network simulation using cvode
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM2_1_1_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM2_1_1_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM2_1_1_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM2_1_1_1_1.net 600 1
-[simulation PID is: 4834]
+[simulation PID is: 11903]
 run_network 3.0
 Read 18 parameters
 Read 15 species
@@ -100,7 +100,7 @@ WARNING: writeFile(): Overwriting existing file /home/raquel/Posdoc_Posner/BioNe
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM2_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM2_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM2_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM2_1_1.net 0 5 10 15 20 25 30 35 40 45 50 55 60 60
-[simulation PID is: 4836]
+[simulation PID is: 11905]
 run_network 3.0
 Read 18 parameters
 Read 15 species
@@ -115,7 +115,7 @@ Time course of groups written to file /home/raquel/Posdoc_Posner/BioNetFit/outpu
 Propagation took 0.00e+00 CPU seconds
 Program times:  0.00 CPU s 0.00 clock s 
 Updating species concentrations from /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM2_1_1.cdat
-CPU TIME: simulate 0.01 s.
+CPU TIME: simulate 0.00 s.
 Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM2_1_1.bngl.
 CPU TIME: total 0.02 s.
 BioNetGen version 2.2.6
@@ -135,7 +135,7 @@ Network simulation using cvode
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM3_1_1_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM3_1_1_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM3_1_1_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM3_1_1_1_1.net 600 1
-[simulation PID is: 4844]
+[simulation PID is: 11909]
 run_network 3.0
 Read 18 parameters
 Read 15 species
@@ -153,14 +153,14 @@ Updating species concentrations from /home/raquel/Posdoc_Posner/BioNetFit/output
 CPU TIME: simulate 0.00 s.
 WARNING: Changing value of previously defined variable 'Ligand_isPresent'
 Set parameter Ligand_isPresent to value 1
-CPU TIME: setParameter 0.01 s.
+CPU TIME: setParameter 0.00 s.
 ACTION: simulate( method=>"cvode" )
 Network simulation using cvode
 WARNING: writeFile(): Overwriting existing file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM3_1_1.net.
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM3_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM3_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM3_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM3_1_1.net 0 5 10 15 20 25 30 35 40 45 50 55 60 60
-[simulation PID is: 4846]
+[simulation PID is: 11911]
 run_network 3.0
 Read 18 parameters
 Read 15 species
@@ -175,7 +175,7 @@ Time course of groups written to file /home/raquel/Posdoc_Posner/BioNetFit/outpu
 Propagation took 0.00e+00 CPU seconds
 Program times:  0.00 CPU s 0.00 clock s 
 Updating species concentrations from /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM3_1_1.cdat
-CPU TIME: simulate 0.00 s.
+CPU TIME: simulate 0.01 s.
 Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM3_1_1.bngl.
 CPU TIME: total 0.02 s.
 BioNetGen version 2.2.6
@@ -195,7 +195,7 @@ Network simulation using cvode
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM4_1_1_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM4_1_1_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM4_1_1_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM4_1_1_1_1.net 600 1
-[simulation PID is: 4852]
+[simulation PID is: 11917]
 run_network 3.0
 Read 18 parameters
 Read 15 species
@@ -210,7 +210,7 @@ Time course of groups written to file /home/raquel/Posdoc_Posner/BioNetFit/outpu
 Propagation took 0.00e+00 CPU seconds
 Program times:  0.00 CPU s 0.00 clock s 
 Updating species concentrations from /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM4_1_1_1_1.cdat
-CPU TIME: simulate 0.01 s.
+CPU TIME: simulate 0.00 s.
 WARNING: Changing value of previously defined variable 'Ligand_isPresent'
 Set parameter Ligand_isPresent to value 1
 CPU TIME: setParameter 0.00 s.
@@ -220,7 +220,7 @@ WARNING: writeFile(): Overwriting existing file /home/raquel/Posdoc_Posner/BioNe
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM4_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM4_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM4_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM4_1_1.net 0 5 10 15 20 25 30 35 40 45 50 55 60 60
-[simulation PID is: 4854]
+[simulation PID is: 11919]
 run_network 3.0
 Read 18 parameters
 Read 15 species
@@ -235,6 +235,6 @@ Time course of groups written to file /home/raquel/Posdoc_Posner/BioNetFit/outpu
 Propagation took 0.00e+00 CPU seconds
 Program times:  0.00 CPU s 0.00 clock s 
 Updating species concentrations from /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM4_1_1.cdat
-CPU TIME: simulate 0.00 s.
+CPU TIME: simulate 0.01 s.
 Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_4models/2/exMutM4_1_1.bngl.
 CPU TIME: total 0.02 s.

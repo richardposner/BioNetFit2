@@ -653,7 +653,10 @@ if (swarm_->options.verbosity >= 3) cout<<"doParticle-4 now lets check messages.
 			cout << "RAQUEL done check messages" << endl;
 		}
 		else if (swarm_->options.fitType == "pso") {
-			checkMessagesPSO();
+			cout << "RAQUEL Entering check messages PSO" << endl;
+			checkMessagesPSO(mid);
+			cout << "RAQUEL Done check messages PSO" << endl;
+
 		}
 		else if (swarm_->options.fitType == "de") {
 			checkMessagesDE();
@@ -839,6 +842,10 @@ cout<<"\nsubParticle::runModel: Finished generating file: "<< gdat_path << "   f
 			command += " &";
 		}
 
+		if (!checkIfFileExists(path)) {
+			runCommand("mkdir " + path); //Raquel added this block
+		}
+
 		if (swp->options.verbosity >= 3) {
 			cout << "subParticle::runModel: Running model with command: " << command << endl;
 		}
@@ -1015,10 +1022,19 @@ cout << "RAQUEL PASSED IF numCheckedMessages >= numMessages" << endl;
 }
 
 void Particle::checkMessagesPSO(unsigned int mid) {
+/*
+	unsigned int subParID = calcsubParID(mid);
+	if ((mid<0)|| (mid >= swarm_->getNumModels()) || (!models.at(mid)))
+	    outputError("checkMessagesGenetic Failed. Invalid SubParticle.  PID:"+ toString(id_) + "  model id:" + toString(mid)+ "  subParID:" + toString(subParID)+". Quitting !!!" );
+*/
+/* Raquel changed this code by the code above
 	unsigned int subParID = calcsubParID(mid);
 	if ((mid<0)|| (mid >= swarm_->getNumModels()) || (!getSubParticle(mid)) || (!models.at(mid)))
 		outputError("checkMessagesPSO Failed. Invalid SubParticle.  PID:"+ toString(id_) + "  model id:" + toString(mid)+ "  subParID:" + toString(subParID)+". Quitting !!!");
+*/
 
+/*
+string path;
 	Model * mdl= models.at(mid);
 	while(1) {
 
@@ -1027,17 +1043,20 @@ void Particle::checkMessagesPSO(unsigned int mid) {
 		}
 
 		int numCheckedMessages = 0;
+
+		cout << "RAQUEL before recvMessage" << endl;
 		int numMessages = swarm_->swarmComm->recvMessage(-1, subParID, -1, true, swarm_->swarmComm->univMessageReceiver, true);
+		cout << "RAQUEL After recvMessage" << endl;
 
 
 		if (swarm_->options.verbosity >= 3) {
-			//cout << "Found " << numMessages << " messages" << endl;
+			cout << "Found " << numMessages << " messages" << endl;
 
-			/*
+
 			for (auto sm = swarm_->swarmComm->univMessageReceiver.begin(); sm != swarm_->swarmComm->univMessageReceiver.end(); ++sm) {
 				cout << "tag: " << sm->second.tag << endl;
 			}
-			 */
+
 		}
 
 		// Holds iterator ranges when finding items in the message holder
@@ -1051,19 +1070,24 @@ void Particle::checkMessagesPSO(unsigned int mid) {
 
 					int messageIndex = 0;
 					for (auto p = simParams_.at(mid).begin(); p != simParams_.at(mid).end(); ++p) {
-						//cout << id_ << " updating parameter " << p->first << " to " << sm->second.message[messageIndex] << endl;
+						cout << id_ << " updating parameter " << p->first << " to " << sm->second.message[messageIndex] << endl;
 						p->second = stod(sm->second.message[messageIndex]);
 						++messageIndex;
+					}
+					path = swarm_->options.jobOutputDir + toString(currentGeneration_ + 1) + "/";
+
+					if (!checkIfFileExists(path)) {
+						runCommand("mkdir " + path);
 					}
 
 					for (unsigned int i = 1; i <= swarm_->options.smoothing; ++i) {
 
 						// Construct our filenames
 						string bnglFilename = swarm_->getModelName(mid, false)+"_" + toString(id_) + "_" + toString(i) + ".bngl";
-						string path = swarm_->options.jobOutputDir + toString(currentGeneration_ + 1) + "/";
 						string bnglFullPath = path + bnglFilename;
 						string suffix = toString(id_) + "_" + toString(i);
-
+						cout << "RAQUEL CREATING BNGL: " << bnglFullPath << endl;
+						// And generate our models
 						if (!checkIfFileExists(path)) {
 							runCommand("mkdir " + path);
 						}
@@ -1082,6 +1106,8 @@ void Particle::checkMessagesPSO(unsigned int mid) {
 					++numCheckedMessages;
 				}
 			}
+
+			cout << "RAQUEL: done while (numCheckedMessages < numMessages) {" << endl;
 
 			smhRange = swarm_->swarmComm->univMessageReceiver.equal_range(FIT_FINISHED);
 			if (smhRange.first != smhRange.second) {
@@ -1120,6 +1146,135 @@ void Particle::checkMessagesPSO(unsigned int mid) {
 		}
 		swarm_->swarmComm->univMessageReceiver.clear();
 	}
+
+*/
+
+
+
+
+	unsigned int subParID = calcsubParID(mid);
+	if ((mid<0)|| (mid >= swarm_->getNumModels()) || (!models.at(mid)))
+	    outputError("checkMessagesGenetic Failed. Invalid SubParticle.  PID:"+ toString(id_) + "  model id:" + toString(mid)+ "  subParID:" + toString(subParID)+". Quitting !!!" );
+	//if ((mid<0)|| (mid >= swarm_->getNumModels()) || (!getSubParticle(mid)) || (!models.at(mid)))
+	//outputError("checkMessagesGenetic Failed. Invalid SubParticle.  PID:"+ toString(id_) + "  model id:" + toString(mid)+ "  subParID:" + toString(subParID)+". Quitting !!!");
+	cout << "RAQUEL: I am subparticle " << subParID << " my model is " << mid << " generation " << currentGeneration_ << endl;
+	Model * mdl= models.at(mid);
+		// Holds iterator ranges when finding items in the message holder
+		pair <Pheromones::swarmMsgHolderIt, Pheromones::swarmMsgHolderIt> smhRange;
+		cout << "RAQUEL entering while from function that takes mid as input" << endl;
+		string path; //Raquel: declaring it outside the while loop
+
+		while (1) {
+			// Retrieve any messages
+			int numCheckedMessages = 0;
+			cout << "RAQUEL I am subPar " << subParID << " model " << mid << " waiting for message." << endl;
+			int numMessages = swarm_->swarmComm->recvMessage(-1, subParID, -1, true, swarm_->swarmComm->univMessageReceiver, true);
+			cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
+
+			cout << "RAQUEL entering univMessageReceiver.equal_range(SEND_FINAL_PARAMS_TO_PARTICLE)" << endl;
+			smhRange = swarm_->swarmComm->univMessageReceiver.equal_range(SEND_FINAL_PARAMS_TO_PARTICLE);
+			cout << "RAQUEL passed univMessageReceiver.equal_range(SEND_FINAL_PARAMS_TO_PARTICLE)" << endl;
+
+
+			if (smhRange.first != smhRange.second) {
+				cout << subParID << " found final params" << endl;
+				for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {
+					//Timer tmr;
+
+					int messageIndex = 0;
+					for (auto p = simParams_.at(mid).begin(); p != simParams_.at(mid).end(); ++p) {
+						//cout << id_ << " updating parameter " << p->first << " to " << sm->second.message[messageIndex] << endl;
+						p->second = stod(sm->second.message[messageIndex]);
+						//cout << "updated param " << p->first << ": " << p->second << endl;
+						++messageIndex;
+					}
+
+					path = swarm_->options.jobOutputDir + toString(currentGeneration_ + 1) + "/";
+
+					if (!checkIfFileExists(path)) {
+						runCommand("mkdir " + path);
+					}
+
+					for (unsigned int i = 1; i <= swarm_->options.smoothing; ++i) {
+						// Construct our filenames
+						string bnglFilename = swarm_->getModelName(mid, false)+"_" + toString(id_) + "_" + toString(i) + ".bngl";
+						string bnglFullPath = path + bnglFilename;
+						string suffix = toString(id_) + "_" + toString(i);
+						cout << "RAQUEL CREATING BNGL: " << bnglFullPath << endl;
+						// And generate our models
+						if (swarm_->options.models.at(mid)->getHasGenerateNetwork()){
+							// If we're using ODE solver, output .net and .bngl
+							mdl->outputModelWithParams(simParams_.at(mid), path, bnglFilename, suffix, false, false, true, false, false);
+						}
+						else {
+							// If we're using network free simulation, output .bngl
+							mdl->outputModelWithParams(simParams_.at(mid), path, bnglFilename, suffix, false, false, false, false, false);
+						}
+
+						cout << "RAQUEL BNGL generated: " <<  bnglFullPath << " id_ " << toString(id_) << " i " << toString(i) << " subParID " << subParID << endl;
+
+					}
+
+					// Tell the master we have our new params and are ready for the next generation
+					//cout << id_ << " telling master we're finished " << endl;
+					//swarm_->swarmComm->sendToSwarm(subParID, 0, DONE_BREEDING, false, swarm_->swarmComm->univMessageSender);
+
+					//double t = tmr.elapsed();
+					//cout << "SEND_FINAL_PARAMS took " << t << " seconds" << endl;
+					++numCheckedMessages;
+				}
+			}
+
+
+			cout << "RAQUEL BEFORE IF numCheckedMessages >= numMessages" << endl;
+
+			if (numCheckedMessages >= numMessages) {
+				swarm_->swarmComm->univMessageReceiver.clear();
+				cout << "RAQUEL INSIDE IF numCheckedMessages >= numMessages = " << numCheckedMessages << ":" << numMessages << endl;
+				continue;
+				//return 0; //Raquel: added
+			}
+
+	cout << "RAQUEL PASSED IF numCheckedMessages >= numMessages" << endl;
+
+
+			if (swarm_->swarmComm->univMessageReceiver.find(FIT_FINISHED) != swarm_->swarmComm->univMessageReceiver.end()) {
+				cout << "RAQUEL entering pheromones" << endl;
+				swarm_->swarmComm->~Pheromones();
+				cout << "RAQUEL exiting pheromones" << endl;
+				exit(0);
+			}
+
+			if (swarm_->swarmComm->univMessageReceiver.find(NEW_BOOTSTRAP) != swarm_->swarmComm->univMessageReceiver.end()) {
+				if (swarm_->options.verbosity >= 3) {
+					cout << "SubParticle " << subParID <<": Starting a new bootstrapping run" << endl;
+				}
+
+				++swarm_->bootstrapCounter;
+				currentGeneration_ = 0;
+				simParams_.at(mid).clear();
+				generateParams();
+				cout << "RAQUEL INSIDE IF swarm_->swarmComm->univMessageReceiver.find(NEW_BOOTSTRAP)" << endl;
+
+				swarm_->swarmComm->univMessageReceiver.clear();
+				return;
+			}
+
+			if (swarm_->swarmComm->univMessageReceiver.find(NEXT_GENERATION) != swarm_->swarmComm->univMessageReceiver.end()) {
+				cout << "RAQUEL INSIDE IF swarm_->swarmComm->univMessageReceiver.find(NEXT_GENERATION)" << endl;
+				swarm_->swarmComm->univMessageReceiver.clear();
+				return true;
+
+				return;
+			}
+
+			swarm_->swarmComm->univMessageReceiver.clear();
+		}
+
+		cout << "RAQUEL existing while that takes mid as input" << endl;
+
+
+
 }
 
 bool Particle::checkMessagesDE(unsigned int mid) {
@@ -1441,7 +1596,7 @@ void Particle::finalizeSim(unsigned int mid) {
 void Particle::smoothRuns(unsigned int mid) {
 	unsigned int subParID = calcsubParID(mid);
 	//if ((mid<0)|| (mid >= swarm_->getNumModels()) || (!getSubParticle(mid)) || (!models.at(mid)) || (dataFiles_.at(mid).empty())){
-	if ((mid<0)|| (mid >= swarm_->getNumModels()) || (!models.at(mid)) || (dataFiles_.at(mid).empty())){ //Raquel: the test !getSubParticle(mid) is not working correctly
+	if ((mid<0)|| (mid > swarm_->getNumModels()) || (!models.at(mid)) || (dataFiles_.at(mid).empty())){ //Raquel: the test !getSubParticle(mid) is not working correctly
 
 
 	if (mid<0)  cout<<"E1\n";
@@ -1829,7 +1984,10 @@ if (swarm_->options.verbosity >= 3) cout<<"doParticle-1 try to run model for i:"
 			checkMessagesGenetic();
 		}
 		else if (swarm_->options.fitType == "pso") {
-			checkMessagesPSO();
+			//cout << "RAQUEL before checkMessagesPSO" << endl;
+			checkMessagesPSO(mid);
+			//cout << "RAQUEL After checkMessagesPSO" << endl;
+
 		}
 		else if (swarm_->options.fitType == "de") {
 			checkMessagesDE();
@@ -1964,6 +2122,7 @@ void Particle::runModel(unsigned int iteration, bool localSearch) {
 	else {
 		// If our return code is not 0, tell the master that the simulation failed
 		cout << "Particle::runModel: I failed completing runmodel ..." << endl;
+		cout << " dataPath " << dataPath;
 		swarm_->swarmComm->sendToSwarm(int(id_), 0, SIMULATION_FAIL, true, swarm_->swarmComm->univMessageSender);
 	}
 cout<<"Particle::runModel: runmodel finished ...\n";
@@ -2094,22 +2253,23 @@ void Particle::checkMessagesPSO() {
 
 					int messageIndex = 0;
 					for (auto p = simParams_.begin(); p != simParams_.end(); ++p) {
-						//cout << id_ << " updating parameter " << p->first << " to " << sm->second.message[messageIndex] << endl;
+						cout << id_ << " updating parameter " << p->first << " to " << sm->second.message[messageIndex] << endl;
 						p->second = stod(sm->second.message[messageIndex]);
 						++messageIndex;
 					}
 
-					for (unsigned int i = 1; i <= swarm_->options.smoothing; ++i) {
+					string path = swarm_->options.jobOutputDir + toString(currentGeneration_ + 1) + "/";
 
+					if (!checkIfFileExists(path)) {
+						runCommand("mkdir " + path);
+					}
+
+
+					for (unsigned int i = 1; i <= swarm_->options.smoothing; ++i) {
 						// Construct our filenames
 						string bnglFilename = toString(id_) + "_" + toString(i) + ".bngl";
-						string path = swarm_->options.jobOutputDir + toString(currentGeneration_ + 1) + "/";
 						string bnglFullPath = path + bnglFilename;
 						string suffix = toString(id_) + "_" + toString(i);
-
-						if (!checkIfFileExists(path)) {
-							runCommand("mkdir " + path);
-						}
 
 						// And generate our models
 						if (swarm_->options.model->getHasGenerateNetwork()){
@@ -2120,6 +2280,7 @@ void Particle::checkMessagesPSO() {
 							// If we're using network free simulation, output .bngl
 							model_->outputModelWithParams(simParams_, path, bnglFilename, suffix, false, false, false, false, false);
 						}
+
 					}
 
 					++numCheckedMessages;

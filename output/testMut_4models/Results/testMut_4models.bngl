@@ -30,18 +30,18 @@ begin parameters
 	# a free ligand reversibly binds a free receptor site
 	# equilibrium dissociation constant
 	# KD1 is specified as being free. It has a matching option in the .conf file.
-	KD1 0.006366 # [=] nM
+	KD1 0.006031 # [=] nM
 	#KD1 = KD1_root*KD1_root 
 	# reverse rate constant (derived)
 	#km1 is specified as being free. It has a matching option in the .conf file.
-	km1 0.019420 # [=] /s
+	km1 0.036348 # [=] /s
 	#km1 = km1_root*km1_root 
 	# forward rate constant (derived)
 	kp1=(km1/KD1) # [=] /nM/s
 	# receptor-receptor interaction
 	# dimensionless equilibrium association constant
 	# K2RT is specified as being free. It has a matching option in the .conf file.
-	K2RT 0.890394 # [=] dimensionless
+	K2RT 0.834497 # [=] dimensionless
 	#K2RT = K2RT_root*K2RT_root
 	#   a value of 0.1 => weak crosslinking
 	#   a value of 1.0 => moderate crosslinking
@@ -57,7 +57,7 @@ begin parameters
 	#razi, changed for test, is a free parameter in exMutM1 
 	#kphos_fixed = 1
 	#changed for testing 
-	kphos 1.227189 # [=] /s
+	kphos 0.144866 # [=] /s
 	#kphos = kphos_root*kphos_root
 	# dephosphorylation rate constant
 	# kdephos is specified as being free. It has a matching option in the .conf file.
