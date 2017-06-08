@@ -659,7 +659,11 @@ if (swarm_->options.verbosity >= 3) cout<<"doParticle-4 now lets check messages.
 
 		}
 		else if (swarm_->options.fitType == "de") {
-			checkMessagesDE();
+			cout << "RAQUEL Entering check messages DE" << endl;
+
+			checkMessagesDE(mid);
+			cout << "RAQUEL Done check messages DE" << endl;
+
 		}
 		else if (swarm_->options.fitType == "sa") {
 			doRunModel = checkMessagesDE();

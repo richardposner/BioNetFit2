@@ -203,6 +203,7 @@ public:
 		std::vector<Model *> models; 			// the model files
 		int defaultModel;
 		std::map<int,string> constraints_; //Raquel: added constraint options support
+		float constraintWeight = 1; //Raquel: added constraint weight option support
 #else
 		Model * model; 			// the model file
 #endif
@@ -406,6 +407,8 @@ private:
 	double calcParticleWeight(unsigned int particle);
 	double calcWeightedAveragePosition();
 	void processParamsPSO(std::vector<double> &params, unsigned int pID, double fit);
+	void processParamsDE(std::vector<double> &params, unsigned int pID, double fit);
+
 	bool checkStopCriteria();
 	void updateInertia();
 	void updateContractionExpansionCoefficient();

@@ -1,0 +1,18 @@
+The function that processes the subparticle parameters and updates the best fit variable after running a generation was not implemented for DE. 
+As a consequence, DE was never passing the first generation because it was forcing a false perfect fit (equal zero), which was the default value set to this variable when the program starts to run. 
+I created a processParamDE function by using as template the processParamPSO function that I had already made before when I was fixing the PSO.
+But for avoiding this problem in the future, a perfect fit value should never be set as default value for a fit variable.
+
+The way that the DE algorithm was looping through particles and free parameter values in a particle->parameter map was not working for multiple models. 
+I had to fix this problem by redefining this map variable correctly, updating it to support subparticles.
+
+The for loop that goes through all the particles of the island-to-particle map was calling the map indexes using the at() operator 
+(for example: particleToIsland_.at(index)), this all was making the program crash the the index reached the las item in the list of particles.
+I fixes this problem by using the [] operator (for example: particleToIsland_[index]) and this solved the problem.
+
+The code that updates free parameter values after running a simulation was inside the runSDE, runSGA, and runSPSO functions, creating repeated/redundant large chuncks of code accross all algorithms.
+I replaced these redundant code blocks by a single function that is shared among all the algorithm. 
+
+Updated the interprocess communication for supporting multiple models, when the master sends the new parameters to be used by the subparticles (before the messages were sent only to particles, so the simulations for additional models were not executed)
+
+The run summary results were generated only when DE reached the stop criteria, I changed it so now the results summary is printed by the end of each generation

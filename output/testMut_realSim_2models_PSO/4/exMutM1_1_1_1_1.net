@@ -7,15 +7,15 @@ begin parameters
     5 EGF_conc          EGF_conc_nM*1e-9  # ConstantExpression 1e-09
     6 EGF_copy_number   EGF_conc*(NA*Vecf)  # ConstantExpression 126464.94
     7 EGFR_copy_number  f*1.0e5  # ConstantExpression 10000
-    8 KD1               76.492306  # Constant
-    9 km1               0.933164  # Constant
-   10 kp1               km1/KD1  # ConstantExpression 0.0121994491838173
-   11 K2RT              61.647446  # Constant
-   12 km2               365.386557  # Constant
-   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 2.25251480417834
-   14 kp3               kp2*0.2  # ConstantExpression 0.450502960835668
-   15 kphos             0.425346  # Constant
-   16 kdephos           50.283403  # Constant
+    8 KD1               34.692440  # Constant
+    9 km1               35.349543  # Constant
+   10 kp1               km1/KD1  # ConstantExpression 1.01894081246519
+   11 K2RT              110.922372  # Constant
+   12 km2               152.708382  # Constant
+   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 1.69387759557221
+   14 kp3               kp2*0.2  # ConstantExpression 0.338775519114442
+   15 kphos             0.504486  # Constant
+   16 kdephos           83.642909  # Constant
    17 Ligand_isPresent  0  # Constant
 end parameters
 begin functions

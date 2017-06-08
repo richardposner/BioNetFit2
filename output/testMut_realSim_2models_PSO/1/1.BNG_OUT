@@ -15,7 +15,7 @@ Network simulation using cvode
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM1_1_1_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM1_1_1_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM1_1_1_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM1_1_1_1_1.net 600 1
-[simulation PID is: 24154]
+[simulation PID is: 6279]
 run_network 3.0
 Read 17 parameters
 Read 15 species
@@ -40,7 +40,7 @@ WARNING: writeFile(): Overwriting existing file /home/raquel/Posdoc_Posner/BioNe
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM1_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM1_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM1_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM1_1_1.net 0 5 10 15 20 25 30 35 40 45 50 55 60 60
-[simulation PID is: 24156]
+[simulation PID is: 6281]
 run_network 3.0
 Read 17 parameters
 Read 15 species
@@ -75,7 +75,7 @@ Network simulation using cvode
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM2_1_1_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM2_1_1_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM2_1_1_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM2_1_1_1_1.net 600 1
-[simulation PID is: 24162]
+[simulation PID is: 6287]
 run_network 3.0
 Read 18 parameters
 Read 15 species
@@ -100,7 +100,7 @@ WARNING: writeFile(): Overwriting existing file /home/raquel/Posdoc_Posner/BioNe
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM2_1_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM2_1_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM2_1_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_2models_PSO/1/exMutM2_1_1.net 0 5 10 15 20 25 30 35 40 45 50 55 60 60
-[simulation PID is: 24164]
+[simulation PID is: 6289]
 run_network 3.0
 Read 18 parameters
 Read 15 species

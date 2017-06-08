@@ -457,6 +457,13 @@ Swarm * Config::createSwarmFromConfig () {
 		swarm_->options.randParamsProbability = stof(pairs.find("rand_params_probability")->second);
 	}
 
+	/////////////////////////RAQUEL adding weight parameter for ranking models by constraint/////////////////////
+
+	if(pairs.find("constraint_weight") != pairs.end()) {
+		swarm_->options.constraintWeight = stof(pairs.find("constraint_weight")->second);
+	}
+
+
 #ifdef VER2
 	swarm_->consolidate_model_params();
 #endif
