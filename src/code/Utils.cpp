@@ -35,7 +35,7 @@ string mainpath(){  //razi addede
 		char curdir[1000];
 
 		curdirstr = (getcwd(curdir, 1000) ? std::string(curdir):  std::string(""));
-		if(curdirstr.compare("cygdrive")){
+		if(!curdirstr.compare("cygdrive")){
 			string Dletter= curdirstr.substr(10,1);
 			curdirstr = Dletter + ":/" + curdirstr.substr(12,curdirstr.size()-12);
 		}
