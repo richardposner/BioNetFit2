@@ -847,8 +847,8 @@ void Swarm::doSwarm() {
 	if(options.verbosity >=3) cout<<"doSwarm invoked: bootsrtarps:"<< options.bootstrap<<" \n";
 	for (bootstrapCounter = 0; bootstrapCounter <= options.bootstrap; ++bootstrapCounter) {
 		initFit();
-		// TODO: Test all synchronous fits on PC
 		// Main fit loops
+
 		if (options.synchronicity) {
 			if (options.fitType == "ga") {
 				runSGA();
@@ -868,7 +868,6 @@ void Swarm::doSwarm() {
 			}
 		}
 
-		// TODO: Need to make asynchronous fits work in PCs
 		// Asynchronous fit loops
 		else {
 			// Genetic fit
@@ -886,8 +885,12 @@ void Swarm::doSwarm() {
 				runASA();
 			}
 		}
+		cout << "RAQUEL: starting finishFit function" << endl;
 		finishFit();
+		cout << "RAQUEL: done finishFit function" << endl;
+
 	}
+
 }
 
 bool Swarm::checkStopCriteria() {
@@ -964,7 +967,7 @@ bool Swarm::checkStopCriteria() {
 			}
 		}
 		 */
-	}
+	}//	else if ((options.fitType == "ga" || options.fitType == "de") && options.synchronicity) {
 	else if ((options.fitType == "ga" || options.fitType == "de") && options.synchronicity) {
 		if (options.verbosity >= 3) {
 			cout << "Checking if we've reached max generation. Current is " << (currentGeneration - 1) << " and max is " << options.maxGenerations << endl;
@@ -995,7 +998,7 @@ bool Swarm::checkStopCriteria() {
 			if () {
 			}
 	 */
-	cout << "RAQUEL: Returning FALSE to Stop Criteria." << endl;
+	//cout << "RAQUEL: Returning FALSE to Stop Criteria." << endl;
 	return false;
 }
 
@@ -2005,6 +2008,105 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 	currentGeneration += 1;
 }
 
+
+
+void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynchronous generations
+	// TODO: Implement walltime
+	unsigned int nModels = options.models.size();
+	if(options.verbosity >= 1) {
+		cout << "Running generation " << currentGeneration << " with " << options.swarmSize << " particles..." << endl;
+	}
+
+	unsigned int numFinishedParticles = 0;
+
+//	vector<unsigned int, vector<bool>> runningParticles;
+//vector<unsigned int, vector<bool>> finishedParticles;
+//	vector<unsigned int> runningSubParticles;
+//	vector<unsigned int> finishedSubParticles;
+
+	unsigned int p, mid, sp;
+	vector<unsigned int> newFinishedParticles;
+	// razi: handle running particles that include subparticles, dont exceed parallel count
+	//we need to track number of completed particles which is not simply equal to (nModels * number of subParticles)
+	//a particle is considered completed of all its subparticles are finished. XXXX
+
+
+	sp=0;
+	finishedParticles_.clear();
+	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
+	int maxSubPar = fcalcsubParID(options.swarmSize, options.models.size()-1, options.models.size());
+	int tries = 0;
+
+	while (finishedParticles_.size() < options.swarmSize/2 && runningParticles_.size() < maxSubPar) { //razi: loop over particles, each particle includes nModels subPArticles
+
+		if (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
+			sp++;
+			p = fcalcParID(sp, nModels);
+			mid = fcalcMID(sp, nModels);
+
+			launchSubParticle(p, mid, false);
+			//launchParticle(p, false);
+			//cout << "RAQUEL runningSubParticles_.size() " << runningSubParticles_.size() << " options.parallelCount " << options.parallelCount << endl;
+
+			tries = 0;
+		}
+		// Check for any messages from particles
+		usleep(250000);
+		//cout << "RAQUEL Entering checkMasterMessages" << endl;
+		newFinishedParticles = checkMasterMessages();
+		flightCounter_ += newFinishedParticles.size();
+		//cout << "RAQUEL Done checkMasterMessages newFinishedParticles.size() " << newFinishedParticles.size() << endl;
+		//cout << "Flight counter = " << flightCounter_ << endl;
+		//cout << "finishedSubParticles_.size() " << finishedSubParticles_.size() << " runningSubParticles_.size() " << runningSubParticles_.size() << " maxSubPar " << maxSubPar << " sp " << sp << endl;
+		numFinishedParticles = finishedParticles_.size();
+		//cout << "RAQUEL rungeneration numFinishedParticles " << numFinishedParticles << endl;
+		//tries++; // Enable this fix if the program stays stuck waiting for a message from the slave, even though the master already sent the message
+		if(tries > 50){
+
+			cout << "RAQUEL " << runningSubParticles_.size() << " subparticles failed in generation " << currentGeneration << endl;
+//			cout << "RAQUEL resending message NEXT_GENERATION to failed particles" << endl;
+			for (auto stuckParticle = runningSubParticles_.begin(); stuckParticle != runningSubParticles_.end(); ++stuckParticle ){
+
+				swarmComm->sendToSwarm(0, *stuckParticle, NEXT_GENERATION, false, swarmComm->univMessageSender);
+
+			}
+
+			tries = 0;
+		}
+
+	}
+	finishedParticles_.clear();
+	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
+
+
+
+	/*
+	while (numFinishedParticles < options.swarmSize) { //razi: loop over particles, each particle includes nModels subPArticles
+
+		if ((runningSubParticles_.size()*nModels+nModels )<= options.parallelCount && numLaunchedParticles < options.swarmSize) {//razi: make sure subparticles don't exceed parallel count limit
+			launchParticle(p);
+			numLaunchedSubParticles += 1;
+			++p;
+		}
+
+		// Check for any messages from particles
+		usleep(10000);
+		finishedSubParticles = checkMasterMessages();
+		numFinishedSubParticles += finishedSubParticles.size();
+		finishedSubParticles.clear();
+	}
+*/
+
+	if ( options.verbosity >=3){ cout<< "running a swarm generation finished ....\n";}
+
+	if (failedParticles_.size() > (options.swarmSize - 3) ) {
+		finishFit();
+		outputError("Error: You had too many failed runs. Check simulation output (.BNG_OUT files) or adjust walltime.");
+	}
+	currentGeneration += 1;
+}
+
+
 void Swarm::cleanupFiles(const char * path) {
 	// TODO: Should we fork to do this? ...yes.
 	DIR* dp;
@@ -2108,7 +2210,9 @@ void Swarm::finishFit() {
 
 		generateBestFitModel(outputDir);
 
+		cout << "RAQUEL: Killing all particles, sending FIT_FINISHED message" << endl;
 		killAllParticles(FIT_FINISHED);
+		cout << "RAQUEL: Done killing all particles." << endl;
 
 		cout << "Finished fitting in " << tmr_.elapsed() << " seconds. Results can be found in " << options.jobOutputDir << "Results" << endl;
 	}
@@ -2215,13 +2319,14 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 	int numMessages = swarmComm->recvMessage(-1, 0, -1, false, swarmComm->univMessageReceiver);
 
 	if (numMessages >= 1) {
-		if (options.verbosity >= 4) {
+		if (options.verbosity >= 3) {
 			cout << "Found " << numMessages << " messages" << endl;
 		}
 
 		pair <Pheromones::swarmMsgHolderIt, Pheromones::swarmMsgHolderIt> smhRange;
 
 		smhRange = swarmComm->univMessageReceiver.equal_range(SIMULATION_END);
+
 		for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {
 			unsigned int subParID = sm->second.sender;
 			pID = fcalcParID(subParID, options.models.size());
@@ -2237,9 +2342,11 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 				string errMsg = "Error: Couldn't remove subParticle " + toString(subParID) + " from runningParticle list.";
 				outputError(errMsg);
 			}
+			cout << "Master messages Added supar " << subParID << " to finnished list and removed it from running list" << endl;
 			runningSubParticles_.erase(runningSubParticlesIterator_);
 			finishedSubParticles_.insert(subParID); //razi: add to the list
 			++particleIterationCounter_[pID][mid];
+			cout << "Master messages running sub" << runningSubParticles_.size() << " finished size " << finishedSubParticles_.size() << endl;
 
 			//finishedsubParticles.push_back(subParID);
 
@@ -2248,7 +2355,7 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 			NewlyFinishedParticles = update_finished_running_particles(); //update particle lists
 			NumNewlyFinishedParticles = NewlyFinishedParticles.size(); //update particle lists
 			flightCounter_=flightCounter_+ NumNewlyFinishedParticles;
-
+			cout << "Master NumNewlyFinishedParticles " <<  NumNewlyFinishedParticles << " Flightcounter " << flightCounter_ << endl;
 
 			unsigned int gen = currentGeneration;
 			string paramsString;
@@ -2331,6 +2438,7 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 
 		// TODO: When sending NEXT_GENERATION, make sure failed particles have actually run again. If not, they need re-launched.
 		//cout << "RAQUEL: before univMessageReceiver.equal_range(SIMULATION_FAIL)" << endl;
+		cout << "Number of runnning subparticles before" << runningSubParticles_.size() << endl;
 
 		smhRange = swarmComm->univMessageReceiver.equal_range(SIMULATION_FAIL);
 
@@ -2344,12 +2452,15 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 
 			// Get an iterator to the particle in our list of running particles
 			runningSubParticlesIterator_ = runningSubParticles_.find(subParID);
+			cout << "Number of runnning subparticles before erasing" << runningSubParticles_.size() << endl;
 			if (runningSubParticlesIterator_ == runningSubParticles_.end()) {
 				string errMsg = "Error: Couldn't remove particle " + toString(pID) +  "  SubParticle " + toString(subParID) + " from runningParticle list.";
 				outputError(errMsg);
-			}else
+			}else{
 				runningSubParticles_.erase(runningSubParticlesIterator_);
-
+				cout << "RAQUEL Erased one subparticle fro running list " << endl;
+				cout << "New size: " << runningSubParticles_.size() << endl;
+			}
 			runningSubParticlesIterator_ = failedSubParticles_.find(subParID);
 			if (runningSubParticlesIterator_== failedSubParticles_.end())  //add to the list of failed subparticles
 				failedParticles_.insert(subParID);
@@ -2926,17 +3037,17 @@ void Swarm::initPSOswarm(bool resumeFit) {
 	}
 
 	// Launch all particles
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
-		launchParticle(p);
-	}
+	//for (unsigned int p = 1; p <= options.swarmSize; ++p) {
+	//	launchParticle(p);
+	//}
 
-	if (options.verbosity >= 3) {
-		cout << "Waiting for particles to finish" << endl;
-	}
+	//if (options.verbosity >= 3) {
+	//	cout << "Waiting for particles to finish" << endl;
+	//}
 
 	// Wait until they are all finished so we can initialize
 	// stuff for subsequent iterations
-	while(numFinishedParticles < options.swarmSize) {
+	/*while(numFinishedParticles < options.swarmSize) {
 		// Check for our finished particles
 
 		cout << "RAQUEL swarm size is " << options.swarmSize << " finished: " << numFinishedParticles << endl;
@@ -2946,6 +3057,11 @@ void Swarm::initPSOswarm(bool resumeFit) {
 		// Sleep for a second
 		usleep(1000000);
 	}
+
+	*/
+	//Raquel replaced the loop above by a synchronous generation
+	runGeneration();
+
 
 	// Fill a vector with all pID's to send for processing
 	vector<unsigned int> allParticles;
@@ -3037,7 +3153,7 @@ void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vec
 		vector<unsigned int> particlesToRecv;
 		for (map<double, unsigned int>::reverse_iterator fitIt = particleBestFitsByFit_.rbegin(); fitIt != particleBestFitsByFit_.rend(); ++fitIt) {
 			cout << fitIt->second << endl;
-			if (particleToIsland_.at(fitIt->second) == island) {
+			if (particleToIsland_[fitIt->second] == island) {
 				particlesToRecv.push_back(fitIt->second);
 			}
 		}
@@ -3091,7 +3207,6 @@ void Swarm::runSGA() {
 		runGeneration();
 		//cout << "RAQUEL: finished runGeneration" << endl;
 		//cout << "RAQUEL: starting checkStopCriteria" << endl;
-		stopCriteria = checkStopCriteria();
 		//cout << "RAQUEL: STOP CRITERIA value" << stopCriteria << endl;
 		//cout << "RAQUEL: starting saveSwarmState" << endl;
 
@@ -3107,13 +3222,16 @@ void Swarm::runSGA() {
 
 		}
 
-		if (!stopCriteria) {
-			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
-			//cout << "RAQUEL: starting outputRunSummary from runSGA" << endl;
+		string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+		//cout << "RAQUEL: starting outputRunSummary from runSGA" << endl;
 
-			outputRunSummary(outputPath);
-			//cout << "RAQUEL: finished outputRunSummary from runSGA" << endl;
-			//cout << "RAQUEL: starting breedGenerationGA from runSGA" << endl;
+		outputRunSummary(outputPath);
+		//cout << "RAQUEL: finished outputRunSummary from runSGA" << endl;
+		//cout << "RAQUEL: starting breedGenerationGA from runSGA" << endl;
+
+		stopCriteria = checkStopCriteria();
+
+		if (!stopCriteria) {
 
 			breedGenerationGA();
 			cout << "RAQUEL: finished breedGenerationGA from runSGA" << endl;
@@ -3619,6 +3737,8 @@ void Swarm::runAGA() {
 		}
 	}
 
+	int sp = 0;
+
 	// Holds finished particles
 	vector<unsigned int> finishedParticles;
 
@@ -3633,18 +3753,46 @@ void Swarm::runAGA() {
 
 	// Re-launch the particles in to the Swarm proper
 	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
-		launchParticle(p);
+
+
+		//for(int mid = 0; mid < options.models.size(); mid++){
+
+		//	launchSubParticle(p, mid, false);
+
+		//}
+
+		launchParticle(p, false);
 	}
 
-	bool stopCriteria = false;
+	int newFinishedPar = 0;
+
+	//bool stopCriteria = false;
+	int iteration = 0;
+
+	/*
+	cout << "==================================ENTERING LOOP==================================" << endl;
 	while (!stopCriteria){
 		usleep(250000);
-
+		cout << "RAQUEL Iteration " << iteration;
+		iteration++;
 		// Check for any messages from particles and store finished particles
+
+		//finishedParticles = checkMasterMessages();
 		finishedParticles = checkMasterMessages();
+		newFinishedPar += finishedParticles.size();
+
+		cout << "new finished particles " << newFinishedPar << endl;
+		cout << "Running particles " << runningParticles_.size() << endl;
+		cout << "Global finished " << finishedParticles_.size() << endl;
+		cout << "Global finished sub " << finishedSubParticles_.size() << endl;
 
 		// Check stop criteria
+		cout << "Checking stop criteria" << endl;
 		stopCriteria = checkStopCriteria();
+		cout << "Done, stop criteria value = " << stopCriteria << endl;
+
+		cout << "flightcounter = " << flightCounter_ << endl;
+		cout << "max flightcounter" << options.maxNumSimulations << endl;
 
 		// Cleanup old files if needed
 		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
@@ -3653,16 +3801,78 @@ void Swarm::runAGA() {
 		}
 
 		// If we haven't reached stop criteria, breed and re-launch finished particles
-		if (!stopCriteria && finishedParticles.size()) {
+//		if (!stopCriteria && finishedParticles.size() >= options.swarmSize/2) {
+		if (!stopCriteria && finishedParticles_.size() >= options.swarmSize/2) {
+			cout << "RAQUEL preparing for asynchronous breed, 1/2 of particles are done" << endl;
 			// Get new params for any finished particles
+			//breedGenerationGA(finishedParticles);
+			copy(finishedParticles_.begin(), finishedParticles_.end(), inserter(finishedParticles, finishedParticles.begin()));
+			cout << "Async Particles done: " << finishedParticles.size() << endl;
+
 			breedGenerationGA(finishedParticles);
+			newFinishedPar = 0;
+
+		//for(auto i = finishedParticles.begin(); i != finishedParticles.end(); ++i){
+		//		for(int j=0; j < options.models.size(); j++){
+		//			sp = fcalcsubParID(*i, j, options.models.size());
+		//			cout << "sending nex gen to " << sp << endl;
+		//			swarmComm->sendToSwarm(0, sp, NEXT_GENERATION, false, swarmComm->univMessageSender);
+		//		}
+		//	}
+			//finishedParticles.clear();
+			//finishedParticles_.clear();
+			//finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
 
 			// Re-launch any finished particles
-			for (auto pID = finishedParticles.begin(); pID != finishedParticles.end(); ++pID) {
-				launchParticle(*pID);
+			for (auto pID = finishedParticles_.begin(); pID != finishedParticles_.end(); ++pID) {
+
+				launchParticle(*pID, false);
+
 			}
+
+			currentGeneration++;
+			flightCounter_++;
+
+
+
 		}
 	}
+	*/
+	bool stopCriteria = false;
+	while (!stopCriteria){
+		cout << "RAQUEL: Started runGeneration();" << endl;
+		runAsyncGeneration();
+		cout << "RAQUEL: Finished runGeneration();" << endl;
+
+		cout << "RAQUEL: Started checkStopCriteria();" << endl;
+		stopCriteria = checkStopCriteria();
+		cout << "RAQUEL: Stop criteria value is " << stopCriteria << endl;
+
+		cout << "RAQUEL: Finished checkStopCriteria();" << endl;
+		cout << "RAQUEL: Started saveSwarmState();" << endl;
+		saveSwarmState();
+		cout << "RAQUEL: Finished saveSwarmState();" << endl;
+
+
+		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
+		if (options.deleteOldFiles) {
+			cout << "RAQUEL: Started cleanupFiles();" << endl;
+			cleanupFiles(currentDirectory.c_str());
+			cout << "RAQUEL: Finished cleanupFiles();" << endl;
+
+		}
+
+		if (!stopCriteria) {
+			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+			cout << "RAQUEL: Started outputRunSummary();" << endl;
+			outputRunSummary(outputPath);
+			cout << "RAQUEL: Finished outputRunSummary();" << endl;
+			cout << "RAQUEL: started breedGenerationGA();" << endl;
+			breedGenerationGA();
+			cout << "RAQUEL: finished breedGenerationGA();" << endl;
+		}
+	}
+
 }
 
 void Swarm::runAPSO() {
@@ -3685,10 +3895,11 @@ void Swarm::runAPSO() {
 
 	saveSwarmState();
 
-	if (options.verbosity >= 3) {
-		cout << "Re-launching swarm" << endl;
-	}
+	//if (options.verbosity >= 3) {
+	//	cout << "Re-launching swarm" << endl;
+	//}
 
+	/*
 	// Re-launch the particles in to the Swarm proper
 	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
 		launchParticle(p);
@@ -3731,10 +3942,51 @@ void Swarm::runAPSO() {
 			}
 		}
 	}
+
+	*/
+	vector<unsigned int> particlestoProcess;
+	bool stopCriteria = false;
+	while (!stopCriteria){
+		cout << "RAQUEL: Started runGeneration();" << endl;
+		runAsyncGeneration();
+		cout << "RAQUEL: Finished runGeneration();" << endl;
+
+		cout << "RAQUEL: Started checkStopCriteria();" << endl;
+		stopCriteria = checkStopCriteria();
+		cout << "RAQUEL: Stop criteria value is " << stopCriteria << endl;
+
+		cout << "RAQUEL: Finished checkStopCriteria();" << endl;
+		cout << "RAQUEL: Started saveSwarmState();" << endl;
+		saveSwarmState();
+		cout << "RAQUEL: Finished saveSwarmState();" << endl;
+
+
+		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
+		if (options.deleteOldFiles) {
+			cout << "RAQUEL: Started cleanupFiles();" << endl;
+			cleanupFiles(currentDirectory.c_str());
+			cout << "RAQUEL: Finished cleanupFiles();" << endl;
+
+		}
+
+		if (!stopCriteria) {
+			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+			//cout << "RAQUEL: Started outputRunSummary();" << endl;
+			outputRunSummary(outputPath);
+			//cout << "RAQUEL: Finished outputRunSummary();" << endl;
+			cout << "RAQUEL: started processParticlesPSO();" << endl;
+			for(auto i = finishedParticles_.begin(); i!=finishedParticles_.end(); ++i){
+				cout << "RAQUEL: processing particle number: " << *i << endl;
+				particlestoProcess.push_back(*i);
+			}
+			processParticlesPSO(particlestoProcess, true);
+			cout << "RAQUEL: finished processParticlesPSO();" << endl;
+		}
+	}
 }
 
 void Swarm::runADE() {
-	if (options.verbosity >= 3) {
+/*	if (options.verbosity >= 3) {
 		cout << "Running an asynchronous DE fit" << endl;
 	}
 
@@ -3901,6 +4153,354 @@ void Swarm::runADE() {
 			}
 		}
 	}
+
+	*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	if (options.verbosity >= 3) {
+		cout << "Running a synchronous DE fit" << endl;
+	}
+
+	// Create an output directory for each island
+	if (!checkIfFileExists(options.jobOutputDir + toString(1))) {
+		string createDirCmd = "mkdir " + options.jobOutputDir + toString(1);
+		runCommand(createDirCmd);
+	}
+
+	if (options.verbosity >= 3) {
+		cout << "Generating island topology" << endl;
+	}
+	vector<vector<unsigned int>> islandTopology;
+	if (!resumingSavedSwarm) {
+		// Generate all particles that will be present in the swarm
+		islandTopology = generateTopology(options.numIslands);
+		// Map all particles and islands
+		unsigned int particlesPerIsland = options.swarmSize / options.numIslands;
+		unsigned int currParticle = 1;
+		for (unsigned int i = 1; i <= options.numIslands; ++i) {
+			for (unsigned int p = 0; p < particlesPerIsland; ++p) {
+				particleToIsland_[currParticle] = i;
+				islandToParticle_[i][p] = currParticle;
+				cout << i << " " << p << " " << islandToParticle_[i][p] << endl;
+
+				cout << "Particle to island " << particleToIsland_[currParticle] << endl;
+				cout << "currPar " << currParticle << endl;
+				++currParticle;
+			}
+		}
+	}
+
+	saveSwarmState();
+
+	//if (options.verbosity >= 3) {
+	//	cout << "Launching first generation" << endl;
+	//}
+
+	unordered_map<unsigned int, vector<double>> finishedParticles;
+	bool stopCriteria = false;
+	vector<unsigned int> islandFinishedParticles(options.numIslands + 1, 0);
+
+	map<unsigned int, vector<vector<double>>> migrationSets;
+
+	bool trialLoop = false;
+
+
+
+
+	//saveSwarmState();
+	string path; //Raquel added
+	//vector<unsigned int> finishedParticles;
+	//vector<unsigned int> particlestoProcess;
+
+
+	int numFinishedParticles = 0;
+
+	unsigned int p = 1;
+	int mid; //Raquel added
+	int sp = 0; //Raquel added
+	int nModels = options.models.size(); //Raquel added
+
+
+	bool first = true;
+
+	while(!stopCriteria) {
+
+
+		numFinishedParticles = options.swarmSize;
+
+		//cout << "RAQUEL: starting runGeneration" << endl;
+		if(first == true){
+			//Raquel added: if this is the first geration, run one generation synchronously, otherwaise run it asynchronously
+			runGeneration();
+			first = false;
+		}else{
+			runAsyncGeneration();
+
+		}
+
+		usleep(250000);
+
+		saveSwarmState();
+		//cout << "RAQUEL: finished saveSwarmState" << endl;
+
+		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
+		if (options.deleteOldFiles) {
+			//cout << "RAQUEL: starting cleanupFiles" << endl;
+
+			cleanupFiles(currentDirectory.c_str());
+			//cout << "RAQUEL: finished cleanupFiles" << endl;
+
+		}
+
+
+
+
+
+/* Raquel replaced this block by the code above
+		// Generation loop
+		unsigned int p = 1;
+		while (numFinishedParticles < options.swarmSize) {
+			// Launch next particle
+			if (runningParticles_.size() < options.parallelCount && p <= options.swarmSize) {
+				launchParticle(p++, trialLoop);
+			}
+
+			unordered_map<unsigned int, vector<double>> finished = checkMasterMessagesDE();
+
+			if (finished.size()) {
+				finishedParticles.insert(finished.begin(), finished.end());
+				numFinishedParticles += finished.size();
+			}
+		}
+
+
+*/
+
+
+		unordered_map<unsigned int, vector<double>> finished;
+
+
+		for (int i = 1; i <= options.swarmSize; i++){
+			//for (int mid=0; mid < options.models.size(); mid++){
+				finished.insert(make_pair(i, subparticleCurrParamSets_[i][0]));
+
+
+			//}
+
+		}
+
+
+		cout << "RAQUEL FINISHED SIZE " << finished.size() << endl;
+		cout << "vector size " << islandFinishedParticles.size() << endl;
+
+		if (finished.size()) {
+			finishedParticles.insert(finished.begin(), finished.end());
+			numFinishedParticles = finished.size();
+		}
+		int counter = 0;
+
+
+//		for(auto index = particleToIsland_.begin(); index != particleToIsland_.end(); )
+
+		for (auto particle = finishedParticles.begin(); particle != finishedParticles.end(); ++particle) {
+			// Increment the counter that tracks the number of particles finished
+			// for a given island
+			counter++;
+			cout << "counter" << counter << endl;
+			cout << "Particle first " << particle->first  << endl;
+			cout << "Particle to island " << particleToIsland_[particle->first] << endl;
+			cout << "Particle to isalnd size " << particleToIsland_.size() << endl;
+
+			islandFinishedParticles[particleToIsland_[particle->first]] += 1;
+		}
+
+
+		//Raquel, the code bellow was in part transfered to the function processParamDE()
+		//Check if this there is something that still needs to be transfered
+/*
+		// For each finished particle
+		for (auto particle = finishedParticles.begin(); particle != finishedParticles.end(); ++particle) {
+			// Increment the counter that tracks the number of particles finished
+			// for a given island
+			islandFinishedParticles[particleToIsland_.at(particle->first)] += 1;
+
+			if (options.verbosity >= 3) {
+				cout << "Particle " << particle->first << " in island " << particleToIsland_.at(particle->first) << " finished. total finished is " << numFinishedParticles << endl;
+			}
+
+			// If we're in a trial loop..
+			if (trialLoop && particle->second.size()) {
+				// Create the beginning of our param string for use in summary and result outputs
+				string paramsString = "gen" + toString(currentGeneration) + "perm" + toString(particle->first) + " ";
+
+				// Increment the flight counter only at the end of a trial
+				++flightCounter_;
+
+				bool replaceParams = false;
+
+				// If the trail sim fit is better than our current best fit, we need
+				// to replace the old fit value with the new one
+				if (particle->second[0] < particleBestFits_.at(particle->first)) {
+					particleBestFits_[particle->first] = particle->second[0];
+					insertKeyByValue(particleBestFitsByFit_, particle->second[0], particle->first);
+
+					replaceParams = true;
+				}
+
+				// Loop through parameters sent to us by the particle
+				unsigned int i = 0;
+				for (auto param = particle->second.begin() + 1; param != particle->second.end(); ++param) {
+
+					// If we need to replace old params with new ones (because fit calc
+					// was better in the trial)...
+					if (replaceParams) {
+						// Store the parameter in the global param set and
+						// concatenate the param string for output
+						particleCurrParamSets_[particle->first][i] = *param;
+						paramsString += toString(*param) + " ";
+						//cout << "added " << paramsString << endl;
+					}
+					// Otherwise, do nothing except use the current/old param
+					// set in the output
+					else {
+						paramsString += toString(particleCurrParamSets_[particle->first][i]) + " ";
+						//cout << "added: " << paramsString << endl;
+					}
+					++i;
+				}
+
+				// Insert fit values and parameters into our global trackers
+				allGenFits.insert(pair<double, string>(particleBestFits_[particle->first], paramsString));
+				swarmBestFits_.insert(pair<double, unsigned int>(particle->second[0], particle->first));
+			}
+			// If we're not in a trial loop...
+			else if (particle->second.size()){
+				// Replace old best fit value with the new one
+				particleBestFits_[particle->first] = particle->second[0];
+				insertKeyByValue(particleBestFitsByFit_, particle->second[0], particle->first);
+
+				// Loop through the params sent to us by the particle
+				unsigned int i = 0;
+				for (auto param = particle->second.begin() + 1; param != particle->second.end(); ++param) {
+					// Replace current params with the new ones and add to
+					// our output string
+					particleCurrParamSets_[particle->first][i] = *param;
+					++i;
+				}
+			}
+		}
+*/
+		finishedParticles.clear();
+		numFinishedParticles = 0;
+
+		// Done processing params. Now we need to...
+		// Check each island to see if it has completed its generation
+		for (unsigned int island = 1; island <= options.numIslands; ++island) {
+			// If the number finished in this island is equal to the total size of the island
+			if (islandFinishedParticles.at(island) == (options.swarmSize / options.numIslands)) {
+				cout << "Island " << island << " finished" << endl;
+				// Loop through the particles in the island
+				for (auto particle = islandToParticle_.at(island).begin(); particle != islandToParticle_.at(island).end(); ++particle) {
+
+					// Will hold mutated and crossed over parameter sets
+					vector<double> newParamSet;
+					// If we're not in a trial loop, we should mutate and crossover
+					if (trialLoop == false) {
+						// Create a mutation set for the particle
+						newParamSet = mutateParticleDE(*particle);
+
+						// Run crossover for the particle
+						newParamSet = crossoverParticleDE(*particle, newParamSet);
+					}
+					// If we're in a main loop, we just send the current parameter
+					// set back to the particle
+					else {
+						newParamSet = particleCurrParamSets_.at(*particle);
+					}
+
+					// Convert our param set to string for sending
+					vector<string> paramVecStr;
+					for (auto param = newParamSet.begin(); param != newParamSet.end(); ++param) {
+						paramVecStr.push_back(toString(*param));
+					}
+
+					// Send new param sets to particles for next generation
+//					swarmComm->sendToSwarm(0, *particle, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
+
+					//Raquel updated the interprocess communication, added the loop bellow
+					for(int mid = 0; mid < options.models.size(); mid++){
+						sp = fcalcsubParID(*particle, mid, options.models.size());
+						swarmComm->sendToSwarm(0, sp, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
+					}
+
+
+					// Empty our finished particle counter for the next loop
+					islandFinishedParticles[island] = 0;
+				}
+			}
+		}
+
+		//Raquel removed the trialloop thing because it was replaced by the processParamDE function
+		// Switch from trial/main loops
+		//if (trialLoop == false) {
+		//	trialLoop = true;
+
+		//	cout << "Switching to trial loop" << endl;
+		//}
+		//else {
+
+
+			// Check for stop criteria
+			stopCriteria = checkStopCriteria();
+			cout << "Stop Criteria value: " << stopCriteria << endl;
+			//Raquel printing the output summary even if we didn't reach the stop criteria
+
+			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+
+			outputRunSummary(outputPath);
+
+
+			if (!stopCriteria) {
+				// Send/receive migration sets
+				if (currentGeneration % options.migrationFrequency == 0) {
+
+					for (unsigned int island = 1; island <= options.numIslands; ++island) {
+						sendMigrationSetDE(island, islandTopology, migrationSets);
+					}
+
+					for (unsigned int island = 1; island <= options.numIslands; ++island) {
+						recvMigrationSetDE(island, migrationSets);
+					}
+				}
+
+//				string outputPath = options.jobOutputDir + toString(currentGeneration) + "_summary.txt";
+	//			outputRunSummary(outputPath);
+				//++currentGeneration;
+				//cout << "Switching to main loop" << endl;
+				//trialLoop = false;
+			}
+		//}
+	}
+
+
+
 }
 
 void Swarm::runASA() {
@@ -5235,8 +5835,9 @@ void Swarm::killAllParticles(int tag) {
 	unsigned int p, sp, mid;
 	for (p = 1; p <= options.swarmSize; ++p) {
 		//cout << "killing " << p << " with tag: " << tag << endl;
-		for(mid=0; options.models.size(); mid++){
-			sp = (p-1)*getNumModels()+ mid + 1;
+		for(mid=0; mid < options.models.size(); mid++){//Raquel modified this
+			//sp = (p-1)*getNumModels()+ mid + 1; //Raquel replaced by code bellow
+			sp = fcalcsubParID(p, mid, options.models.size());
 			//cout << "RAQUEL sending message to subPar " << sp << "message=" << tag << endl;
 			swarmComm->sendToSwarm(0, sp, tag, false, swarmComm->univMessageSender);
 		}
@@ -5595,7 +6196,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	//use functions in the Util
 	//function parse model, creates the file qith the contents of the model
 	//children
-
+	cout << "RAQUEL number of children received: " << children.size() << endl;
 	//later:
 	//where the parameters are comming from, full list of consolidate
 
@@ -6060,6 +6661,10 @@ std::vector<unsigned int> Swarm::update_finished_running_particles(){
 			}
 		}
 	}
+	cout << "updated number of finished susb" << finishedSubParticles_.size();
+	cout << "updated number of new finished subs" << NewlyFinishedParticles.size();
+
+
 	return NewlyFinishedParticles;
 }
 
@@ -6685,7 +7290,7 @@ bool Swarm::checkStopCriteria() {
 		}
 		 */
 	}
-	else if ((options.fitType == "ga" || options.fitType == "de") && options.synchronicity) {
+	else if ((options.fitType == "ga" || options.fitType == "de") ) { //Raquel removed && options.synchronicity
 		if (options.verbosity >= 3) {
 			cout << "Checking if we've reached max generation. Current is " << (currentGeneration - 1) << " and max is " << options.maxGenerations << endl;
 		}
@@ -7703,7 +8308,7 @@ vector<unsigned int> Swarm::checkMasterMessages() {
 	int numMessages = swarmComm->recvMessage(-1, 0, -1, false, swarmComm->univMessageReceiver);
 
 	if (numMessages >= 1) {
-		if (options.verbosity >= 4) {
+		if (options.verbosity >= 3) {
 			cout << "Found " << numMessages << " messages" << endl;
 		}
 

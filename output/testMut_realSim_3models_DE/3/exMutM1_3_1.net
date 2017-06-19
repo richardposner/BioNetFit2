@@ -11,10 +11,10 @@ begin parameters
     9 km1               0.460925  # Constant
    10 kp1               km1/KD1  # ConstantExpression 20.5935573228487
    11 K2RT              2.334969  # Constant
-   12 km2               0.048114  # Constant
-   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 1.12344698466e-05
-   14 kp3               kp2*0.2  # ConstantExpression 2.24689396932e-06
-   15 kphos             0.007391  # Constant
+   12 km2               0.051315  # Constant
+   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 1.19818934235e-05
+   14 kp3               kp2*0.2  # ConstantExpression 2.3963786847e-06
+   15 kphos             0.028276  # Constant
    16 kdephos           0.228324  # Constant
    17 Ligand_isPresent  1  # Constant
 end parameters
@@ -23,17 +23,17 @@ begin functions
 end functions
 begin species
     1 L(r) 1.264649400000e+05
-    2 R(Y~0,l,r) 7.411935957714e+03
+    2 R(Y~0,l,r) 7.375357824917e+03
     3 L(r!1).R(Y~0,l!1,r) 0.000000000000e+00
-    4 R(Y~0,l,r!1).R(Y~0,l,r!1) 1.220507045327e+03
+    4 R(Y~0,l,r!1).R(Y~0,l,r!1) 1.060041012750e+03
     5 L(r!1).R(Y~0,l!1,r!2).R(Y~0,l,r!2) 0.000000000000e+00
     6 L(r!1).L(r!2).R(Y~0,l!1,r!3).R(Y~0,l!2,r!3) 0.000000000000e+00
-    7 R(Y~0,l,r!1).R(Y~P,l,r!1) 6.589948852238e+01
+    7 R(Y~0,l,r!1).R(Y~P,l,r!1) 2.153380835371e+02
     8 L(r!1).R(Y~0,l!1,r!2).R(Y~P,l,r!2) 0.000000000000e+00
     9 L(r!1).R(Y~0,l,r!2).R(Y~P,l!1,r!2) 0.000000000000e+00
-   10 R(Y~P,l,r) 1.332031207776e+01
+   10 R(Y~P,l,r) 4.989844437687e+01
    11 L(r!1).L(r!2).R(Y~0,l!2,r!3).R(Y~P,l!1,r!3) 0.000000000000e+00
-   12 R(Y~P,l,r!1).R(Y~P,l,r!1) 9.653310940503e-01
+   12 R(Y~P,l,r!1).R(Y~P,l,r!1) 1.199276909607e+01
    13 L(r!1).R(Y~P,l!1,r) 0.000000000000e+00
    14 L(r!1).R(Y~P,l!1,r!2).R(Y~P,l,r!2) 0.000000000000e+00
    15 L(r!1).L(r!2).R(Y~P,l!2,r!3).R(Y~P,l!1,r!3) 0.000000000000e+00

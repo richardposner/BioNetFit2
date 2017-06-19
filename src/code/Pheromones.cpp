@@ -90,7 +90,7 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 
 			// TODO: Replace this exchange with a world_->sendrecv()
 			smessage.tag = toString(GET_RUNNING_PARTICLES);
-			//std::cout << "trying to get list of running particles.." << std::endl;
+			std::cout << "trying to get list of running particles.." << std::endl;
 			// First we need to get a list of all running particles from the master
 
 			std::string serializedMessage = serializeSwarmMessage(smessage);

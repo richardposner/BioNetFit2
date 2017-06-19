@@ -12,6 +12,6 @@ Particle	Model	Fit_Rank	Constraint_Rank	Final_Rank
 6	1	7	1	1
 6	2	8	1	1
 7	1	9	1	1
-7	2	9	1	1
-8	1	10	1	1
-8	2	10	1	1
+7	2	10	1	1
+8	1	11	1	1
+8	2	11	1	1

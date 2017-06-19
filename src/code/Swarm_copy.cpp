@@ -965,7 +965,15 @@ bool Swarm::checkStopCriteria() {
 			cout << "RAQUEL: Stopped because currentGeneration > maxGenerations" << endl;
 			return true;
 		}
-	}
+	}else if ((options.fitType == "ga") { //Raquel added
+		if (options.verbosity >= 3) {
+			cout << "Checking if we've reached max generation. Current is " << (currentGeneration - 1) << " and max is " << options.maxGenerations << endl;
+		}
+		if (options.maxGenerations && currentGeneration > options.maxGenerations) {
+			cout << "RAQUEL: Stopped because currentGeneration > maxGenerations" << endl;
+			return true;
+		}
+	}//Raquel added
 
 	// If we've run more than the maximum number of simulations
 	if (flightCounter_ >= options.maxNumSimulations) {
@@ -1774,6 +1782,83 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 	finishedParticles_.clear();
 	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
 	while (numFinishedParticles < options.swarmSize) { //razi: loop over particles, each particle includes nModels subPArticles
+
+		if (runningSubParticles_.size()< options.parallelCount) {//razi: make sure the number of subparticles don't exceed parallel count limit
+			sp++;
+			p = fcalcParID(sp, nModels);
+			mid = fcalcMID(sp, nModels);
+
+			launchSubParticle(p, mid, false);
+			//launchParticle(p, false);
+
+		}
+		// Check for any messages from particles
+		usleep(10000);
+		checkMasterMessages();
+
+		numFinishedParticles = finishedParticles_.size();
+		//cout << "RAQUEL rungeneration numFinishedParticles " << numFinishedParticles << endl;
+	}
+	finishedParticles_.clear();
+	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
+
+
+
+	/*
+	while (numFinishedParticles < options.swarmSize) { //razi: loop over particles, each particle includes nModels subPArticles
+
+		if ((runningSubParticles_.size()*nModels+nModels )<= options.parallelCount && numLaunchedParticles < options.swarmSize) {//razi: make sure subparticles don't exceed parallel count limit
+			launchParticle(p);
+			numLaunchedSubParticles += 1;
+			++p;
+		}
+
+		// Check for any messages from particles
+		usleep(10000);
+		finishedSubParticles = checkMasterMessages();
+		numFinishedSubParticles += finishedSubParticles.size();
+		finishedSubParticles.clear();
+	}
+*/
+
+	if ( options.verbosity >=3){ cout<< "running a swarm generation finished ....\n";}
+
+	if (failedParticles_.size() > (options.swarmSize - 3) ) {
+		finishFit();
+		outputError("Error: You had too many failed runs. Check simulation output (.BNG_OUT files) or adjust walltime.");
+	}
+	currentGeneration += 1;
+}
+
+
+
+
+
+void Swarm::runAsyncGeneration () {   //Raquel: added new function
+	// TODO: Implement walltime
+	unsigned int nModels = options.models.size();
+	if(options.verbosity >= 1) {
+		cout << "Running generation " << currentGeneration << " with " << options.swarmSize << " particles..." << endl;
+	}
+
+	unsigned int numFinishedParticles = 0;
+
+//	vector<unsigned int, vector<bool>> runningParticles;
+//vector<unsigned int, vector<bool>> finishedParticles;
+//	vector<unsigned int> runningSubParticles;
+//	vector<unsigned int> finishedSubParticles;
+
+	unsigned int p, mid, sp;
+
+	// razi: handle running particles that include subparticles, dont exceed parallel count
+	//we need to track number of completed particles which is not simply equal to (nModels * number of subParticles)
+	//a particle is considered completed of all its subparticles are finished. XXXX
+
+
+	sp=0;
+	finishedParticles_.clear();
+	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
+	while (numFinishedParticles < options.swarmSize/2) { //razi: loop over particles, each particle includes nModels subPArticles
 
 		if (runningSubParticles_.size()< options.parallelCount) {//razi: make sure the number of subparticles don't exceed parallel count limit
 			sp++;

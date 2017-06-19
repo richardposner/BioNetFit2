@@ -14,8 +14,8 @@ begin parameters
    12 km2               0.051315  # Constant
    13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 1.19818934235e-05
    14 kp3               kp2*0.2  # ConstantExpression 2.3963786847e-06
-   15 kphos             0.147551  # Constant
-   16 kdephos           0.228324  # Constant
+   15 kphos             0.007391  # Constant
+   16 kdephos           44.934525  # Constant
    17 Ligand_isPresent  0  # Constant
 end parameters
 begin functions

@@ -8,14 +8,14 @@ begin parameters
     6 EGF_copy_number   EGF_conc*(NA*Vecf)  # ConstantExpression 126464.94
     7 EGFR_copy_number  f*1.0e5  # ConstantExpression 10000
     8 KD1               0.006366  # Constant
-    9 km1               0.036348  # Constant
-   10 kp1               km1/KD1  # ConstantExpression 5.70970782280867
+    9 km1               55.579048  # Constant
+   10 kp1               km1/KD1  # ConstantExpression 8730.60760289036
    11 K2RT              315.316905  # Constant
    12 km2               0.019306  # Constant
    13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 0.000608750816793
    14 kp3               kp2*0.2  # ConstantExpression 0.0001217501633586
    15 kphos             0.144866  # Constant
-   16 kdephos           0.206895  # Constant
+   16 kdephos           0.014037  # Constant
    17 Ligand_isPresent  1  # Constant
 end parameters
 begin functions
@@ -23,20 +23,20 @@ begin functions
 end functions
 begin species
     1 L(r) 1.264649400000e+05
-    2 R(Y~0,l,r) 9.889066418847e+02
-    3 L(r!1).R(Y~0,l!1,r) 0.000000000000e+00
-    4 R(Y~0,l,r!1).R(Y~0,l,r!1) 1.599392070691e+03
-    5 L(r!1).R(Y~0,l!1,r!2).R(Y~0,l,r!2) 0.000000000000e+00
-    6 L(r!1).L(r!2).R(Y~0,l!1,r!3).R(Y~0,l!2,r!3) 0.000000000000e+00
-    7 R(Y~0,l,r!1).R(Y~P,l,r!1) 2.101263789787e+03
-    8 L(r!1).R(Y~0,l!1,r!2).R(Y~P,l,r!2) 0.000000000000e+00
-    9 L(r!1).R(Y~0,l,r!2).R(Y~P,l!1,r!2) 0.000000000000e+00
-   10 R(Y~P,l,r) 1.935498762404e+02
-   11 L(r!1).L(r!2).R(Y~0,l!2,r!3).R(Y~P,l!1,r!3) 0.000000000000e+00
-   12 R(Y~P,l,r!1).R(Y~P,l,r!1) 7.081158804788e+02
-   13 L(r!1).R(Y~P,l!1,r) 0.000000000000e+00
-   14 L(r!1).R(Y~P,l!1,r!2).R(Y~P,l,r!2) 0.000000000000e+00
-   15 L(r!1).L(r!2).R(Y~P,l!2,r!3).R(Y~P,l!1,r!3) 0.000000000000e+00
+    2 R(Y~0,l,r) 2.107141691124e+02
+    3 L(r!1).R(Y~0,l!1,r) 1.090568157083e-28
+    4 R(Y~0,l,r!1).R(Y~0,l,r!1) 4.402528326939e+01
+    5 L(r!1).R(Y~0,l!1,r!2).R(Y~0,l,r!2) 7.883166254977e-29
+    6 L(r!1).L(r!2).R(Y~0,l!1,r!3).R(Y~0,l!2,r!3) -1.127332060714e-44
+    7 R(Y~0,l,r!1).R(Y~P,l,r!1) 7.767046943650e+02
+    8 L(r!1).R(Y~0,l!1,r!2).R(Y~P,l,r!2) 3.116608078157e-25
+    9 L(r!1).R(Y~0,l,r!2).R(Y~P,l!1,r!2) 1.473326956633e-31
+   10 R(Y~P,l,r) 9.717423489561e+02
+   11 L(r!1).L(r!2).R(Y~0,l!2,r!3).R(Y~P,l!1,r!3) -1.783079252316e-41
+   12 R(Y~P,l,r!1).R(Y~P,l,r!1) 3.588041762841e+03
+   13 L(r!1).R(Y~P,l!1,r) 5.857770871179e-32
+   14 L(r!1).R(Y~P,l!1,r!2).R(Y~P,l,r!2) 1.604559854056e-28
+   15 L(r!1).L(r!2).R(Y~P,l!2,r!3).R(Y~P,l!1,r!3) -1.286897856922e-43
 end species
 begin reactions
     1 1,2 3 func #

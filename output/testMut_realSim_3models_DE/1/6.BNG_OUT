@@ -9,13 +9,13 @@ Read 54 reaction(s).
 WARNING: Found 'groups' block before 'observables': creating observables.
 Read 6 group(s).
 Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM1_6_1.net.
-CPU TIME: readFile 0.01 s.
+CPU TIME: readFile 0.02 s.
 ACTION: simulate( method=>"cvode" )
 Network simulation using cvode
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM1_6_1_6_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM1_6_1_6_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM1_6_1_6_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM1_6_1_6_1.net 600 1
-[simulation PID is: 26073]
+[simulation PID is: 10638]
 run_network 3.0
 Read 17 parameters
 Read 15 species
@@ -40,7 +40,7 @@ WARNING: writeFile(): Overwriting existing file /home/raquel/Posdoc_Posner/BioNe
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM1_6_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM1_6_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM1_6_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM1_6_1.net 0 5 10 15 20 25 30 35 40 45 50 55 60 60
-[simulation PID is: 26075]
+[simulation PID is: 10640]
 run_network 3.0
 Read 17 parameters
 Read 15 species
@@ -57,7 +57,7 @@ Program times:  0.00 CPU s 0.00 clock s
 Updating species concentrations from /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM1_6_1.cdat
 CPU TIME: simulate 0.00 s.
 Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM1_6_1.bngl.
-CPU TIME: total 0.02 s.
+CPU TIME: total 0.03 s.
 BioNetGen version 2.2.6
 Reading from file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM2_6_1.bngl (level 0)
 Reading from file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM2_6_1.net (level 1)
@@ -75,7 +75,7 @@ Network simulation using cvode
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM2_6_1_6_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM2_6_1_6_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM2_6_1_6_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM2_6_1_6_1.net 600 1
-[simulation PID is: 26081]
+[simulation PID is: 10650]
 run_network 3.0
 Read 18 parameters
 Read 15 species
@@ -100,7 +100,7 @@ WARNING: writeFile(): Overwriting existing file /home/raquel/Posdoc_Posner/BioNe
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM2_6_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM2_6_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM2_6_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM2_6_1.net 0 5 10 15 20 25 30 35 40 45 50 55 60 60
-[simulation PID is: 26083]
+[simulation PID is: 10652]
 run_network 3.0
 Read 18 parameters
 Read 15 species
@@ -129,13 +129,13 @@ Read 54 reaction(s).
 WARNING: Found 'groups' block before 'observables': creating observables.
 Read 6 group(s).
 Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM3_6_1.net.
-CPU TIME: readFile 0.01 s.
+CPU TIME: readFile 0.02 s.
 ACTION: simulate( method=>"cvode" )
 Network simulation using cvode
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM3_6_1_6_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM3_6_1_6_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM3_6_1_6_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM3_6_1_6_1.net 600 1
-[simulation PID is: 26089]
+[simulation PID is: 10658]
 run_network 3.0
 Read 18 parameters
 Read 15 species
@@ -160,7 +160,7 @@ WARNING: writeFile(): Overwriting existing file /home/raquel/Posdoc_Posner/BioNe
 Wrote network in net format to /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM3_6_1.net.
 Running run_network on raquel-Precision-5510
 full command: /home/raquel/Posdoc_Posner/BioNetFit/Simulators/bin/run_network_x86_64-linux -o /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM3_6_1 -p cvode -a 1e-08 -r 1e-08 --cdat 1 --fdat 0 -g /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM3_6_1.net /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM3_6_1.net 0 5 10 15 20 25 30 35 40 45 50 55 60 60
-[simulation PID is: 26091]
+[simulation PID is: 10660]
 run_network 3.0
 Read 18 parameters
 Read 15 species
@@ -177,4 +177,4 @@ Program times:  0.00 CPU s 0.00 clock s
 Updating species concentrations from /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM3_6_1.cdat
 CPU TIME: simulate 0.00 s.
 Finished processing file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim_3models_DE/1/exMutM3_6_1.bngl.
-CPU TIME: total 0.02 s.
+CPU TIME: total 0.03 s.

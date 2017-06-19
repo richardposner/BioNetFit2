@@ -382,6 +382,7 @@ private:
 	std::vector<unsigned int> update_finished_running_particles();
 #endif
 	void runGeneration();
+	void runAsyncGeneration();
 	void breedGenerationGA(std::vector<unsigned int> children = std::vector<unsigned int>());
 	void runNelderMead(unsigned int receiver, unsigned int cpu);
 	std::map<double, unsigned int> getNearestNeighbors(unsigned int it, unsigned int N);

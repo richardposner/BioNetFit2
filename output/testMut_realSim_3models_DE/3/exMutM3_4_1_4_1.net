@@ -10,12 +10,12 @@ begin parameters
     8 KD1               0.006366  # Constant
     9 km1               0.036348  # Constant
    10 kp1               km1/KD1  # ConstantExpression 5.70970782280867
-   11 K2RT              302.960627  # Constant
+   11 K2RT              315.316905  # Constant
    12 km2               0.019306  # Constant
-   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 0.0005848957864862
-   14 kp3               kp2*0.2  # ConstantExpression 0.00011697915729724
+   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 0.000608750816793
+   14 kp3               kp2*0.2  # ConstantExpression 0.0001217501633586
    15 kphos             0.144866  # Constant
-   16 kdephos           0.014037  # Constant
+   16 kdephos           44.962599  # Constant
    17 Ligand_isPresent  0  # Constant
    18 _rateLaw1         km2*0.2  # ConstantExpression 0.0038612
 end parameters

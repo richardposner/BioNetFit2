@@ -15,4 +15,4 @@ I replaced these redundant code blocks by a single function that is shared among
 
 Updated the interprocess communication for supporting multiple models, when the master sends the new parameters to be used by the subparticles (before the messages were sent only to particles, so the simulations for additional models were not executed)
 
-The run summary results were generated only when DE reached the stop criteria, I changed it so now the results summary is printed by the end of each generation
+The run summary results were generated only when DE reached the stop criteria, I changed it so now the results summary is printed by the end of each generation.
