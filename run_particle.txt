@@ -1,1 +1,0 @@
-d:/VCProjects/BioNetFit-master/bin/BioNetFit/bin/BioNetFit -t particle -p 2 -a run -g 1 -c d:/VCProjects/BioNetFit-master/0.sconf >> pOUT 2>&1 &

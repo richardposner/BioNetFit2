@@ -1,23 +1,23 @@
-# Created by BioNetGen 2.2.6
+# Created by BioNetGen 2.2.6-stable
 begin parameters
     1 f                 0.1  # Constant
     2 NA                6.02214e23  # Constant
-    3 Vecf              1.9e-9*f  # ConstantExpression 1.9e-10
+    3 Vecf              1.9e-9*f  # ConstantExpression
     4 EGF_conc_nM       1.0  # Constant
-    5 EGF_conc          EGF_conc_nM*1e-9  # ConstantExpression 1e-09
-    6 EGF_copy_number   EGF_conc*(NA*Vecf)  # ConstantExpression 114420.66
-    7 EGFR_copy_number  f*1.0e5  # ConstantExpression 10000
+    5 EGF_conc          EGF_conc_nM*1e-9  # ConstantExpression
+    6 EGF_copy_number   EGF_conc*(NA*Vecf)  # ConstantExpression
+    7 EGFR_copy_number  f*1.0e5  # ConstantExpression
     8 KD1               0.232433  # Constant
     9 km1               61.750461  # Constant
-   10 kp1               km1/KD1  # ConstantExpression 265.669939294334
+   10 kp1               km1/KD1  # ConstantExpression
    11 K2RT              109.932551  # Constant
    12 km2               295.042208  # Constant
-   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression 3.24347425781126
-   14 kp3               kp2*0.2  # ConstantExpression 0.648694851562252
+   13 kp2               (K2RT*km2)/EGFR_copy_number  # ConstantExpression
+   14 kp3               kp2*0.2  # ConstantExpression
    15 kphos             0.015322  # Constant
    16 kdephos           49.956885  # Constant
    17 Ligand_isPresent  1  # Constant
-   18 _rateLaw1         km2*0.2  # ConstantExpression 59.0084416
+   18 _rateLaw1         km2*0.2  # ConstantExpression
 end parameters
 begin functions
     1 func() kp1*Ligand_isPresent

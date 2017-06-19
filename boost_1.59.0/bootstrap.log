@@ -7,19 +7,19 @@ gcc -o bootstrap/jam0 command.c compile.c constants.c debug.c execcmd.c frames.c
 execcmd.c: In function ‘onintr’:
 execcmd.c:120:5: warning: implicit declaration of function ‘out_printf’ [-Wimplicit-function-declaration]
      out_printf( "...interrupted\n" );
-     ^
+     ^~~~~~~~~~
 make.c: In function ‘make’:
 make.c:132:13: warning: implicit declaration of function ‘out_printf’ [-Wimplicit-function-declaration]
              out_printf( "...found %d target%s...\n", counts->targets,
-             ^
+             ^~~~~~~~~~
 make.c: In function ‘make0’:
 make.c:735:13: warning: implicit declaration of function ‘out_flush’ [-Wimplicit-function-declaration]
              out_flush();
-             ^
+             ^~~~~~~~~
 modules/path.c: In function ‘path_exists’:
 modules/path.c:16:12: warning: implicit declaration of function ‘file_query’ [-Wimplicit-function-declaration]
      return file_query( list_front( lol_get( frame->args, 0 ) ) ) ?
-            ^
+            ^~~~~~~~~~
 ./bootstrap/jam0 -f build.jam --toolset=gcc --toolset-root= clean
 ...found 1 target...
 ...updating 1 target...
@@ -32,14 +32,14 @@ modules/path.c:16:12: warning: implicit declaration of function ‘file_query’
 execcmd.c: In function ‘onintr’:
 execcmd.c:120:5: warning: implicit declaration of function ‘out_printf’ [-Wimplicit-function-declaration]
      out_printf( "...interrupted\n" );
-     ^
+     ^~~~~~~~~~
 make.c: In function ‘make’:
 make.c:132:13: warning: implicit declaration of function ‘out_printf’ [-Wimplicit-function-declaration]
              out_printf( "...found %d target%s...\n", counts->targets,
-             ^
+             ^~~~~~~~~~
 modules/path.c: In function ‘path_exists’:
 modules/path.c:16:12: warning: implicit declaration of function ‘file_query’ [-Wimplicit-function-declaration]
      return file_query( list_front( lol_get( frame->args, 0 ) ) ) ?
-            ^
+            ^~~~~~~~~~
 [COPY] bin.linuxx86_64/bjam
 ...updated 2 targets...

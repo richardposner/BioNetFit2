@@ -1,6 +1,6 @@
 /*============================================================================
 // Name        : Utils.cpp
-// Authors     : Brandon Thomas, Abolfazl Razi
+// Authors     : Brandon Thomas, Abolfazl Razi, Alex Ionkov
 // Version     : 2.0
 // Lat Update: : 2017-01-7
 // Copyright   :
@@ -13,7 +13,7 @@
 using namespace boost::filesystem;
 using namespace std;
 
-
+string executableName;
 
 
 
@@ -24,6 +24,43 @@ void mypause(){
 	int ii;
 	cin>>ii;
 }
+/*
+void SetExecName(char *argv0) {
+        path full_path = system_complete( path(argv0) );
+
+        executableName = full_path.string();
+}
+
+string GetExecName() {
+	return executableName;
+}
+
+string GetExecPath(void) {
+        path full_path = system_complete( path(executableName) );
+
+        //Without file name
+        return full_path.stem().string();
+}
+
+string GetCurrentPath(void) {
+        path full_path(current_path());
+
+        //Without file name
+        return full_path.stem().string();
+}
+*/
+string convertToAbsPath(string relPath) {
+        path fullPath;
+
+        try{
+                fullPath = canonical(relPath);
+        }
+        catch(...){}
+
+        return fullPath.string();
+}
+
+/*
 string mainpath(){  //razi addede
 	string curdirstr;
 	#ifdef WIN_VER
@@ -63,7 +100,7 @@ bool  CheckFullPath(string inputpath){ //razi: check whether or not in canonical
 }
 
 string tolinux(string inputpath){   //razi: replace \ with /
-	std::replace(inputpath.begin(), inputpath.end(), '\\', '\/');
+	std::replace(inputpath.begin(), inputpath.end(), '\\', '/');
 	return inputpath;
 }
 
@@ -75,14 +112,14 @@ string removeDoubleSlash(string inputpath){   //razi: remove last \ or /
 
 
 string removeLastSlash(string inputpath){   //razi: remove last \ or /
-	if ((inputpath.substr(inputpath.size()-1,1)=="\\") || (inputpath.substr(inputpath.size()-1,1)=="\/"))
+	if ((inputpath.substr(inputpath.size()-1,1)=="\\") || (inputpath.substr(inputpath.size()-1,1)=="/"))
 		return inputpath.substr(0,inputpath.size()-1);
 	else
 		return inputpath;
 }
 
 string addLastSlash(string inputpath){   //razi: remove last \ or /
-	if ((inputpath.substr(inputpath.size()-1,1)!="\\") && (inputpath.substr(inputpath.size()-1,1)!="\/"))
+	if ((inputpath.substr(inputpath.size()-1,1)!="\\") && (inputpath.substr(inputpath.size()-1,1)!="/"))
 		return inputpath+"/";
 	else
 		return inputpath;
@@ -132,8 +169,10 @@ string convertToAbsPath(string relPath) {
 	}else{
 		return(fullPath);
 	}
-}
 
+	return fullPath;
+}
+*/
 int generate_gdat_file(string exp_file, string gdat_path, int seed){ //razi added to generate artificial gdat files
 	//read exp-file
 	//copy to gdat file

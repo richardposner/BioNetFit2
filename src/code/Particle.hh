@@ -73,7 +73,7 @@ public:
 	bool checkMessagesDE(unsigned int mid);
 	void checkMessagesGenetic(){checkMessagesGenetic(0);}
 	void checkMessagesPSO(){checkMessagesPSO(0);}
-	bool checkMessagesDE(){checkMessagesDE(0);}
+	bool checkMessagesDE(){ return checkMessagesDE(0);}
 	void calculateFit(bool local, unsigned int mid);
 	void finalizeSim(unsigned int mid);
 	void smoothRuns(unsigned int mid);
@@ -147,7 +147,7 @@ public:
 class subParticle{
 public:
 	subParticle(Particle * p, unsigned int modelId, unsigned int subParID);
-	setParent(Particle * p) {parParticle = p;}
+	void setParent(Particle * p) {parParticle = p;}
 	void runModel(unsigned int iteration, bool localSearch);
 	void setModel(unsigned int mid);
 	Particle * parParticle; //razi: model id startuing from 0

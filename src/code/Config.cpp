@@ -1,6 +1,6 @@
 /*============================================================================
 // Name        : Config.cpp
-// Authors     : Brandon Thomas, Abolfazl Razi
+// Authors     : Brandon Thomas, Abolfazl Razi, Alex Ionkov
 // Version     : 2.0
 // Last Update : 2017-01-15
 // Copyright   :
@@ -16,11 +16,13 @@
 #include <boost/filesystem.hpp>
 
 using namespace std;
+namespace fs = boost::filesystem;
 
 Config::Config(string configFile) {
 	swarm_ = 0;
 	verbose=false; //razi added
 	configPath_ = convertToAbsPath(configFile);
+	cout << "*** configFile: " << configPath_ << endl;
 }
 
 
@@ -32,6 +34,8 @@ int Config::printDetails(){ //razi added for debugging
 //	else{
 //		cout<<"No Details for config file: "<< configPath_ <<", Swarm object has not created yet !!! "<<endl;
 //	}
+
+	return 0;
 }
 
 
@@ -48,7 +52,7 @@ Swarm * Config::createSwarmFromConfig () {
 	unordered_multimap<string,string>::iterator piter; //razi added
 
 	swarm_->setConfigPath(configPath_);
-
+	fs::path cpath(configPath_);
 
 
 
@@ -109,7 +113,9 @@ Swarm * Config::createSwarmFromConfig () {
 	if(pairs.find("model") != pairs.end()) {
 		cout << "Processing models include:" << pairs.find("model")->second<< endl;
 #ifdef VER2
-		swarm_->setModels(pairs.find("model")->second, true);
+		
+
+		swarm_->setModels(cpath.parent_path().string(), pairs.find("model")->second, true);
 #else
 		swarm_->setModel(pairs.find("model")->second);
 #endif
@@ -138,9 +144,19 @@ Swarm * Config::createSwarmFromConfig () {
 		if (pairs.find("bng_command")->second.find("random")!=std::string::npos){
 			swarm_->options.bngCommand = pairs.find("bng_command")->second;
 		}else{//do for all simulators except random
-			swarm_->options.bngCommand = convertToAbsPath(pairs.find("bng_command")->second);
-			if (!checkIfFileExists(swarm_->options.bngCommand)) {
+			string bngcmd = pairs.find("bng_command")->second;
+			string abspath = convertToAbsPath(bngcmd);
+			if (!checkIfFileExists(abspath)) {
+				//swarm_->outputError("Error: The specified bng command: " + swarm_->options.bngCommand + " does not exist. Quitting.");
+				char *bnfroot = getenv("BNFROOT");
+				if (bnfroot != NULL) {
+					fs::path bnfr(bnfroot);
+					abspath = (bnfr / fs::path(bngcmd)).string();
+					swarm_->options.bngCommand = abspath;
+				} 
+				else {
 				swarm_->outputError("Error: The specified bng command: " + swarm_->options.bngCommand + " does not exist. Quitting.");
+				}
 			}
 		}
 	}
@@ -264,9 +280,11 @@ Swarm * Config::createSwarmFromConfig () {
                 	}
        		}
 		swarm_->options.outputDir = convertToAbsPath(pairs.find("output_dir")->second);
+#if 0
 #ifdef VER2
 		swarm_->options.outputDir = tolinux(swarm_->options.outputDir);    //razi added for consistency between Linux and Windows
 		swarm_->options.outputDir = removeLastSlash(swarm_->options.outputDir);  //razi added later check for linux, works for windows
+#endif
 #endif
 	}
 
@@ -457,6 +475,13 @@ Swarm * Config::createSwarmFromConfig () {
 		swarm_->options.randParamsProbability = stof(pairs.find("rand_params_probability")->second);
 	}
 
+	/////////////////////////RAQUEL adding weight parameter for ranking models by constraint/////////////////////
+
+	if(pairs.find("constraint_weight") != pairs.end()) {
+		swarm_->options.constraintWeight = stof(pairs.find("constraint_weight")->second);
+	}
+
+
 #ifdef VER2
 	swarm_->consolidate_model_params();
 #endif
@@ -527,7 +552,7 @@ std::pair <std::unordered_multimap<string,string>::iterator, std::unordered_mult
 #ifdef VER2   //razi added to include multiple exp and bngl files in the swarm object, [one exp file per model to avoid ambiguity] 2017-1-7
 	if(pairs.find("exp_file") != pairs.end()){
 		if(verbose) cout<<"Config::createSwarmFromConfig: EXPs files: "<<pairs.find("exp_file")->second<<".\n";
-		swarm_->setExpPath(pairs.find("exp_file")->second,-1);
+		swarm_->setExpPath(cpath.parent_path().string(),pairs.find("exp_file")->second,-1);
 	}
 #else
 

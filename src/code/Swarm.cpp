@@ -13,6 +13,7 @@
 
 using namespace std;
 using namespace std::chrono;
+namespace fs = boost::filesystem;
 
 Swarm::Swarm() {
 
@@ -391,7 +392,7 @@ void Swarm::setsConf(std::string sConf, unsigned int mid){  //razi added
 //	}
 }
 
-void Swarm::setExpPath(std::string path, int mid){
+void Swarm::setExpPath(std::string prefixPath, std::string path, int mid){
 
 /*   old ver, just one exp file for each model
 	std::vector<string> paths;
@@ -416,15 +417,19 @@ void Swarm::setExpPath(std::string path, int mid){
 
 	std::vector<string> Paths;
 	std::vector<string> absPaths;
+	fs::path prefix(prefixPath);
 	string expfile;
 	Paths = split_string(path, ",");
 
 	if (mid==-1){ //razi: means that each file is for one model [in the sqame order]
 
 		for(int i=0; i< Paths.size(); ++i){
+			fs::path path(Paths.at(i));
+			fs::path abspath = prefix / path;
+
 			absPaths.clear();
-			expfile = convertToAbsPath(Paths.at(i));
-cout<<"exp file found"<<expfile<< " set for model:"<<i<<endl;
+			expfile = abspath.string();
+cout<<"*** exp file found"<<expfile<< " set for model:"<<i<<endl;
 			absPaths.push_back(expfile);
 			expPaths_.insert(make_pair(i, absPaths));
 			addExp(expfile, i);
@@ -436,8 +441,12 @@ cout<<"exp file found"<<expfile<< " set for model:"<<i<<endl;
 		if((mid>=0)&&(mid < options.models.size())){
 			absPaths.clear();
 			for(int i=0; i< Paths.size(); ++i){
-				expfile = convertToAbsPath(Paths.at(i));
+				fs::path path(Paths.at(i));
+				fs::path abspath = prefix / path;
+
+				expfile = abspath.string();
 				absPaths.push_back(expfile);
+cout<<"*** exp file found"<<expfile<<endl;
 				if (options.verbosity >= 3){ cout<<"Swarm::setExpPath try to add  File:"<< expfile <<endl;}
 				addExp(expfile, mid);
 				if (options.verbosity >=3) cout<<"Exp["<<i<<"]  :"<<expfile <<" is added to the list of exp files for model:"<<mid<<".\n";
@@ -452,18 +461,21 @@ cout<<"exp file found"<<expfile<< " set for model:"<<i<<endl;
 
 
 
-void Swarm::setModels(std::string path, bool overwrite){
+void Swarm::setModels(std::string pathPrefix, std::string path, bool overwrite){
 	std::vector<string> paths;
+	fs::path prefix(pathPrefix);
 
 	if(overwrite)
 		this->options.models.clear();
 
-	if  (options.verbosity >= 3) cout<<"Swarm::setModel:  processing model files:"<<path<<endl;
+	if  (options.verbosity >= 3) cout<<"Swarm::setModels:  processing model files:"<<path<<endl;
 	paths = split_string(path, ",");
 	for(int i=0; i< paths.size(); ++i){
+		fs::path path(paths.at(i));
+		fs::path abspath = prefix / path;
 
-		setModel(paths.at(i), i, overwrite);
-		if (options.verbosity >=3) cout<<"Model["<<i<<"]  :"<<paths.at(i)<<" is added to the list of models.\n";
+		setModel(abspath.string(), i, overwrite);
+		if (options.verbosity >=3) cout<<"Model["<<i<<"]  :"<<paths.at(i)<<" is added to the list of models.\n" << endl;
 	}
 	check_model_consistency(options.models);
 	//this->options.model = this->options.models.at(0); //set the first model as the basic model for backward comaptibility
@@ -472,6 +484,7 @@ void Swarm::setModels(std::string path, bool overwrite){
 void Swarm::setModel(std::string path, int mid, bool overwrite){
 	std::string modelfile = convertToAbsPath(path);
 	unsigned int  nmodel=getNumModels();
+
 	if (mid == nmodel){
 		this->options.models.push_back(new Model(this, modelfile));  //add to the end
 		if(options.verbosity >=4) cout<<" Model["<< mid<<"]: "<<path<<" is appended to the list of models."<<endl;
@@ -1776,6 +1789,90 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 }
 
 
+
+
+
+
+
+//Raquel added this function
+void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, double fit) {
+	unsigned int mid = fcalcMID(subParID,options.models.size());
+	unsigned int pID = fcalcParID(subParID,options.models.size());
+
+	if (options.verbosity >= 3) {
+		cout << "Processing finished params for particle " << pID << " subParticle:" << subParID<<"  with fit of " << fit << endl;
+	}
+
+	unsigned int i = 0;
+
+	//razi: TODO: modify, the params order is based on free parameters in the corresonding model, reorder based on the global list
+
+	//outputError("Needs modifications: for models that have different numbers of free parameters, we need to check if the values are in the correct order.");
+
+	// If this is the particle's first iteration, we need to store its params
+	if (particleIterationCounter_[pID][0] == 1) {   //razi: later check consistency, models parameters
+		//cout << "Storing " << params.size() << " params for particle " << pID << endl;
+		for (auto param = params.begin(); param != params.end(); ++param) {
+			cout << *param << endl;
+			particleCurrParamSets_[pID][i] = *param;
+
+			//Raquel added: now parameters for subparticles are processed as well
+			for(int mid=0; mid < options.models.size(); mid++){
+				subparticleCurrParamSets_[pID][mid][i] = *param;
+			}
+
+			++i;
+		}
+	}
+
+	// The the fit value of this param set is less than the particles best fit
+	// we should update the particle's best fit, then store the best fit params
+	if (particleBestFits_.at(pID) == 0 || fit < particleBestFits_.at(pID)) {
+		if (options.verbosity >= 3) {
+			cout << "Updating best fit and params for particle " << pID << endl;
+		}
+
+		// Insert into best fit lists, erasing in the case of the map with fits as keys
+		particleBestFits_[pID] = fit;
+
+		map<double, unsigned int>::iterator toDelIt = particleBestFitsByFit_.end();
+		cout << "looping fits" << endl;
+
+		for (auto it = particleBestFitsByFit_.begin(); it != particleBestFitsByFit_.end(); ++it) {
+			//cout << "loop: " << it->second << endl;
+			if (it->second == pID) {
+				//cout << "Erasing old best fit for particle " << pID << endl;
+				toDelIt = it;
+				//it = particleBestFitsByFit_.erase(it);
+			}
+		}
+		cout << "seting new fit value" << endl;
+		if (toDelIt != particleBestFitsByFit_.end()) {
+			particleBestFitsByFit_.erase(toDelIt);
+
+		}
+		cout << "done" << endl;
+		particleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));
+
+		//unsigned int i = 0;
+		//for (auto param = params.begin(); param != params.end(); ++param) {
+		//	cout << "Updating best param for particle " << pID << ": " << *param << endl;
+		//	particleBestParamSets_[pID][i] = *param;
+		//	++i;
+		//}
+
+
+		cout << "updating params" << endl;
+		for(int mid = 0; mid < options.models.size(); mid++){
+			update_cur_particle_params(pID, mid, true);
+		}
+		cout << "done" << endl;
+
+	}
+}
+
+
+
 void Swarm::launchParticle(unsigned int pID, bool nextGen) {
 	//run all subparticles associated with different models
 	for(int mid=0; mid<options.models.size(); ++mid)
@@ -2239,6 +2336,10 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 			if (options.fitType == "pso") {
 				processParamsPSO(paramsVec, subParID, fitCalc);
 			}
+
+			if (options.fitType == "de") {
+				processParamsDE(paramsVec, subParID, fitCalc);
+			}
 		}
 
 		// TODO: When sending NEXT_GENERATION, make sure failed particles have actually run again. If not, they need re-launched.
@@ -2317,7 +2418,7 @@ unordered_map<unsigned int, vector<double>> Swarm::checkMasterMessagesDE() {
 
 	unsigned int pID, subParID, mid, newlyFinishedParticles=0;
 	if (options.verbosity >= 3) { //razi: TODO test for multiple models
-		cout << "Checking messages DE, may need some modifications/test to support sbParticle" << endl;
+		//cout << "Checking messages DE, may need some modifications/test to support sbParticle" << endl;
 	}
 
 	unordered_map<unsigned int, vector<double>> subParticleParams;
@@ -3164,10 +3265,12 @@ void Swarm::runSPSO() {
 				// Check for stop criteria
 				stopCriteria = checkStopCriteria();
 				cout << "Stop Criteria value: " << stopCriteria << endl;
+				string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+
+				outputRunSummary(outputPath);
 
 
 		if (!stopCriteria) {
-			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
 
 
 			//for(int i=1; i <= options.swarmSize; i++){//
@@ -3175,7 +3278,6 @@ void Swarm::runSPSO() {
 			//		subparticleCurrParamSets_[i][j] = particleCurrParamSets_[i];
 			//	}
 			//}
-			outputRunSummary(outputPath);
 
 
 
@@ -3225,6 +3327,9 @@ void Swarm::runSDE() {
 				particleToIsland_[currParticle] = i;
 				islandToParticle_[i][p] = currParticle;
 				cout << i << " " << p << " " << islandToParticle_[i][p] << endl;
+
+				cout << "Particle to island " << particleToIsland_[currParticle] << endl;
+				cout << "currPar " << currParticle << endl;
 				++currParticle;
 			}
 		}
@@ -3232,19 +3337,63 @@ void Swarm::runSDE() {
 
 	saveSwarmState();
 
-	if (options.verbosity >= 3) {
-		cout << "Launching first generation" << endl;
-	}
+	//if (options.verbosity >= 3) {
+	//	cout << "Launching first generation" << endl;
+	//}
 
 	unordered_map<unsigned int, vector<double>> finishedParticles;
 	bool stopCriteria = false;
-	unsigned int numFinishedParticles = 0;
 	vector<unsigned int> islandFinishedParticles(options.numIslands + 1, 0);
+
 	map<unsigned int, vector<vector<double>>> migrationSets;
 
 	bool trialLoop = false;
+
+
+
+
+	//saveSwarmState();
+	string path; //Raquel added
+	//vector<unsigned int> finishedParticles;
+	//vector<unsigned int> particlestoProcess;
+
+
+	int numFinishedParticles = 0;
+
+	unsigned int p = 1;
+	int mid; //Raquel added
+	int sp = 0; //Raquel added
+	int nModels = options.models.size(); //Raquel added
+
+
+
+
 	while(!stopCriteria) {
 
+
+		numFinishedParticles = options.swarmSize;
+
+		//cout << "RAQUEL: starting runGeneration" << endl;
+		runGeneration();
+		usleep(250000);
+
+		saveSwarmState();
+		//cout << "RAQUEL: finished saveSwarmState" << endl;
+
+		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
+		if (options.deleteOldFiles) {
+			//cout << "RAQUEL: starting cleanupFiles" << endl;
+
+			cleanupFiles(currentDirectory.c_str());
+			//cout << "RAQUEL: finished cleanupFiles" << endl;
+
+		}
+
+
+
+
+
+/* Raquel replaced this block by the code above
 		// Generation loop
 		unsigned int p = 1;
 		while (numFinishedParticles < options.swarmSize) {
@@ -3261,6 +3410,51 @@ void Swarm::runSDE() {
 			}
 		}
 
+
+*/
+
+
+		unordered_map<unsigned int, vector<double>> finished;
+
+
+		for (int i = 1; i <= options.swarmSize; i++){
+			//for (int mid=0; mid < options.models.size(); mid++){
+				finished.insert(make_pair(i, subparticleCurrParamSets_[i][0]));
+
+
+			//}
+
+		}
+
+
+		cout << "RAQUEL FINISHED SIZE " << finished.size() << endl;
+		cout << "vector size " << islandFinishedParticles.size() << endl;
+
+		if (finished.size()) {
+			finishedParticles.insert(finished.begin(), finished.end());
+			numFinishedParticles = finished.size();
+		}
+		int counter = 0;
+
+
+//		for(auto index = particleToIsland_.begin(); index != particleToIsland_.end(); )
+
+		for (auto particle = finishedParticles.begin(); particle != finishedParticles.end(); ++particle) {
+			// Increment the counter that tracks the number of particles finished
+			// for a given island
+			counter++;
+			cout << "counter" << counter << endl;
+			cout << "Particle first " << particle->first  << endl;
+			cout << "Particle to island " << particleToIsland_[particle->first] << endl;
+			cout << "Particle to isalnd size " << particleToIsland_.size() << endl;
+
+			islandFinishedParticles[particleToIsland_[particle->first]] += 1;
+		}
+
+
+		//Raquel, the code bellow was in part transfered to the function processParamDE()
+		//Check if this there is something that still needs to be transfered
+/*
 		// For each finished particle
 		for (auto particle = finishedParticles.begin(); particle != finishedParticles.end(); ++particle) {
 			// Increment the counter that tracks the number of particles finished
@@ -3332,7 +3526,7 @@ void Swarm::runSDE() {
 				}
 			}
 		}
-
+*/
 		finishedParticles.clear();
 		numFinishedParticles = 0;
 
@@ -3368,7 +3562,14 @@ void Swarm::runSDE() {
 					}
 
 					// Send new param sets to particles for next generation
-					swarmComm->sendToSwarm(0, *particle, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
+//					swarmComm->sendToSwarm(0, *particle, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
+
+					//Raquel updated the interprocess communication, added the loop bellow
+					for(int mid = 0; mid < options.models.size(); mid++){
+						sp = fcalcsubParID(*particle, mid, options.models.size());
+						swarmComm->sendToSwarm(0, sp, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
+					}
+
 
 					// Empty our finished particle counter for the next loop
 					islandFinishedParticles[island] = 0;
@@ -3376,15 +3577,26 @@ void Swarm::runSDE() {
 			}
 		}
 
+		//Raquel removed the trialloop thing because it was replaced by the processParamDE function
 		// Switch from trial/main loops
-		if (trialLoop == false) {
-			trialLoop = true;
+		//if (trialLoop == false) {
+		//	trialLoop = true;
 
-			cout << "Switching to trial loop" << endl;
-		}
-		else {
-			// Only want to check stop criteria at end of trial set
+		//	cout << "Switching to trial loop" << endl;
+		//}
+		//else {
+
+
+			// Check for stop criteria
 			stopCriteria = checkStopCriteria();
+			cout << "Stop Criteria value: " << stopCriteria << endl;
+			//Raquel printing the output summary even if we didn't reach the stop criteria
+
+			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+
+			outputRunSummary(outputPath);
+
+
 			if (!stopCriteria) {
 				// Send/receive migration sets
 				if (currentGeneration % options.migrationFrequency == 0) {
@@ -3398,13 +3610,13 @@ void Swarm::runSDE() {
 					}
 				}
 
-				string outputPath = options.jobOutputDir + toString(currentGeneration) + "_summary.txt";
-				outputRunSummary(outputPath);
-				++currentGeneration;
-				cout << "Switching to main loop" << endl;
-				trialLoop = false;
+//				string outputPath = options.jobOutputDir + toString(currentGeneration) + "_summary.txt";
+	//			outputRunSummary(outputPath);
+				//++currentGeneration;
+				//cout << "Switching to main loop" << endl;
+				//trialLoop = false;
 			}
-		}
+		//}
 	}
 }
 
@@ -4449,68 +4661,7 @@ void Swarm::outputRunSummary(string outputPath) {
 		outputFile.precision(8);
 		outputFile.setf(ios::scientific);
 
-		// Output first two fields of header
-		//outputFile << left << setw(16) << "Fit" << left << setw(16) << "Iteration";
 
-		//Raquel: starting new code that I made to fix the alignment problem
-		//Raquel: this loop will go through all models, particles, parameters, and parameter values, associating them correctly in a new map
-
-/*	if(options.fitType == "pso") {
-
-		paramCounter = 0;
-		 for (unsigned int i=0; i< options.models.size(); i++ ){//loops through models
-			 cout<<" Model ["<<i<<"]: " << options.models.at(i)->getName()<<endl<<"              ";
-			 counter = 0;
-
-
-
-		 	 for (auto it1 = options.models.at(i)->freeParams_.begin(); it1 != options.models.at(i)->freeParams_.end(); ++it1){//loop through parameters
-
-		 		    cout<<" Free Parameter: " << it1->first << endl;
-
-		 		    if((find(paramList.begin(), paramList.end(), it1->first)) == paramList.end()){
-		 		    	paramList.insert(paramList.end(), it1->first);
-		 		    	paramCounter++;
-
-		 		    }
-		 		    particleCounter = 0;
-
-		 		    for(auto it2 = subparticleCurrParamSets_.begin(); it2!=subparticleCurrParamSets_.end(); ++it2){//loops through subparticle IDs
-		 		    	particleCounter++;
-
-		 		    	parID = fcalcParID(particleCounter, options.models.size());
-
-		 		      	for(auto it3 = it2->second.begin(); it3 != it2->second.end(); ++it3){//loops through model IDs
-		 		    		//if(it3->first==i){
-
-
-		 		    		//}
-		 		      		paramIndex=0;
-		 		    		for (auto param = particleCurrParamSets_.at(parID).begin(); param != particleCurrParamSets_.at(parID).end(); ++param) {
-		 		    			if(paramIndex==counter){
-		 		    				alignedResults[it2->first][i][it1->first] = *param;
-
-		 		    				paramString = toString(particleCurrParamSets_[parID][counter]);
-
-			 		    			if (options.verbosity >=3){
-			 		    				cout << "parameter for particle for PSO " <<  parID  << " : "  << paramString << endl;
-			 		    			}
-		 		    			}
-
-		 		    			// Particle -> Model -> Parameter -> value
-		 		    			paramIndex++;
-		 		    		}
-		 		    	}
-
-		 		    }
-					counter++; //free param counter
-		 	 }
-			 cout << endl;
-		 }
-
-
-	}
-*/
 	if(options.fitType == "ga" || options.fitType == "pso") {
 
 
@@ -4732,7 +4883,7 @@ int fpid;
 
 
 		 vector<pair<int,float>> finalScore;
-		 float weight = 0.90;
+		 float weight = 1-options.constraintWeight;
 		 float scoreTmp = 0;
 
 
@@ -4746,7 +4897,7 @@ int fpid;
 
 				 if(subParRankCons[i].first == subParRankFit[j].first){
 
-					 scoreTmp = (subParRankCons[i].second + (subParRankFit[j].second * 0.90));
+					 scoreTmp = (subParRankCons[i].second + (subParRankFit[j].second * weight));
 					 finalScore.push_back(make_pair(subParRankCons[i].first, scoreTmp));
 
 				 }
@@ -5119,7 +5270,7 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 	unsigned int particlesPerIsland = 0;
 
 	if (options.fitType == "de") {
-		currIsland = particleToIsland_.at(particle);
+		currIsland = particleToIsland_[particle]; //Raquel changed, was .at(particle)
 		particlesPerIsland = options.swarmSize / options.numIslands;
 	}
 
@@ -5138,11 +5289,15 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 	if (options.mutateType == 1) {
 		int bestParticle = 0;
 		for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
+			cout << "Raquel setting particle to island value" << endl;
 			if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+				cout << "Raquel setting particle to island value done" << endl;
+
 				bestParticle = fitVal->second;
 				//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
 				break;
 			}
+
 		}
 
 		vector<double> bestParamSet = particleCurrParamSets_.at(bestParticle);
@@ -7243,11 +7398,18 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int pID, double fi
 				toDelIt = it;
 			}
 		}
-		if (toDelIt != particleBestFitsByFit_.end()) {
-			particleBestFitsByFit_.erase(toDelIt);
+		//if (toDelIt != particleBestFitsByFit_.end()) {
+		//	particleBestFitsByFit_.erase(toDelIt);
+		//}
+		if (options.verbosity >= 3) {
+			cout << "Overwriting toDelIt " << pID << endl;
 		}
+		//particleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));
+		particleBestFits_.at(pID) = fit;
 
-		particleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));
+		if (options.verbosity >= 3) {
+			cout << "Erasing toDelIt " << pID << endl;
+		}
 
 		unsigned int i = 0;
 		for (auto param = params.begin(); param != params.end(); ++param) {

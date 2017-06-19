@@ -86,8 +86,8 @@ public:
 
 #ifdef VER2	//razi added to support multiple files
 	void addExp(std::string path, int mid);
-	void setExpPath(std::string path, int mid);  //call addExp
-	void setModels(std::string path, bool overwrite);
+	void setExpPath(std::string prefixPath, std::string path, int mid);  //call addExp
+	void setModels(std::string prefixPath, std::string path, bool overwrite);
 	void setModel(std::string path, int mid, bool overwrite);
 
 	std::string getModelName(unsigned int modelId, bool FullPath); //std::string getModelPath(unsigned int modelId) {return modelPaths_.at(modelId);} //std::string getModel(unsigned int modelId);
@@ -124,7 +124,7 @@ public:
 	void setsConf(std::string sConf, unsigned int mid);
 	std::string getsConf(unsigned int mid) { return sConf_.at(mid); }
 
-	vector<pair<int,float>> Swarm::resultChecking(); //Raquel: result checking function added
+	vector<pair<int,float>> resultChecking(); //Raquel: result checking function added
 
 #else
 	void addExp(std::string path);
@@ -203,6 +203,7 @@ public:
 		std::vector<Model *> models; 			// the model files
 		int defaultModel;
 		std::map<int,string> constraints_; //Raquel: added constraint options support
+		float constraintWeight = 1; //Raquel: added constraint weight option support
 #else
 		Model * model; 			// the model file
 #endif
@@ -406,6 +407,8 @@ private:
 	double calcParticleWeight(unsigned int particle);
 	double calcWeightedAveragePosition();
 	void processParamsPSO(std::vector<double> &params, unsigned int pID, double fit);
+	void processParamsDE(std::vector<double> &params, unsigned int pID, double fit);
+
 	bool checkStopCriteria();
 	void updateInertia();
 	void updateContractionExpansionCoefficient();

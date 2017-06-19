@@ -12,4 +12,14 @@ module config-cache {
   set "ac-library-zlib-<address-model>64-<architecture>x86-<link>shared-<target-os>linux-<toolset-gcc:version>5.4.0-<toolset>gcc" : "%default" "z" "<link>shared" ;
   set "has_icu builds-<address-model>64-<architecture>x86-<target-os>linux-<toolset-gcc:version>5.4.0-<toolset>gcc" : "true" ;
   set "ac-library-zlib-<address-model>64-<architecture>x86-<link>static-<target-os>linux-<toolset-gcc:version>5.4.0-<toolset>gcc" : "%default" "z" "<link>static" ;
+  set "32-bit-<target-os>linux-<toolset-gcc:version>6.2.0-<toolset>gcc" : "false" ;
+  set "64-bit-<target-os>linux-<toolset-gcc:version>6.2.0-<toolset>gcc" : "true" ;
+  set "arm-<target-os>linux-<toolset-gcc:version>6.2.0-<toolset>gcc" : "false" ;
+  set "mips1-<target-os>linux-<toolset-gcc:version>6.2.0-<toolset>gcc" : "false" ;
+  set "power-<target-os>linux-<toolset-gcc:version>6.2.0-<toolset>gcc" : "false" ;
+  set "sparc-<target-os>linux-<toolset-gcc:version>6.2.0-<toolset>gcc" : "false" ;
+  set "x86-<target-os>linux-<toolset-gcc:version>6.2.0-<toolset>gcc" : "true" ;
+  set "ac-library-zlib-<address-model>64-<architecture>x86-<link>shared-<target-os>linux-<toolset-gcc:version>6.2.0-<toolset>gcc" : "%default" "z" "<link>shared" ;
+  set "has_icu builds-<address-model>64-<architecture>x86-<target-os>linux-<toolset-gcc:version>6.2.0-<toolset>gcc" : "false" ;
+  set "ac-library-zlib-<address-model>64-<architecture>x86-<link>static-<target-os>linux-<toolset-gcc:version>6.2.0-<toolset>gcc" : "%default" "z" "<link>shared" ;
 }

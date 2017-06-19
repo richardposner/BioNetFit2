@@ -659,7 +659,11 @@ if (swarm_->options.verbosity >= 3) cout<<"doParticle-4 now lets check messages.
 
 		}
 		else if (swarm_->options.fitType == "de") {
-			checkMessagesDE();
+			cout << "RAQUEL Entering check messages DE" << endl;
+
+			checkMessagesDE(mid);
+			cout << "RAQUEL Done check messages DE" << endl;
+
 		}
 		else if (swarm_->options.fitType == "sa") {
 			doRunModel = checkMessagesDE();
@@ -720,7 +724,7 @@ void subParticle::runModel(unsigned int iteration, bool localSearch) {
 	unsigned int pID = parParticle->id_;
 	Swarm * swp = parParticle->swarm_;  if(!swp){cout<<"subParticle::runModel: Invalid subParticle with no parent..."; return;}
 	Model * mdl = parParticle->models.at(this->mid_);  if(!swp){cout<<"subParticle::runModel: Invalid subParticle with no model..."; return;}
-	unsigned int mid = this->mid_;
+	int mid = this->mid_;
 	unsigned int subParID = parParticle->calcsubParID(mid);
 
 	if ((swp->getNumModels()<1) || (mid<0) || (mid >=swp->getNumModels())){
@@ -1263,8 +1267,6 @@ string path;
 			if (swarm_->swarmComm->univMessageReceiver.find(NEXT_GENERATION) != swarm_->swarmComm->univMessageReceiver.end()) {
 				cout << "RAQUEL INSIDE IF swarm_->swarmComm->univMessageReceiver.find(NEXT_GENERATION)" << endl;
 				swarm_->swarmComm->univMessageReceiver.clear();
-				return true;
-
 				return;
 			}
 
@@ -1426,19 +1428,44 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 	// Construct pointers to the relevant fitting function.
 	// This lets us avoid a switch/case or excess conditionals
 	// within the calculation loop
-	if (swarm_->options.objFunc == 1) {
-		objFuncPtr = &Particle::objFunc_sumOfSquares;
-	}
+	/*if (swarm_->options.objFunc == 1) {
+                objFuncPtr = &Particle::objFunc_sumOfSquares;
+       	}
 	else if (swarm_->options.objFunc == 2) {
-		objFuncPtr = &Particle::objFunc_chiSquare;
-		usingSD = true;
-	}
+               	objFuncPtr = &Particle::objFunc_chiSquare;
+                usingSD = true;
+        }
 	else if (swarm_->options.objFunc == 3) {
-		objFuncPtr = &Particle::objFunc_divByMeasured;
-	}
+                objFuncPtr = &Particle::objFunc_divByMeasured;
+       	}
 	else if (swarm_->options.objFunc == 4) {
-		objFuncPtr = &Particle::objFunc_divByMean;
-		usingMean = true;
+               	objFuncPtr = &Particle::objFunc_divByMean;
+                usingMean = true;
+        }
+	*/
+	switch (swarm_->options.objFunc) {
+
+		case 1: 
+			objFuncPtr = &Particle::objFunc_sumOfSquares;
+			break;
+
+		case 2:
+			objFuncPtr = &Particle::objFunc_chiSquare;
+			usingSD = true;
+			break;
+
+		case 3:
+			objFuncPtr = &Particle::objFunc_divByMeasured;
+			break;
+
+		case 4:
+			objFuncPtr = &Particle::objFunc_divByMean;
+			usingMean = true;
+			break;
+
+		default:
+			outputError("calculateFit failed. No objFunc");
+			break;
 	}
 
 	double colSum;

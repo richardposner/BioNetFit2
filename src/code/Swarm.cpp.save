@@ -1,0 +1,557 @@
+/*============================================================================
+// Authors     : Brandon Thomas, Abolfazl Razi
+// Version     : 2.0
+// Lat Update: : 2017-01-15
+// Copyright   :
+// Description :
+//============================================================================*/
+
+
+//razi: check particleIterationCounter_ on initfit and also check messages ....
+
+#include "Swarm.hh"
+
+using namespace std;
+using namespace std::chrono;
+namespace fs = boost::filesystem;
+
+Swarm::Swarm() {
+
+	// Whether or not we are master
+	isMaster = false;
+	resumingSavedSwarm = false;
+	swarmComm = 0;
+	fitCompareTolerance = 1e-6;
+	bootstrapCounter = 0;
+	commInit = false;
+	verbose = false;  //razi added for debugging
+
+	options.jobName = "";
+	options.fitType = "";
+	options.outputDir = "";
+	options.bngCommand = "";
+	options.outputEvery = 100;
+
+#ifdef VER2
+	options.models.clear();
+	options.defaultModel = -1;
+	sConf_.clear();
+#else
+	options.model = 0;
+	sConf_ = "";
+#endif
+
+	options.synchronicity = 0;
+	options.maxGenerations = 0;
+	options.swarmSize = 0;
+	options.minFit = 0;
+	options.bootstrap = 0;
+	options.parallelCount = 0;
+	options.seed = 0;
+
+	options.useCluster = false;
+	options.saveClusterOutput = false;
+	options.emailWhenFinished = false;
+	options.emailAddress = "";
+
+	options.usePipes = false;
+	options.divideByInit = false;
+	options.logTransformSimData = false;
+	options.standardizeSimData = false;
+	options.standardizeExpData = false;
+
+	options.deleteOldFiles = true;
+	options.objFunc = 1;
+	options.extraWeight = 0;
+	options.swapRate = 0.5;
+	options.forceDifferentParents = true;
+	options.maxRetryDifferentParents = 100;
+	options.smoothing = 1;
+	options.keepParents = 0;
+
+	options.maxFitTime = MAX_LONG;
+	options.maxNumSimulations = MAX_LONG;
+
+	// PSO options
+	options.inertia = 0.72; // 0.72
+	options.cognitive = 1.49; // 1.49
+	options.social = 1.49; // 1.49
+	options.nmax = 0; // 20
+	options.nmin = 80; // 80
+	options.inertiaInit = 1; // 1
+	options.inertiaFinal = 0.1; // 0.1
+	options.absTolerance = 10e-4; // 10E-4
+	options.relTolerance = 10e-4; // 10E-4
+	options.mutateQPSO = false;
+	options.betaMin = 0.5;
+	options.betaMax = 1.0;
+
+	options.topology = "fullyconnected"; // fullyconnected
+	options.psoType = "pso"; // pso
+
+	options.enhancedStop = false; // true
+	options.enhancedInertia = false; // true
+
+	options.numIslands = 0;
+
+	options.minTemp = pow(10, -10);
+	options.minRadius = pow(10, -6);
+	options.localSearchProbability = 0.01;
+	options.randParamsProbability = 0.1;
+
+	options.verbosity = 1;
+	hasMutate = false;
+
+	currentGeneration = 0;
+
+	/*
+	std::map<int, double> particleBestFits_;
+	std::map<int, std::vector<double>> particleBestParamSets_;
+	std::map<int, std::vector<double>> particleCurrParamSets_;
+	std::map<int, double> particleWeights_;
+	std::map<double, int> particleBestFitsByFit_;
+	 */
+
+	permanenceCounter_ = 0; // 0
+	flightCounter_ = 0; // 0
+	weightedAvgPos_ = 0; // 0
+	optimum_ = 0; // 0
+	inertiaUpdateCounter_ = 0; // 0;
+	beta_ = 0.7;
+	cauchyMutator_ = 0.2;
+
+	auto seed = chrono::high_resolution_clock::now().time_since_epoch().count();
+	generalRand.seed(seed);
+	generalRand.discard(700000);
+
+	/*
+	if (options.seed) {
+		generalRand.seed(options.seed);
+		generalRand.discard(700000);
+
+		srand(options.seed);
+	}
+	else {
+		// TODO: Make sure everything is being seeded properly and in the proper place. Also let's do away with rand()
+		// Seed our random number engine
+		auto seed = chrono::high_resolution_clock::now().time_since_epoch().count();
+		generalRand.seed(seed);
+		generalRand.discard(700000);
+
+		srand (std::tr1::random_device{}());
+	}
+	 */
+
+}
+
+void Swarm::initRNGS(int seed) {
+	if (seed) {
+		srand(seed);
+		cout << "seeding rng with: " << seed << endl;
+	}
+	else {
+		// TODO: Make sure everything is being seeded properly and in the proper place. Also let's do away with rand()
+		// Seed our random number engine
+//razi changed was 		srand (std::tr1::random_device{}());
+		srand (std::random_device{}());
+	}
+}
+
+void Swarm::initComm() {
+	// Create the communication class
+	Pheromones *ph = new Pheromones();
+
+	// Initialize the communication class
+	ph->init(this);
+
+	// Store our communication class
+	swarmComm = ph;
+}
+
+
+double Swarm::normalizeParam(double oldParam, double min, double max, bool log) {
+	if (log) {
+		return (log10(oldParam) - log10(min)) / (log10(max) - log10(min));
+		//return (oldParam - min) / (max - min);
+	}
+	else {
+		return (oldParam - min) / (max - min);
+	}
+}
+
+
+double Swarm::deNormalizeParam(double oldParam, double min, double max, bool log) {
+	if (log) {
+		return pow(10, log10(min) + oldParam * (log10(max) - log10(min)));
+		//return min + oldParam * (max - min);
+	}
+	else {
+		return min + oldParam * (max - min);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#ifdef VER2   //razi: new versions mostly to support multiple particles
+void Swarm::addExp(string path, int mid) {
+//	Timer tmr;
+
+//cout << "Swarm::addExp   1-path:"<< path<<endl; mypause();
+	path = convertToAbsPath(path);
+//cout << "Swarm::addExp   2-fullpath:"<< path<<endl; mypause();
+	string basename = getFilename(path);
+//cout << "Swarm::addExp   3-basename:"<< basename<<endl; mypause();
+
+//cout << "Swarm::addExp inserting EXP?" << endl; mypause();
+	this->options.expFiles.insert(make_pair(basename, new Data(path, this, true, mid)));
+//cout << "Swarm::addExp exp inserted" << endl; mypause();
+
+	//double t = tmr.elapsed();
+	//cout << "Adding .exp took " << t << " seconds" << endl;
+}
+
+
+/*
+//razi: this version is based on having different set of free parameters for each model
+// the implementation is subject to change, lets keep the same set of free parameters for all models and use a mask vector
+// to account for heterogenous set of free parameters, note: check what happens if there is a conflict between the free parameter and fixed parameters
+*/
+
+void Swarm::consolidate_model_params(){
+
+	cout<<"consolidating " << this->getNumModels()<<" models."<<endl;
+	//Raquel: commented, unnecessary
+	/*if (options.models.size() <1){
+		if(options.verbosity >= 3) cout<<"No need to consolidate models. Less than two models exist"<<endl;
+		return;
+	}
+/*
+/* Bug Note by Raquel
+ * There was a bug in the consolidation function bellow
+ * When you have more then 2 models that share equal paramaters, the command:
+ * delete options.models.at(j)->freeParams_[fj->first];
+ * will try to delete the free parameter from the list more then once
+ * this will cause an error of memory access violation
+ * I solved this problem by creating a new map containing only the unique parameters
+ */
+	map<string,FreeParam*> uniqueList;
+	int uniqueIndex = 0;
+	//remove dulicate free parameters
+	unsigned int i,j, k, cnt=0;
+
+	for (i=0; i <options.models.size()-1; i++){  //k-1 first models
+		//cout << "in the first loop" << endl;
+		for (j=i+1; j <options.models.size(); j++){  //the subsequent model to the end
+			//cout << "in the second loop" << endl;
+			for (auto fi=options.models.at(i)->freeParams_.begin(); fi!=options.models.at(i)->freeParams_.end(); ++fi){
+				//cout << "in the thrid loop" << endl;
+				for (auto fj=options.models.at(j)->freeParams_.begin(); fj!=options.models.at(j)->freeParams_.end(); ++fj){
+					//cout << "in the fourth loop" << endl;
+					if(fi->first.compare(fj->first)==0){  //common free parameters
+						//cout << "in the if if the fourth loop" << endl;
+						cnt++;
+						if(options.verbosity >= 4)
+							cout<<"Common free parameters found.  Param:"<< fi->first <<"  model1:" <<options.models.at(i)->getName() <<"   model2:" << options.models.at(j)->getName() <<endl;
+						//cout << "before deleting" << endl;
+
+						if ( uniqueList.find(fj->first) == uniqueList.end() ) {
+							cout << fj->first << endl;
+							//delete options.models.at(j)->freeParams_[fj->first]; //delete free param objecyt in j
+							uniqueList[fj->first] = fj->second;
+							uniqueIndex++;
+							//cout << "Found parameter " << fj->first << endl;
+						  // found
+						} else {
+							  // not found
+								//cout << "parameter already found: " << fj->first << endl;
+
+						}
+						//cout << "after delete" << endl;
+						//options.models.at(j)->freeParams_[fj->first] = options.models.at(i)->freeParams_[fi->first];  //map to i
+						fj->second = fi->second;
+					}
+				}
+			}
+		}
+	}
+	//cout << "Found " << uniqueIndex << " unique parameters" << endl;
+	//Raquel changed the way that the function find unique parameters
+
+	if(options.verbosity >= 3) cout<<"Removing duplicate free parameters is finished. "<<cnt<<" duplicate free parameters are deleted."<<endl;
+
+	if(options.models.size() >1){
+
+		for (i=0; i <options.models.size(); i++){
+			options.models.at(i)->freeParams_ = uniqueList;
+			cout << "model " << i << " free parameters " << options.models.at(i)->freeParams_.size() << endl;
+		}
+
+
+		options.freeParams_.clear(); cnt=0;
+		options.freeParams_ = uniqueList;
+		cnt = options.freeParams_.size();
+	}
+	 //razi make full list of union of free parameters
+	options.freeParams_.clear(); cnt=0;
+	for (i=0; i <options.models.size(); i++){  //razi: all models, was k-1 first models, later test
+		for (auto fi=options.models.at(i)->freeParams_.begin(); fi!=options.models.at(i)->freeParams_.end(); ++fi){
+			if (options.freeParams_.count(fi->first) < 1){  //a new free parameters
+				options.freeParams_.insert(make_pair(fi->first, fi->second)); cnt++;
+				if(options.verbosity >= 3) cout<<"Free parameter:"<<fi->first <<" is added to the list"<<endl;
+			}
+		}
+	}
+
+
+	if(options.verbosity >= 3) cout<<"Free parameters found:"<< cnt << endl;
+
+
+	//razi make mapping from models free parameters to the full list of free parameters
+
+
+	std::map<unsigned int, unsigned int> dummay_map;
+	for (i=0; i <options.models.size(); i++){  //razi: all models, was k-1 first models, later test
+		j = 0;
+
+		freeParamMapping.push_back(dummay_map);
+		for (auto fj=options.models.at(i)->freeParams_.begin(); fj!=options.models.at(i)->freeParams_.end(); ++fj){
+			k=0;
+			for (auto fk=options.freeParams_.begin(); fk!=options.freeParams_.end(); ++fk){
+//cout<<"Full List   FreeParam["<<k<<"] :" << fk->first<<endl; //mypause();
+				if (fj->first == fk->first){
+					freeParamMapping.at(i).insert(make_pair(j,k));
+				}
+				k++;
+			}
+			j++;
+		}
+	}
+
+
+	if(options.verbosity >= 3)cout<<"Model consolidation is completed. "<<cnt<<" free parameters are found."<<endl;
+}
+
+
+
+
+void Swarm::setsConf(std::string sConf, unsigned int mid){  //razi added
+	if (options.verbosity>=3) cout<<"Setting sConf id:" << mid << " File:" << sConf <<endl;
+	int sz = sConf_.size();
+	if (mid < 0){
+		outputError("Error in setting sConf. Invalid id. Quitting ....");
+	}else if ((mid >= 0) && (mid == sz)){
+		sConf_.push_back(sConf);
+	}else if ((mid >= 0) && (mid < sz)){
+		sConf_.at(mid) = sConf;
+	}else if ((mid >= 0) && (mid > sz)){
+
+		for(unsigned int i = 0; i < mid - sz; i++){
+			sConf_.push_back("");
+		}
+		sConf_.at(mid) = sConf;
+	}
+
+//	cout<<"set conf done, new size is:"<< sConf_.size() <<". Eneter a number to continue..."; cin>>i;
+//	if( sConf_.size()>0)
+//		for(i=0; i<sConf_.size(); i++)
+//			cout<<" SConf[" << i <<"] is:" << sConf_.at(i)<<", ";
+//
+//	}
+//	catch(string err){
+//		cout<<"Error occurred in set conf Err:"<< err;
+//	}
+}
+
+void Swarm::setExpPath(std::string path, int mid){
+
+/*   old ver, just one exp file for each model
+	std::vector<string> paths;
+	string expfile;
+
+	expPaths_.clear();
+	paths = split_string(path, ",");
+	if (paths.size()>1)
+		outputError("Can not set more than 1 exp file for each model at this version");
+
+	for(int i=0; i< paths.size(); ++i){
+		expfile = convertToAbsPath(paths.at(i));
+//cout<<"Swarm::setExpPath AAA1  Enter a number..."; mypause();
+		expPaths_.push_back(expfile);
+//cout<<"Swarm::setExpPath AAA2, File:"<< expfile <<"  Enter a number..."; mypause();
+		addExp(expfile, mid);
+//cout<<"Swarm::setExpPath AAA3  Enter a number..."; mypause();
+
+		if (options.verbosity >=3) cout<<"Exp["<<i<<"]  :"<<expfile <<" is added to the list of exp files.\n";
+	}
+*/
+
+	std::vector<string> Paths;
+	std::vector<string> absPaths;
+	string expfile;
+	Paths = split_string(path, ",");
+
+	if (mid==-1){ //razi: means that each file is for one model [in the sqame order]
+
+		for(int i=0; i< Paths.size(); ++i){
+			absPaths.clear();
+			expfile = convertToAbsPath(Paths.at(i));
+cout<<"exp file found"<<expfile<< " set for model:"<<i<<endl;
+			absPaths.push_back(expfile);
+			expPath		}
+			}
+		}
+	}
+	//cout << "Found " << uniqueIndex << " unique parameters" << endl;
+	//Raquel changed the way that the function find unique parameters
+
+	if(options.verbosity >= 3) cout<<"Removing duplicate free parameters is finished. "<<cnt<<" duplicate free parameters are deleted."<<endl;
+
+	if(options.models.size() >1){
+
+		for (i=0; i <options.models.size(); i++){
+			options.models.at(i)->freeParams_ = uniqueList;
+			cout << "model " << i << " free parameters " << options.models.at(i)->freeParams_.size() << endl;
+		}
+
+
+		options.freeParams_.clear(); cnt=0;
+		options.freeParams_ = uniqueList;
+		cnt = options.freeParams_.size();
+	}
+	 //razi make full list of union of free parameters
+	options.freeParams_.clear(); cnt=0;
+	for (i=0; i <options.models.size(); i++){  //razi: all models, was k-1 first models, later test
+		for (auto fi=options.models.at(i)->freeParams_.begin(); fi!=options.models.at(i)->freeParams_.end(); ++fi){
+			if (options.freeParams_.count(fi->first) < 1){  //a new free parameters
+				options.freeParams_.insert(make_pair(fi->first, fi->second)); cnt++;
+				if(options.verbosity >= 3) cout<<"Free parameter:"<<fi->first <<" is added to the list"<<endl;
+			}
+		}
+	}
+
+
+	if(options.verbosity >= 3) cout<<"Free parameters found:"<< cnt << endl;
+
+
+	//razi make mapping from models free parameters to the full list of free parameters
+
+
+	std::map<unsigned int, unsigned int> dummay_map;
+	for (i=0; i <options.models.size(); i++){  //razi: all models, was k-1 first models, later test
+		j = 0;
+
+		freeParamMapping.push_back(dummay_map);
+		for (auto fj=options.models.at(i)->freeParams_.begin(); fj!=options.models.at(i)->freeParams_.end(); ++fj){
+			k=0;
+			for (auto fk=options.freeParams_.begin(); fk!=options.freeParams_.end(); ++fk){
+//cout<<"Full List   FreeParam["<<k<<"] :" << fk->first<<endl; //mypause();
+				if (fj->first == fk->first){
+					freeParamMapping.at(i).insert(make_pair(j,k));
+				}
+				k++;
+			}
+			j++;
+		}
+	}
+
+
+	if(options.verbosity >= 3)cout<<"Model consolidation is completed. "<<cnt<<" free parameters are found."<<endl;
+}
+
+
+
+
+void Swarm::setsConf(std::string sConf, unsigned int mid){  //razi added
+	if (options.verbosity>=3) cout<<"Setting sConf id:" << mid << " File:" << sConf <<endl;
+	int sz = sConf_.size();
+	if (mid < 0){
+		outputError("Error in setting sConf. Invalid id. Quitting ....");
+	}else if ((mid >= 0) && (mid == sz)){
+		sConf_.push_back(sConf);
+	}else if ((mid >= 0) && (mid < sz)){
+		sConf_.at(mid) = sConf;
+	}else if ((mid >= 0) && (mid > sz)){
+
+		for(unsigned int i = 0; i < mid - sz; i++){
+			sConf_.push_back("");
+		}
+		sConf_.at(mid) = sConf;
+	}
+
+//	cout<<"set conf done, new size is:"<< sConf_.size() <<". Eneter a number to continue..."; cin>>i;
+//	if( sConf_.size()>0)
+//		for(i=0; i<sConf_.size(); i++)
+//			cout<<" SConf[" << i <<"] is:" << sConf_.at(i)<<", ";
+//
+//	}
+//	catch(string err){
+//		cout<<"Error occurred in set conf Err:"<< err;
+//	}
+}
+
+void Swarm::setExpPath(std::string path, int mid){
+
+/*   old ver, just one exp file for each model
+	std::vector<string> paths;
+	string expfile;
+
+	expPaths_.clear();
+	paths = split_string(path, ",");
+	if (paths.size()>1)
+		outputError("Can not set more than 1 exp file for each model at this version");
+
+	for(int i=0; i< paths.size(); ++i){
+		expfile = convertToAbsPath(paths.at(i));
+//cout<<"Swarm::setExpPath AAA1  Enter a number..."; mypause();
+		expPaths_.push_back(expfile);
+//cout<<"Swarm::setExpPath AAA2, File:"<< expfile <<"  Enter a number..."; mypause();
+		addExp(expfile, mid);
+//cout<<"Swarm::setExpPath AAA3  Enter a number..."; mypause();
+
+		if (options.verbosity >=3) cout<<"Exp["<<i<<"]  :"<<expfile <<" is added to the list of exp files.\n";
+	}
+*/
+
+	std::vector<string> Paths;
+	std::vector<string> absPaths;
+	string expfile;
+	Paths = split_string(path, ",");
+
+	if (mid==-1){ //razi: means that each file is for one model [in the sqame order]
+
+		for(int i=0; i< Paths.size(); ++i){
+			absPaths.clear();
+			expfile = convertToAbsPath(Paths.at(i));
+cout<<"exp file found"<<expfile<< " set for model:"<<i<<endl;
+			absPaths.push_back(expfile);
+			expPath
