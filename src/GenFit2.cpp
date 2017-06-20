@@ -1,6 +1,6 @@
 /*============================================================================
 // Name        : GenFit2.cpp
-// Authors     : Brandon Thomas, Abolfazl Razi
+// Authors     : Brandon Thomas, Abolfazl Razi, Alex Ionkov
 // Version     : 2.0
 // Last Update : 2017-01-15
 // Copyright   :
@@ -20,7 +20,11 @@ int main(int argc, char *argv[]) {
 	string type;
 	int pID, nModels,ret;
 	bool verbose;
+	string execPath;
 
+	execPath = boost::filesystem::canonical(boost::filesystem::system_complete(argv[0])).string();
+
+//	SetExecPath(argv[0]);
 	vector<string> configFiles; //razi : we could have more than one config file for joint optimization. But we chose to use one config file with multiple models,	However,this is still a vector
 
 	string expFile; //razi : These files are not required for ordinary runs. Included as a reference for artificial simulation i order to generate gdat files from exp file by adding noise !!!!
@@ -79,7 +83,8 @@ int main(int argc, char *argv[]) {
 				}
 				action = it->second.at(0);
 				if (action != "run" && action != "cluster" && action != "load" && action != "results" && action != "resume") {
-					outputError("Error: Couldn't find a valid 'action' in your arguments, add switch -h for more info...");
+					cout << "Error: Couldn't find a valid 'action' in your arguments, add switch -h for more info...";
+					cout << "Default action is" << action;
 				}
 		}
 
@@ -90,7 +95,8 @@ int main(int argc, char *argv[]) {
 				}
 				type = it->second.at(0);
 				if (type != "master" && type != "particle") {
-					outputError("Error: Couldn't find a valid 'type' in your arguments., add switch -h for more info...");
+					cout << "Error: Couldn't find a valid 'type' in your arguments., add switch -h for more info...";
+					cout << "Default type is" << type;
 				}
 		}
 
@@ -234,7 +240,8 @@ int main(int argc, char *argv[]) {
 			s->currentGeneration = 1;
 
 			//if(verbose) cout<<"Execution path to be set to: "<< mainpath()<<endl;
-			s->setExePath(mainpath()+"/bin/BioNetFit");
+			cout << "argv[0]: " << argv[0] << ", absolute: " << execPath << endl;
+			s->setExePath(execPath); //mainpath()+"/src/BioNetFit2"
 
 			s->isMaster = true;
 			if(verbose) cout<<"Swarm Initialization Started.\n";
@@ -307,7 +314,7 @@ int main(int argc, char *argv[]) {
 
 			s->isMaster = true;
 //support cygwin
-			s->setExePath(mainpath()+"/bin/BioNetFit");
+			s->setExePath(execPath);
 			//was s->setExePath(convertToAbsPath(argv[0]));
 			s->initComm();
 		}
@@ -447,14 +454,14 @@ int main(int argc, char *argv[]) {
 		if (verbose) {cout<<"Slave:  Working on Particle:"<< pID<<"   subParticle:" << subParID<< "   Model id:"<< mid << "  Model file:"<< s->getModelName(mid,false)<<endl;}
 
 //cout<<"setting Exp file:"<< expFile <<" for model id:"<<mid <<endl;
-		s->setExpPath(expFile,mid); //the problem is here--> s->addExp() --> new Data(path, this, true) --> Data::parseData --> the exp file in not in the action list
+		s->setExpPath("", expFile,mid); //the problem is here--> s->addExp() --> new Data(path, this, true) --> Data::parseData --> the exp file in not in the action list
 
 		s->printDetails();
 
 		s->isMaster = false;
 
 		//support cygwin
-		s->setExePath(mainpath()+"/bin/BioNetFit");
+		s->setExePath(execPath);
 		//cout<<"3-GenFit:Particle:   Exe path is set to : "<<(mainpath()+"/bin/BioNetFit")<<endl;
 		//was s->setExePath(convertToAbsPath(argv[0]));
 
@@ -708,7 +715,7 @@ int main(int argc, char *argv[]) {
 				cout << "chdir(\"bin/\") failed (line 185)\n";	
 
 #ifdef VER2
-			s->setExePath(mainpath()+"/bin/BioNetFit");
+			s->setExePath(execPath);
 #else
 			s->setExePath(convertToAbsPath(argv[0]));
 #endif
