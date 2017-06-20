@@ -1,4 +1,0 @@
-BioNetGen version 2.2.6
-Reading from file /home/raquel/Posdoc_Posner/BioNetFit/output/testMut_realSim/exMutM1_base.bngl (level 0)
-ABORT: Parameter 'KD1__FREE__' is referenced but not defined
-  at line 68

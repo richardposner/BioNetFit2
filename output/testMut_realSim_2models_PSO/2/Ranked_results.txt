@@ -1,3 +1,0 @@
-Particle	Model	Fit_Rank	Constraint_Rank	Final_Rank
-1	1	1	1	1
-2	1	2	1	1
