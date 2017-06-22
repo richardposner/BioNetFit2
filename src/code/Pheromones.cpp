@@ -234,7 +234,7 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 
 		// Loop through receivers and perform the send operation
 		for (std::vector<int>::iterator i = receivers.begin(); i != receivers.end(); ++i) {
-			//std::cout << senderID << " sending " << smessage.tag << " to " << *i	<< ". ser: " << serializedMessage.data() << std::endl;
+			std::cout << "### " << senderID << " sending " << smessage.tag << " to " << *i	<< ". ser: " << serializedMessage.data() << std::endl;
 			//smq_[*i]->send(serializedMessage.data(), serializedMessage.size(), 0);
 			//Raquel: added for debbuging
 			bool sendAttempt2 = smq_[*i]->try_send(serializedMessage.data(), serializedMessage.size(), 0);
@@ -244,7 +244,7 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 				cout << "RAQUEL: queue was full when message was sent" << endl;
 
 			}else{ cout << "RAQUEL: sending success" << endl; }
-
+			
 			//std::cout << "sent" << std::endl;
 			if (block) {
 				bool foundMessage = true;

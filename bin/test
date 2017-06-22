@@ -1,7 +1,0 @@
-
-		auto freeParam = swarm_->options.models.at(mid)->getFreeParams_().begin();
-		for (auto paramVal = swarm_->swarmComm->univMessageReceiver.find(SEND_FINAL_PARAMS_TO_PARTICLE)->second.message.begin(); paramVal != swarm_->swarmComm->univMessageReceiver.find(SEND_FINAL_PARAMS_TO_PARTICLE)->second.message.end(); ++paramVal) {
-			if (swarm_->options.verbosity >= 3) cout << "updating " << freeParam->first << " to " << *paramVal << endl;
-			simParams_.at(mid).insert(pair<string, double>(freeParam->first, stod(*paramVal)));
-			++freeParam;
-		}

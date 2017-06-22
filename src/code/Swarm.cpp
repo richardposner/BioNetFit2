@@ -1,3 +1,4 @@
+
 /*============================================================================
 // Authors     : Brandon Thomas, Abolfazl Razi
 // Version     : 2.0
@@ -13,6 +14,7 @@
 
 using namespace std;
 using namespace std::chrono;
+namespace fs = boost::filesystem;
 
 Swarm::Swarm() {
 
@@ -391,7 +393,7 @@ void Swarm::setsConf(std::string sConf, unsigned int mid){  //razi added
 //	}
 }
 
-void Swarm::setExpPath(std::string path, int mid){
+void Swarm::setExpPath(std::string prefixPath, std::string path, int mid){
 
 /*   old ver, just one exp file for each model
 	std::vector<string> paths;
@@ -416,15 +418,19 @@ void Swarm::setExpPath(std::string path, int mid){
 
 	std::vector<string> Paths;
 	std::vector<string> absPaths;
+	fs::path prefix(prefixPath);
 	string expfile;
 	Paths = split_string(path, ",");
 
 	if (mid==-1){ //razi: means that each file is for one model [in the sqame order]
 
 		for(int i=0; i< Paths.size(); ++i){
+			fs::path path(Paths.at(i));
+			fs::path abspath = prefix / path;
+
 			absPaths.clear();
-			expfile = convertToAbsPath(Paths.at(i));
-cout<<"exp file found"<<expfile<< " set for model:"<<i<<endl;
+			expfile = abspath.string();
+cout<<"*** exp file found"<<expfile<< " set for model:"<<i<<endl;
 			absPaths.push_back(expfile);
 			expPaths_.insert(make_pair(i, absPaths));
 			addExp(expfile, i);
@@ -436,8 +442,12 @@ cout<<"exp file found"<<expfile<< " set for model:"<<i<<endl;
 		if((mid>=0)&&(mid < options.models.size())){
 			absPaths.clear();
 			for(int i=0; i< Paths.size(); ++i){
-				expfile = convertToAbsPath(Paths.at(i));
+				fs::path path(Paths.at(i));
+				fs::path abspath = prefix / path;
+
+				expfile = abspath.string();
 				absPaths.push_back(expfile);
+cout<<"*** exp file found"<<expfile<<endl;
 				if (options.verbosity >= 3){ cout<<"Swarm::setExpPath try to add  File:"<< expfile <<endl;}
 				addExp(expfile, mid);
 				if (options.verbosity >=3) cout<<"Exp["<<i<<"]  :"<<expfile <<" is added to the list of exp files for model:"<<mid<<".\n";
@@ -452,18 +462,21 @@ cout<<"exp file found"<<expfile<< " set for model:"<<i<<endl;
 
 
 
-void Swarm::setModels(std::string path, bool overwrite){
+void Swarm::setModels(std::string pathPrefix, std::string path, bool overwrite){
 	std::vector<string> paths;
+	fs::path prefix(pathPrefix);
 
 	if(overwrite)
 		this->options.models.clear();
 
-	if  (options.verbosity >= 3) cout<<"Swarm::setModel:  processing model files:"<<path<<endl;
+	if  (options.verbosity >= 3) cout<<"Swarm::setModels:  processing model files:"<<path<<endl;
 	paths = split_string(path, ",");
 	for(int i=0; i< paths.size(); ++i){
+		fs::path path(paths.at(i));
+		fs::path abspath = prefix / path;
 
-		setModel(paths.at(i), i, overwrite);
-		if (options.verbosity >=3) cout<<"Model["<<i<<"]  :"<<paths.at(i)<<" is added to the list of models.\n";
+		setModel(abspath.string(), i, overwrite);
+		if (options.verbosity >=3) cout<<"Model["<<i<<"]  :"<<paths.at(i)<<" is added to the list of models.\n" << endl;
 	}
 	check_model_consistency(options.models);
 	//this->options.model = this->options.models.at(0); //set the first model as the basic model for backward comaptibility
@@ -472,6 +485,7 @@ void Swarm::setModels(std::string path, bool overwrite){
 void Swarm::setModel(std::string path, int mid, bool overwrite){
 	std::string modelfile = convertToAbsPath(path);
 	unsigned int  nmodel=getNumModels();
+
 	if (mid == nmodel){
 		this->options.models.push_back(new Model(this, modelfile));  //add to the end
 		if(options.verbosity >=4) cout<<" Model["<< mid<<"]: "<<path<<" is appended to the list of models."<<endl;
@@ -1861,8 +1875,6 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 	}
 }
 
-
-
 void Swarm::launchParticle(unsigned int pID, bool nextGen) {
 	//run all subparticles associated with different models
 	for(int mid=0; mid<options.models.size(); ++mid)
@@ -2294,7 +2306,7 @@ void Swarm::getClusterInformation() {
 			getline(cin, input);
 			stringstream myInp(input);
 			myInp >> clusterType;
-
+			
 			if (clusterType == "S" || clusterType == "s") {
 				options.clusterSoftware = "slurm";
 				break;
@@ -2302,6 +2314,11 @@ void Swarm::getClusterInformation() {
 			else if (clusterType == "T" || clusterType == "t") {
 				options.clusterSoftware = "torque";
 				break;
+			}
+			
+			
+			if (options.fitType == "de") {
+			//	processParamsDE(paramsVec, subParID, fitCalc);
 			}
 		}
 	}
@@ -4014,6 +4031,9 @@ void Swarm::runADE() {
 				particleToIsland_[currParticle] = i;
 				islandToParticle_[i][p] = currParticle;
 				cout << i << " " << p << " " << islandToParticle_[i][p] << endl;
+
+				cout << "Particle to island " << particleToIsland_[currParticle] << endl;
+				cout << "currPar " << currParticle << endl;
 				++currParticle;
 			}
 		}
@@ -9228,19 +9248,63 @@ void Swarm::runSDE() {
 
 	saveSwarmState();
 
-	if (options.verbosity >= 3) {
-		cout << "Launching first generation" << endl;
-	}
+	//if (options.verbosity >= 3) {
+	//	cout << "Launching first generation" << endl;
+	//}
 
 	unordered_map<unsigned int, vector<double>> finishedParticles;
 	bool stopCriteria = false;
-	unsigned int numFinishedParticles = 0;
 	vector<unsigned int> islandFinishedParticles(options.numIslands + 1, 0);
+
 	map<unsigned int, vector<vector<double>>> migrationSets;
 
 	bool trialLoop = false;
+
+
+
+
+	//saveSwarmState();
+	string path; //Raquel added
+	//vector<unsigned int> finishedParticles;
+	//vector<unsigned int> particlestoProcess;
+
+
+	int numFinishedParticles = 0;
+
+	unsigned int p = 1;
+	int mid; //Raquel added
+	int sp = 0; //Raquel added
+	int nModels = options.models.size(); //Raquel added
+
+
+
+
 	while(!stopCriteria) {
 
+
+		numFinishedParticles = options.swarmSize;
+
+		//cout << "RAQUEL: starting runGeneration" << endl;
+		runGeneration();
+		usleep(250000);
+
+		saveSwarmState();
+		//cout << "RAQUEL: finished saveSwarmState" << endl;
+
+		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
+		if (options.deleteOldFiles) {
+			//cout << "RAQUEL: starting cleanupFiles" << endl;
+
+			cleanupFiles(currentDirectory.c_str());
+			//cout << "RAQUEL: finished cleanupFiles" << endl;
+
+		}
+
+
+
+
+
+/* Raquel replaced this block by the code above
 		// Generation loop
 		unsigned int p = 1;
 		while (numFinishedParticles < options.swarmSize) {
@@ -9257,6 +9321,51 @@ void Swarm::runSDE() {
 			}
 		}
 
+
+*/
+
+
+		unordered_map<unsigned int, vector<double>> finished;
+
+
+		for (int i = 1; i <= options.swarmSize; i++){
+			//for (int mid=0; mid < options.models.size(); mid++){
+				finished.insert(make_pair(i, subparticleCurrParamSets_[i][0]));
+
+
+			//}
+
+		}
+
+
+		cout << "RAQUEL FINISHED SIZE " << finished.size() << endl;
+		cout << "vector size " << islandFinishedParticles.size() << endl;
+
+		if (finished.size()) {
+			finishedParticles.insert(finished.begin(), finished.end());
+			numFinishedParticles = finished.size();
+		}
+		int counter = 0;
+
+
+//		for(auto index = particleToIsland_.begin(); index != particleToIsland_.end(); )
+
+		for (auto particle = finishedParticles.begin(); particle != finishedParticles.end(); ++particle) {
+			// Increment the counter that tracks the number of particles finished
+			// for a given island
+			counter++;
+			cout << "counter" << counter << endl;
+			cout << "Particle first " << particle->first  << endl;
+			cout << "Particle to island " << particleToIsland_[particle->first] << endl;
+			cout << "Particle to isalnd size " << particleToIsland_.size() << endl;
+
+			islandFinishedParticles[particleToIsland_[particle->first]] += 1;
+		}
+
+
+		//Raquel, the code bellow was in part transfered to the function processParamDE()
+		//Check if this there is something that still needs to be transfered
+/*
 		// For each finished particle
 		for (auto particle = finishedParticles.begin(); particle != finishedParticles.end(); ++particle) {
 			// Increment the counter that tracks the number of particles finished
@@ -9328,7 +9437,7 @@ void Swarm::runSDE() {
 				}
 			}
 		}
-
+*/
 		finishedParticles.clear();
 		numFinishedParticles = 0;
 
@@ -9364,7 +9473,14 @@ void Swarm::runSDE() {
 					}
 
 					// Send new param sets to particles for next generation
-					swarmComm->sendToSwarm(0, *particle, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
+//					swarmComm->sendToSwarm(0, *particle, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
+
+					//Raquel updated the interprocess communication, added the loop bellow
+					for(int mid = 0; mid < options.models.size(); mid++){
+						sp = fcalcsubParID(*particle, mid, options.models.size());
+						swarmComm->sendToSwarm(0, sp, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
+					}
+
 
 					// Empty our finished particle counter for the next loop
 					islandFinishedParticles[island] = 0;
@@ -9372,15 +9488,26 @@ void Swarm::runSDE() {
 			}
 		}
 
+		//Raquel removed the trialloop thing because it was replaced by the processParamDE function
 		// Switch from trial/main loops
-		if (trialLoop == false) {
-			trialLoop = true;
+		//if (trialLoop == false) {
+		//	trialLoop = true;
 
-			cout << "Switching to trial loop" << endl;
-		}
-		else {
-			// Only want to check stop criteria at end of trial set
+		//	cout << "Switching to trial loop" << endl;
+		//}
+		//else {
+
+
+			// Check for stop criteria
 			stopCriteria = checkStopCriteria();
+			cout << "Stop Criteria value: " << stopCriteria << endl;
+			//Raquel printing the output summary even if we didn't reach the stop criteria
+
+			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+
+			outputRunSummary(outputPath);
+
+
 			if (!stopCriteria) {
 				// Send/receive migration sets
 				if (currentGeneration % options.migrationFrequency == 0) {
@@ -9394,13 +9521,13 @@ void Swarm::runSDE() {
 					}
 				}
 
-				string outputPath = options.jobOutputDir + toString(currentGeneration) + "_summary.txt";
-				outputRunSummary(outputPath);
-				++currentGeneration;
-				cout << "Switching to main loop" << endl;
-				trialLoop = false;
+//				string outputPath = options.jobOutputDir + toString(currentGeneration) + "_summary.txt";
+	//			outputRunSummary(outputPath);
+				//++currentGeneration;
+				//cout << "Switching to main loop" << endl;
+				//trialLoop = false;
 			}
-		}
+		//}
 	}
 }
 
@@ -10544,7 +10671,7 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 	unsigned int particlesPerIsland = 0;
 
 	if (options.fitType == "de") {
-		currIsland = particleToIsland_.at(particle);
+		currIsland = particleToIsland_[particle]; //Raquel changed, was .at(particle)
 		particlesPerIsland = options.swarmSize / options.numIslands;
 	}
 
@@ -10563,11 +10690,15 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 	if (options.mutateType == 1) {
 		int bestParticle = 0;
 		for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
+			cout << "Raquel setting particle to island value" << endl;
 			if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+				cout << "Raquel setting particle to island value done" << endl;
+
 				bestParticle = fitVal->second;
 				//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
 				break;
 			}
+
 		}
 
 		vector<double> bestParamSet = particleCurrParamSets_.at(bestParticle);
