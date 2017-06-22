@@ -36,10 +36,10 @@ EXES=BioNetFit2
 
 all: $(EXES)
 clean:
-	rm -rf $(OFILES) $(EXES)
+	rm -rf ../bin/BioNetFit2 $(OFILES) $(EXES)
 
 BioNetFit2: $(HFILES) $(OFILES) Makefile
-	$(CXX) -o BioNetFit2 $(OFILES) $(LFLAGS)
+	$(CXX) -o ../bin/BioNetFit2 $(OFILES) $(LFLAGS)
 
 %.o: %.cpp $(HFILES)
 	$(CXX) $(CFLAGS) -o $*.o -c $*.cpp
