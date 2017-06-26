@@ -1,6 +1,6 @@
 
 /*============================================================================
-// Authors     : Brandon Thomas, Abolfazl Razi
+// Authors     : Brandon Thomas, Abolfazl Razi, Raquel Dias
 // Version     : 2.0
 // Lat Update: : 2017-01-15
 // Copyright   :
@@ -679,6 +679,7 @@ void Swarm::initFit () {  //razi: modified version
 
 
 		vector<double> params;
+		int subPar = 0; //Raquel added to support subparticles
 		for (unsigned int param = 0; param < getNumFreeParams(); ++param) {  //Razi: All free params tat appear in some models
 			params.push_back(0);
 		}
@@ -707,8 +708,17 @@ void Swarm::initFit () {  //razi: modified version
 			}
 		}
 		if (options.fitType == "pso" || "de") {
+			int subPar = 0;
+
 			for (unsigned int particle = 1; particle <= options.swarmSize; ++particle) {
 				particleBestFits_[particle] = 0;
+
+				//Raquel: added support for subparticles
+				for(int mid = 0; mid < options.models.size(); mid++){
+					subPar = fcalcsubParID(particle, mid, options.models.size());
+					subparticleBestFits_[subPar] = 0;
+				}//Raquel: added support for subparticles
+
 			}
 		}
 		if(options.fitType == "de") {
@@ -718,13 +728,33 @@ void Swarm::initFit () {  //razi: modified version
 			for (unsigned int particle = 1; particle <= options.swarmSize; ++particle) {
 				particleToIsland_.push_back(0);
 				particleBestFitsByFit_.insert(pair<double, unsigned int>(0, particle));
+
+				//Raquel added this loop to support subparticles
+				for(int mid = 0; mid < options.models.size(); mid++){
+					subPar = fcalcsubParID(particle, mid, options.models.size());
+					subparticleBestFitsByFit_.insert(pair<double, unsigned int>(0, subPar));
+				}//Raquel added this loop to support subparticles
+
 			}
 		}
 		if (options.fitType == "sa") {
 			for (unsigned int particle = 1; particle <= options.swarmSize; ++particle) {
 				particleBestFitsByFit_.insert(pair<double, unsigned int>(0, particle));
+
+				//Raquel added this loop to support subparticles
+				for(int mid = 0; mid < options.models.size(); mid++){
+					subPar = fcalcsubParID(particle, mid, options.models.size());
+					subparticleBestFitsByFit_.insert(pair<double, unsigned int>(0, subPar));
+				}//Raquel added this loop to support subparticles
+
+
 			}
+
+
 		}
+
+
+
 	}
 }
 
@@ -1761,6 +1791,7 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 
 		// Insert into best fit lists, erasing in the case of the map with fits as keys
 		particleBestFits_[pID] = fit;
+		subparticleBestFits_[subParID] = fit; //Raquel added support to subparticles
 
 		map<double, unsigned int>::iterator toDelIt = particleBestFitsByFit_.end();
 		for (auto it = particleBestFitsByFit_.begin(); it != particleBestFitsByFit_.end(); ++it) {
@@ -1772,9 +1803,23 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 		}
 		if (toDelIt != particleBestFitsByFit_.end()) {
 			particleBestFitsByFit_.erase(toDelIt);
+
 		}
 
+		for (auto it = subparticleBestFitsByFit_.begin(); it != subparticleBestFitsByFit_.end(); ++it) {
+			//cout << "loop: " << it->second << endl;
+			if (it->second == subParID) {
+				//cout << "Erasing old best fit for particle " << pID << endl;
+				toDelIt = it;
+			}
+		}
+		if (toDelIt != subparticleBestFitsByFit_.end()) {
+			subparticleBestFitsByFit_.erase(toDelIt); //Raquel added support to subparticles
+		}
+
+
 		particleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));
+		subparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, subParID)); //Raquel added support to subparticles
 
 		unsigned int i = 0;
 		for (auto param = params.begin(); param != params.end(); ++param) {
@@ -1838,6 +1883,7 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 
 		// Insert into best fit lists, erasing in the case of the map with fits as keys
 		particleBestFits_[pID] = fit;
+		subparticleBestFits_[pID] = fit; //Raquel added support to subparticles
 
 		map<double, unsigned int>::iterator toDelIt = particleBestFitsByFit_.end();
 		cout << "looping fits" << endl;
@@ -1855,8 +1901,26 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 			particleBestFitsByFit_.erase(toDelIt);
 
 		}
+
+
+		for (auto it = subparticleBestFitsByFit_.begin(); it != subparticleBestFitsByFit_.end(); ++it) {
+			//cout << "loop: " << it->second << endl;
+			if (it->second == subParID) {
+				//cout << "Erasing old best fit for particle " << pID << endl;
+				toDelIt = it;
+				//it = particleBestFitsByFit_.erase(it);
+			}
+		}
+		cout << "seting new fit value" << endl;
+		if (toDelIt != subparticleBestFitsByFit_.end()) {
+			subparticleBestFitsByFit_.erase(toDelIt); //Raquel added support to subparticles
+
+		}
+
+
 		cout << "done" << endl;
 		particleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));
+		subparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));//Raquel added support to subparticles
 
 		//unsigned int i = 0;
 		//for (auto param = params.begin(); param != params.end(); ++param) {
@@ -2442,6 +2506,8 @@ cout<<i <<" Params collected for one subparticle: "<<paramsString<<endl; //mypau
 cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<endl; //mypause();
 			allGenFits.insert(pair<double, string>(fitCalc, order_params(paramsString, mid)));
 			swarmBestFits_.insert(pair<double, unsigned int>(fitCalc, pID));
+			subswarmBestFits_.insert(pair<double, unsigned int>(fitCalc, subParID));
+
 //cout << "add to swarmBestFits_ fitCalc: " << fitCalc <<endl;mypause();
 
 			if (options.fitType == "pso") {
@@ -3252,7 +3318,8 @@ void Swarm::runSGA() {
 
 			breedGenerationGA();
 			cout << "RAQUEL: finished breedGenerationGA from runSGA" << endl;
-
+			subparticleBestFitsByFit_.clear();
+			subswarmBestFits_.clear();
 		}
 	}
 	//cout << "RAQUEL: got out from WHILE STOP CRITERIA" << endl;
@@ -3411,6 +3478,9 @@ void Swarm::runSPSO() {
 			//cout << "Raquel before processParticlesPSO " << particlestoProcess.size() << " finished particles" << endl;
 			processParticlesPSO(particlestoProcess, true);
 
+
+			subparticleBestFitsByFit_.clear();
+			subswarmBestFits_.clear();
 			//cout << "Raquel After processParticlesPSO in the main loop" << endl;
 
 			//cout << "RAQUEL FALSE STOP CRITERIA IN RUNSPSO" << endl;
@@ -3737,6 +3807,9 @@ void Swarm::runSDE() {
 				//++currentGeneration;
 				//cout << "Switching to main loop" << endl;
 				//trialLoop = false;
+
+				subparticleBestFitsByFit_.clear();
+				subswarmBestFits_.clear();
 			}
 		//}
 	}
@@ -3768,6 +3841,8 @@ void Swarm::runAGA() {
 	// Breed generation
 	breedGenerationGA();
 
+	subparticleBestFitsByFit_.clear();
+	subswarmBestFits_.clear();
 	// Re-launch the particles in to the Swarm proper
 	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
 
@@ -3886,6 +3961,9 @@ void Swarm::runAGA() {
 			cout << "RAQUEL: Finished outputRunSummary();" << endl;
 			cout << "RAQUEL: started breedGenerationGA();" << endl;
 			breedGenerationGA();
+
+			subparticleBestFitsByFit_.clear();
+			subswarmBestFits_.clear();
 			cout << "RAQUEL: finished breedGenerationGA();" << endl;
 		}
 	}
@@ -3997,6 +4075,9 @@ void Swarm::runAPSO() {
 				particlestoProcess.push_back(*i);
 			}
 			processParticlesPSO(particlestoProcess, true);
+			subparticleBestFitsByFit_.clear();
+			subswarmBestFits_.clear();
+
 			cout << "RAQUEL: finished processParticlesPSO();" << endl;
 		}
 	}
@@ -4510,6 +4591,8 @@ void Swarm::runADE() {
 					}
 				}
 
+				subparticleBestFitsByFit_.clear();
+				subswarmBestFits_.clear();
 //				string outputPath = options.jobOutputDir + toString(currentGeneration) + "_summary.txt";
 	//			outputRunSummary(outputPath);
 				//++currentGeneration;
@@ -5344,11 +5427,27 @@ int fpid;
 //int pmid;
 //int psub;
 
+
+
+multimap<double, unsigned int> subparticleFitIDMap;
+
+if(options.fitType == "ga") {
+
+	 subparticleFitIDMap = subswarmBestFits_;
+
+}else if(options.fitType == "pso" || options.fitType == "de"){
+
+
+	 subparticleFitIDMap = subparticleBestFitsByFit_;
+
+}
+
+
 		 for(auto ri1 = alignedResults.begin(); ri1 != alignedResults.end(); ++ri1){//loop through particles
 
 
 			 for (auto ri2 = ri1->second.begin(); ri2 != ri1->second.end(); ++ri2){//loop through models
-				 pcounter++;
+				 pcounter++;// Raquel: subparticle id counter
 
 				 //str =
 				 //str = ;
@@ -5366,11 +5465,11 @@ int fpid;
 
 				 //Raquel: this fcounter will be equal to the subparticle ID
 				 fcounter = 0;
-				 for (auto fits = allGenFits.begin(); fits != allGenFits.end(); ++fits){//loops through the fit resuts
+				 for (auto fits = subparticleFitIDMap.begin(); fits != subparticleFitIDMap.end(); ++fits){//loops through the fit resuts
 					 fcounter++;
 
 					 //fmid = fcalcMID(fcounter,options.models.size());
-					 fpid = fcalcParID(fcounter, options.models.size());
+					 fpid = fcalcParID(fits->second, options.models.size());
 
 					 if(fpid==pcounter){
 						 cout << left << setw(16) << fits->first;
@@ -5412,6 +5511,7 @@ int fpid;
 
 		 //this variable will store the number of constraints fulfilled per subparticle
 		 vector<pair<int,float>> constraintsCount;
+		 int mid = 0;
 
 		 constraintsCount = resultChecking();
 
@@ -5435,7 +5535,7 @@ int fpid;
 		     previous=constraintsCount[i].second;
 		 }
 
-		 cout << "SubParID\tRank" << endl;
+		 cout << "SubParID\tConstraintRank" << endl;
 
 		 for (int i = 0 ; i < subParRankCons.size(); i++){
 		     cout << subParRankCons[i].first << " " << subParRankCons[i].second << "\n";
@@ -5445,21 +5545,32 @@ int fpid;
 
 		 fcounter = 0;
 
-		 for (auto itr = allGenFits.begin(); itr != allGenFits.end(); ++itr){
+
+
+
+
+		 for (auto itr = subparticleFitIDMap.begin(); itr != subparticleFitIDMap.end(); ++itr){
 			 fcounter++;
+
+			 cout << "ALLGENFITS FIRST " << itr->first << " SECOND " << itr->second << endl;
 			 for (int j = 0 ; j < constraintsCount.size(); j++){
 
-				 if(fcounter==constraintsCount[j].first){
+				 if(itr->second==constraintsCount[j].first){
 
-					 fitCount.push_back(make_pair(fcounter,itr->first));
+					 fitCount.push_back(make_pair(itr->second,itr->first));
 
 
 				 }
 			 }
 
+			 mid = fcalcMID(itr->second,options.models.size());
+			 if(mid==0){//if we are dealing with the wild type
+
+				 fitCount.push_back(make_pair(itr->second,itr->first));
+
+			 }
+
 		 }
-
-
 
 		 //sort results from the smaller fit to the larger fit
 		 sort(fitCount.begin(), fitCount.end(), [](const pair<int,float> &left, const pair<int,float> &right){return left.second < right.second;});
@@ -5481,7 +5592,8 @@ int fpid;
 		     previousFit=fitCount[i].second;
 		 }
 
-		 cout << "SubParID\tRank" << endl;
+
+		 cout << "SubParID\tFitRank" << endl;
 
 		 for (int i = 0 ; i < subParRankFit.size(); i++){
 		     cout << subParRankFit[i].first << " " << subParRankFit[i].second << "\n";
@@ -5490,9 +5602,8 @@ int fpid;
 
 
 		 vector<pair<int,float>> finalScore;
-		 float weight = 1-options.constraintWeight;
+		 float weight = 1-options.constraintWeight; //Here it defines how important the cnsraints will be
 		 float scoreTmp = 0;
-
 
 		 //this loop will combine both scores based on fit ranks and fulfilled constraints ranks
 		 for (int i = 0 ; i < subParRankCons.size(); i++){
@@ -5503,9 +5614,18 @@ int fpid;
 
 
 				 if(subParRankCons[i].first == subParRankFit[j].first){
-
+					 //Here it defines how important the cnsraints will be
 					 scoreTmp = (subParRankCons[i].second + (subParRankFit[j].second * weight));
 					 finalScore.push_back(make_pair(subParRankCons[i].first, scoreTmp));
+
+				 }else{
+					 //if the model that we are looking at belongs to the wild type
+					 mid = fcalcMID(subParRankFit[j].first,options.models.size());
+					 if(mid == 0 && (subParRankCons[i].first-1) == subParRankFit[j].first){
+						 //cout << "mid=0 subParRankFit[j].first= " << subParRankFit[j].first << endl;
+						 scoreTmp = subParRankFit[j].second;
+						 finalScore.push_back(make_pair(subParRankFit[j].first, scoreTmp));
+					 }
 
 				 }
 
@@ -5522,8 +5642,8 @@ int fpid;
 		 fitRank=0;
 		 previousFit=-1;
 
-		 vector<pair<int,float>> subParRankFinal;
-
+		 //vector<pair<int,float>> subParRankFinal;
+		 subParRankFinal.clear();
 		 //rank the results based on the Fit value
 		 for (int i = 0 ; i < finalScore.size(); i++){
 		     cout << finalScore[i].first << " " << finalScore[i].second << "\n";
@@ -5556,21 +5676,30 @@ int fpid;
 		 cout << "Particle\tModel\tFit_Rank\tConstraint_Rank\tFinal_Rank" << endl;
 		 outFile << "Particle\tModel\tFit_Rank\tConstraint_Rank\tFinal_Rank" << endl;
 
-		 int maxPar = fcalcParID(allGenFits.size(), options.models.size());
+		 int maxPar = fcalcParID(subparticleFitIDMap.size(), options.models.size());
 
-		 int mid;
+		 //int mid;
 		 int pid;
 
 		 for (int i = 0 ; i < subParRankFinal.size(); i++){
 
+			 mid = fcalcMID(subParRankFinal[i].first,options.models.size());
+			 pid = fcalcParID(subParRankFinal[i].first, options.models.size());
+
 			 for (int j = 0 ; j < subParRankFit.size(); j++){
+
+				 if(mid==0 && subParRankFinal[i].first==subParRankFit[j].first){
+
+					 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << "-" << "\t" << subParRankFinal[i].second << endl;
+					 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << "-" << "\t" << subParRankFinal[i].second << endl;
+
+
+				 }
 
 				 for (int k = 0 ; k < subParRankCons.size(); k++){
 
 					 if(subParRankFinal[i].first==subParRankFit[j].first && subParRankFinal[i].first==subParRankCons[k].first){
 
-						 mid = fcalcMID(subParRankFinal[i].first,options.models.size());
-						 pid = fcalcParID(subParRankFinal[i].first, options.models.size());
 
 						 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << endl;
 						 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << endl;
@@ -6263,6 +6392,14 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	double maxWeight = w->first;
 	w = swarmBestFits_.begin();
 
+
+	cout << "WWWWWWWWWWWWWWWWWWWW      " << w->first << "    WWWWWWWWWWWWWWWWWWW     " << w->second << endl;
+
+	w = subswarmBestFits_.begin();
+
+	cout << "WWWWWWWWWWWWWWWWWWWW      " << w->first << "    WWWWWWWWWWWWWWWWWWW     " << w->second << endl;
+
+
 	// Fill the second element of the weight map with difference between maxWeight and fit value
 	multimap<double, unsigned int> weightDiffs;
 	double diff;
@@ -6301,17 +6438,38 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	unsigned int childCounter = 1;
 	int subParID = 0;
 	int nModels = options.models.size();
+	int pID = 0;
 	// Only keep parents if we're doing an entire generation at once
 	if (children.size() == options.swarmSize) {
 		auto parent = allGenFits.begin();
 		for (unsigned int p = 1; p <= options.keepParents; ++p) {
 
 			vector<string> params;
-			split(parent->second, params);
-			params.erase(params.begin());
 
-			for (auto param = params.begin(); param != params.end(); ++param) {
-				particleNewParamSets[childCounter].push_back(stod(*param));
+			//Raquel, if we are using constraints, select parents with the best final rank (Fit and constraints combined)
+			if(options.constraints_.size()>=1){
+				//vector<pair<int,float>> subParRankFinal;
+				int index = 0;
+				int bestSubparID = subParRankFinal[index].first;
+				index++;
+				pID = fcalcParID(bestSubparID, nModels);
+				vector<double> nparams = particleCurrParamSets_[pID];
+
+				params.clear();
+				for (auto param = nparams.begin(); param != nparams.end(); ++param) {
+					particleNewParamSets[childCounter].push_back((*param));
+					params.push_back(toString(*param));
+				}
+
+			}else{
+				split(parent->second, params);
+				params.erase(params.begin());
+
+				for (auto param = params.begin(); param != params.end(); ++param) {
+					particleNewParamSets[childCounter].push_back(stod(*param));
+				}
+
+
 			}
 
 			cout << "Sending unchanged params to " << children[childCounter - 1] << " counter: " << childCounter << endl;

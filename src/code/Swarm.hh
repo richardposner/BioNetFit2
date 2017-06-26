@@ -1,6 +1,6 @@
 /*============================================================================
-// Name        : sewarm.hh
-// Authors     : Brandon Thomas, Abolfazl Razi
+// Name        : swarm.hh
+// Authors     : Brandon Thomas, Abolfazl Razi,Raquel Dias
 // Version     : 2.0
 // Lat Update: : 2017-01-15
 // Copyright   :
@@ -460,6 +460,9 @@ private:
 	std::set<unsigned int> finishedParticles_;
 	//std::set<unsigned int>::iterator finishedParticlesIterator_;
 
+
+	vector<pair<int,float>> subParRankFinal; //Raquel added this variable to store the model checging results as a global variable
+
 	std::map<unsigned int, std::vector<std::string>> expPaths_;
 	std::vector<std::string> sConf_;
 
@@ -493,8 +496,14 @@ private:
 
 	// Maybe we can change them to vectors, too
 	std::map<unsigned int, double> particleBestFits_;
+	std::map<unsigned int, double> subparticleBestFits_; //Raquel added support to subparticles
+
 	std::multimap<double, unsigned int> particleBestFitsByFit_;
+	std::multimap<double, unsigned int> subparticleBestFitsByFit_; //Raquel added support to subparticles
+
 	std::multimap<double, unsigned int> swarmBestFits_;
+	std::multimap<double, unsigned int> subswarmBestFits_; //Raquel added support to subparticles
+
 	std::map<unsigned int, std::vector<double>> particleParamVelocities_;
 
 	// Holds the running best parameter set for each particle

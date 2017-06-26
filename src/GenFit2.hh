@@ -1,8 +1,8 @@
 /*============================================================================
 // Name        : GenFit2.hh
-// Authors     : Brandon Thomas, Abolfazl Razi
+// Authors     : Brandon Thomas, Abolfazl Razi, Raquel Dias
 // Version     : 2.0
-// Last Update : 2017-01-15
+// Last Update : 2017-06-22,
 // Copyright   :
 // Description :
 //============================================================================*/
