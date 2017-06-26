@@ -5602,7 +5602,11 @@ if(options.fitType == "ga") {
 
 
 		 vector<pair<int,float>> finalScore;
-		 float weight = 1-options.constraintWeight; //Here it defines how important the cnsraints will be
+		 float consWeight = options.constraintWeight; //Here it defines how important the consraints will be
+		 //put a large consWeight number = the constraint ranks will prevail
+		 //put a small consWeight number = the fit ranks will prevail
+		 float fitWeight = 1-options.constraintWeight; //Here it defines how important the fits will be
+
 		 float scoreTmp = 0;
 
 		 //this loop will combine both scores based on fit ranks and fulfilled constraints ranks
@@ -5615,7 +5619,7 @@ if(options.fitType == "ga") {
 
 				 if(subParRankCons[i].first == subParRankFit[j].first){
 					 //Here it defines how important the cnsraints will be
-					 scoreTmp = (subParRankCons[i].second + (subParRankFit[j].second * weight));
+					 scoreTmp = ((subParRankCons[i].second*consWeight) + (subParRankFit[j].second * fitWeight));
 					 finalScore.push_back(make_pair(subParRankCons[i].first, scoreTmp));
 
 				 }else{
@@ -5623,7 +5627,7 @@ if(options.fitType == "ga") {
 					 mid = fcalcMID(subParRankFit[j].first,options.models.size());
 					 if(mid == 0 && (subParRankCons[i].first-1) == subParRankFit[j].first){
 						 //cout << "mid=0 subParRankFit[j].first= " << subParRankFit[j].first << endl;
-						 scoreTmp = subParRankFit[j].second;
+						 scoreTmp = subParRankFit[j].second*fitWeight;
 						 finalScore.push_back(make_pair(subParRankFit[j].first, scoreTmp));
 					 }
 
@@ -5634,7 +5638,7 @@ if(options.fitType == "ga") {
 
 		 }
 
-
+		 //sort results from the smaller fit to the larger fit
 		 sort(finalScore.begin(), finalScore.end(), [](const pair<int,float> &left, const pair<int,float> &right){return left.second < right.second;});
 
 
@@ -6386,30 +6390,53 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	unsigned int parentPoolSize = options.swarmSize;
 	parentPoolSize = parentPoolSize - options.keepParents;
 
-	// Create an iterator to our fit list, use it to get our maximum fit value, then reset the iterator to the beginning of the list
-	multimap<double, unsigned int>::iterator w = swarmBestFits_.begin();
-	advance(w, options.swarmSize - 1);
-	double maxWeight = w->first;
-	w = swarmBestFits_.begin();
+	double maxWeight;
+	multimap<double, unsigned int>::iterator w;
+
+	//use model checking results if user provided constraints
+	if(options.constraints_.size()>=1){
+		int last = (options.swarmSize*options.models.size()) - 1;
+
+		maxWeight = subParRankFinal[last].second;
+		cout << "WWWWWWWWWWWWWWWWWWWW subParRankFinal[last]     " << subParRankFinal[last].second << "    WWWWWWWWWWWWWWWWWWW     " << subParRankFinal[last].first << endl;
 
 
-	cout << "WWWWWWWWWWWWWWWWWWWW      " << w->first << "    WWWWWWWWWWWWWWWWWWW     " << w->second << endl;
+	}else{
+		// Create an iterator to our fit list, use it to get our maximum fit value, then reset the iterator to the beginning of the list
+		//Raquel updated to use subparticles
+		w = subswarmBestFits_.begin();
+		advance(w, (options.swarmSize*options.models.size()) - 1);
+		maxWeight = w->first;
+		w = subswarmBestFits_.begin();
+		cout << "WWWWWWWWWWWWWWWWWWWW      " << w->first << "    WWWWWWWWWWWWWWWWWWW     " << w->second << endl;
 
-	w = subswarmBestFits_.begin();
-
-	cout << "WWWWWWWWWWWWWWWWWWWW      " << w->first << "    WWWWWWWWWWWWWWWWWWW     " << w->second << endl;
+	}
 
 
 	// Fill the second element of the weight map with difference between maxWeight and fit value
 	multimap<double, unsigned int> weightDiffs;
 	double diff;
 	double weightSum = 0;
-	for (unsigned int i = 0; i < options.swarmSize; ++i) {
-		diff = maxWeight - w->first;
-		weightSum += diff;
-		weightDiffs.insert(pair<double, unsigned int>(diff, w->second));
-		++w;
+
+	if(options.constraints_.size()>=1){
+		//Raquel updated to use subparticles
+		for (unsigned int i = 0; i < options.swarmSize*options.models.size(); ++i) {
+			diff = maxWeight - subParRankFinal[i].second;
+			weightSum += diff;
+			weightDiffs.insert(pair<double, unsigned int>(diff, subParRankFinal[i].first));
+		}
+
+	}else{
+		//Raquel updated to use subparticles
+		for (unsigned int i = 0; i < options.swarmSize*options.models.size(); ++i) {
+			diff = maxWeight - w->first;
+			weightSum += diff;
+			weightDiffs.insert(pair<double, unsigned int>(diff, w->second));
+			++w;
+		}
+
 	}
+
 
 	if (weightSum == 0) {
 		finishFit();
@@ -6461,14 +6488,13 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 					params.push_back(toString(*param));
 				}
 
-			}else{
+			}else{//Raquel, otherwise, use the original fit values
 				split(parent->second, params);
 				params.erase(params.begin());
 
 				for (auto param = params.begin(); param != params.end(); ++param) {
 					particleNewParamSets[childCounter].push_back(stod(*param));
 				}
-
 
 			}
 
