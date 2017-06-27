@@ -500,9 +500,11 @@ private:
 
 	std::multimap<double, unsigned int> particleBestFitsByFit_;
 	std::multimap<double, unsigned int> subparticleBestFitsByFit_; //Raquel added support to subparticles
+	std::multimap<double, unsigned int> currentsubparticleBestFitsByFit_; //Raquel added support to subparticles
 
 	std::multimap<double, unsigned int> swarmBestFits_;
 	std::multimap<double, unsigned int> subswarmBestFits_; //Raquel added support to subparticles
+	std::multimap<double, unsigned int> currentsubswarmBestFits_; //Raquel added support to subparticles
 
 	std::map<unsigned int, std::vector<double>> particleParamVelocities_;
 
