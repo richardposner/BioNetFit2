@@ -1975,7 +1975,6 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 
 		// Insert into best fit lists, erasing in the case of the map with fits as keys
 		particleBestFits_[pID] = fit;
-		subparticleBestFits_[pID] = fit; //Raquel added support to subparticles
 
 		map<double, unsigned int>::iterator toDelIt = particleBestFitsByFit_.end();
 		cout << "looping fits" << endl;
@@ -2012,8 +2011,55 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 
 		cout << "done" << endl;
 		particleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));
-		subparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));//Raquel added support to subparticles
-		currentsubparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));//Raquel added support to subparticles
+
+		//unsigned int i = 0;
+		//for (auto param = params.begin(); param != params.end(); ++param) {
+		//	cout << "Updating best param for particle " << pID << ": " << *param << endl;
+		//	particleBestParamSets_[pID][i] = *param;
+		//	++i;
+		//}
+
+
+		cout << "updating params" << endl;
+		for(int mid = 0; mid < options.models.size(); mid++){
+			update_cur_particle_params(pID, mid, true);
+		}
+		cout << "done" << endl;
+
+	}
+
+
+
+	if (subparticleBestFits_.at(subParID) == 0 || fit < subparticleBestFits_.at(subParID)) {
+		if (options.verbosity >= 3) {
+			cout << "Updating best fit and params for particle " << pID << endl;
+		}
+
+		// Insert into best fit lists, erasing in the case of the map with fits as keys
+		particleBestFits_[pID] = fit;
+		subparticleBestFits_[subParID] = fit; //Raquel added support to subparticles
+
+		map<double, unsigned int>::iterator toDelIt2 = subparticleBestFitsByFit_.end();
+		cout << "looping fits" << endl;
+
+		for (auto it = subparticleBestFitsByFit_.begin(); it != subparticleBestFitsByFit_.end(); ++it) {
+			//cout << "loop: " << it->second << endl;
+			if (it->second == subParID) {
+				//cout << "Erasing old best fit for particle " << pID << endl;
+				toDelIt2 = it;
+				//it = particleBestFitsByFit_.erase(it);
+			}
+		}
+		cout << "seting new fit value" << endl;
+		if (toDelIt2 != subparticleBestFitsByFit_.end()) {
+			subparticleBestFitsByFit_.erase(toDelIt2);
+
+		}
+
+
+		cout << "done" << endl;
+		subparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, subParID));//Raquel added support to subparticles
+		currentsubparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, subParID));//Raquel added support to subparticles
 
 		//unsigned int i = 0;
 		//for (auto param = params.begin(); param != params.end(); ++param) {
@@ -3667,6 +3713,11 @@ void Swarm::runSDE() {
 		saveSwarmState();
 		//cout << "RAQUEL: finished saveSwarmState" << endl;
 
+		string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+
+		outputRunSummary(outputPath);
+
+
 		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
 		if (options.deleteOldFiles) {
 			//cout << "RAQUEL: starting cleanupFiles" << endl;
@@ -3877,12 +3928,6 @@ void Swarm::runSDE() {
 			// Check for stop criteria
 			stopCriteria = checkStopCriteria();
 			cout << "Stop Criteria value: " << stopCriteria << endl;
-			//Raquel printing the output summary even if we didn't reach the stop criteria
-
-			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
-
-			outputRunSummary(outputPath);
-
 
 			if (!stopCriteria) {
 				// Send/receive migration sets
@@ -6089,6 +6134,7 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 		cout << "Mutating particle " << particle << endl;
 	}
 
+	int parID = 0;
 	vector<double> mutatedParams;
 	unsigned int currIsland = 0;
 	unsigned int particlesPerIsland = 0;
@@ -6109,20 +6155,49 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 	}
 
 	boost::random::uniform_int_distribution<int> unif(0, particlesPerIsland - 1);
+	cout << "done setting uniform_int_distribution" << endl;
 
+	//Raquel: adding support to use constraints when selecting the best particles in DE
 	if (options.mutateType == 1) {
 		int bestParticle = 0;
-		for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
-			cout << "Raquel setting particle to island value" << endl;
-			if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
-				cout << "Raquel setting particle to island value done" << endl;
 
-				bestParticle = fitVal->second;
-				//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
-				break;
+		if(options.constraints_.size()>0){//If the user provided any constraint
+			//use the combined rank between fit values and constraint values to select the best particle
+			//The ranks are sorted from the best fit to the worst fit values, so the loop will stop at the first particle that it finds, with the best fit as possible per iland
+			for (auto fitVal = subParRankFinal.begin(); fitVal != subParRankFinal.end(); ++fitVal) {
+				//cout << "Raquel setting particle to island value" << endl;
+
+				parID = fcalcParID(fitVal->first, options.models.size());
+
+				if (fitVal->second > 0 && particleToIsland_[parID] == currIsland) {
+					//cout << "Raquel setting particle to island value done" << endl;
+
+					bestParticle = fitVal->second;
+					//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
+					break;
+				}
+
 			}
 
+
+		}else{
+
+			for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
+				//cout << "Raquel setting particle to island value" << endl;
+				if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+					//cout << "Raquel setting particle to island value done" << endl;
+
+					bestParticle = fitVal->second;
+					//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
+					break;
+				}
+
+			}
+
+
 		}
+
+
 
 		vector<double> bestParamSet = particleCurrParamSets_.at(bestParticle);
 		unsigned int pi = 0;
@@ -6145,11 +6220,49 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 	else if (options.mutateType == 2) {
 		unsigned int pi = 0;
 		int bestParticle = 0;
-		for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
-			if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
-				bestParticle = fitVal->second;
-			}
-		}
+		//for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
+		//	if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+		//		bestParticle = fitVal->second;
+		//	}
+		//}
+		if(options.constraints_.size()>0){//If the user provided any constraint
+					//use the combined rank between fit values and constraint values to select the best particle
+					//mutate type 2 will take the worst particle for the current island and mutate it
+					for (auto fitVal = subParRankFinal.begin(); fitVal != subParRankFinal.end(); ++fitVal) {
+						cout << "Raquel setting particle to island value" << endl;
+
+						parID = fcalcParID(fitVal->first, options.models.size());
+
+						if (fitVal->second > 0 && particleToIsland_.at(parID) == currIsland) {
+							cout << "Raquel setting particle to island value done" << endl;
+
+							bestParticle = fitVal->second;
+							//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
+							//break;
+						}
+
+					}
+
+
+				}else{
+
+
+					for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
+						//cout << "Raquel setting particle to island value" << endl;
+						if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+							//cout << "Raquel setting particle to island value done" << endl;
+
+							bestParticle = fitVal->second;
+							//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
+							//break;
+						}
+
+					}
+
+
+				}
+
+
 		vector<double> bestParamSet = particleCurrParamSets_.at(bestParticle);
 		for (auto param = this->getFreeParams_().begin(); param != this->getFreeParams_().end(); ++param) {//for (auto param = options.model->getFreeParams_().begin(); param != options.model->getFreeParams_().end(); ++param) {
 			int p1 = 0;
@@ -6175,11 +6288,50 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 	else if (options.mutateType == 3) {
 		unsigned int pi = 0;
 		int bestParticle = 0;
-		for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
-			if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
-				bestParticle = fitVal->second;
-			}
-		}
+		//for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
+		//	if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+		//		bestParticle = fitVal->second;
+		//	}
+		//}
+
+		if(options.constraints_.size()>0){//If the user provided any constraint
+					//use the combined rank between fit values and constraint values to select the best particle
+					//mutate type 3 will take the worst particle for the current island and mutate it
+					for (auto fitVal = subParRankFinal.begin(); fitVal != subParRankFinal.end(); ++fitVal) {
+						cout << "Raquel setting particle to island value" << endl;
+
+						parID = fcalcParID(fitVal->first, options.models.size());
+
+						if (fitVal->second > 0 && particleToIsland_.at(parID) == currIsland) {
+							cout << "Raquel setting particle to island value done" << endl;
+
+							bestParticle = fitVal->second;
+							//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
+							//break;
+						}
+
+					}
+
+
+				}else{
+
+
+					for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
+						//cout << "Raquel setting particle to island value" << endl;
+						if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+							//cout << "Raquel setting particle to island value done" << endl;
+
+							bestParticle = fitVal->second;
+							//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
+							//break;
+						}
+
+					}
+
+
+				}
+
+
 		vector<double> bestParamSet = particleCurrParamSets_.at(bestParticle);
 		for (auto param = this->getFreeParams_().begin(); param != this->getFreeParams_().end(); ++param) { //for (auto param = options.model->getFreeParams_().begin(); param != options.model->getFreeParams_().end(); ++param) {
 			int p1 = 0;
@@ -6202,11 +6354,51 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 	else if (options.mutateType == 4) {
 		unsigned int pi = 0;
 		int bestParticle = 0;
-		for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
-			if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
-				bestParticle = fitVal->second;
-			}
-		}
+		//for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
+		//	if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+		//		bestParticle = fitVal->second;
+		//	}
+		//}
+
+		if(options.constraints_.size()>0){//If the user provided any constraint
+					//use the combined rank between fit values and constraint values to select the best particle
+					//mutate type 4 will take the worst particle for the current island and mutate it
+					for (auto fitVal = subParRankFinal.begin(); fitVal != subParRankFinal.end(); ++fitVal) {
+						cout << "Raquel setting particle to island value" << endl;
+
+						parID = fcalcParID(fitVal->first, options.models.size());
+
+						if (fitVal->second > 0 && particleToIsland_.at(parID) == currIsland) {
+							cout << "Raquel setting particle to island value done" << endl;
+
+							bestParticle = fitVal->second;
+							//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
+							//break;
+						}
+
+					}
+
+
+				}else{
+
+
+					for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
+						//cout << "Raquel setting particle to island value" << endl;
+						if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+							//cout << "Raquel setting particle to island value done" << endl;
+
+							bestParticle = fitVal->second;
+							//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
+							//break;
+						}
+
+					}
+
+
+				}
+
+
+
 		vector<double> bestParamSet = particleCurrParamSets_.at(bestParticle);
 		for (auto param = this->getFreeParams_().begin(); param != this->getFreeParams_().end(); ++param) {//for (auto param = options.model->getFreeParams_().begin(); param != options.model->getFreeParams_().end(); ++param) {
 			int p1 = 0;
