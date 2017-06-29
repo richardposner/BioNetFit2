@@ -1993,22 +1993,6 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 
 		}
 
-
-		for (auto it = subparticleBestFitsByFit_.begin(); it != subparticleBestFitsByFit_.end(); ++it) {
-			//cout << "loop: " << it->second << endl;
-			if (it->second == subParID) {
-				//cout << "Erasing old best fit for particle " << pID << endl;
-				toDelIt = it;
-				//it = particleBestFitsByFit_.erase(it);
-			}
-		}
-		cout << "seting new fit value" << endl;
-		if (toDelIt != subparticleBestFitsByFit_.end()) {
-			subparticleBestFitsByFit_.erase(toDelIt); //Raquel added support to subparticles
-
-		}
-
-
 		cout << "done" << endl;
 		particleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));
 
@@ -2036,7 +2020,6 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 		}
 
 		// Insert into best fit lists, erasing in the case of the map with fits as keys
-		particleBestFits_[pID] = fit;
 		subparticleBestFits_[subParID] = fit; //Raquel added support to subparticles
 
 		map<double, unsigned int>::iterator toDelIt2 = subparticleBestFitsByFit_.end();
@@ -2256,7 +2239,15 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 	int maxSubPar = fcalcsubParID(options.swarmSize, options.models.size()-1, options.models.size());
 	int tries = 0;
 
-	while (finishedParticles_.size() < options.swarmSize/2 && runningParticles_.size() < maxSubPar) { //razi: loop over particles, each particle includes nModels subPArticles
+	if(options.swarmSize<2){
+
+		finishFit();
+		outputError("Error: If running an asynchronous run please set a swarm size of at least 2, otherwise run the synchronous method.");
+
+
+	}
+
+	while ( (finishedParticles_.size() < options.swarmSize/2 || finishedParticles_.size() < 2 ) && runningParticles_.size() < maxSubPar ) { //razi: loop over particles, each particle includes nModels subPArticles
 
 		if (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
 			sp++;
@@ -3335,16 +3326,35 @@ void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int>>
 	// Generate a random number between 1 and the number of neighbors
 	// in the island topology
 	boost::random::uniform_int_distribution<int> unif(0, islandTopology[island].size() - 1);
-
+	int parID = 0;
 	// Fill a vector with particles from this island, starting with best fits and ending with worst
 	vector<unsigned int> particlesToSend;
-	for (auto fitIt = particleBestFitsByFit_.begin(); fitIt != particleBestFitsByFit_.end(); ++fitIt) {
-		if (particleToIsland_.at(fitIt->second) == island) {
-			particlesToSend.push_back(fitIt->second);
-			if (particlesToSend.size() == options.numToMigrate) {
-				break;
+	//Raquel: if the user provided constraints, then use the ranks calculated from the fit values and constraints combined in order to select the best particle
+	if(options.constraints_.size()>0){
+
+		//the ranks are sorted from the best particle to the worst, so the for loop will stop in the first time it finds a particle that belongs to the current iland
+		for (auto fitIt = subParRankFinal.begin(); fitIt != subParRankFinal.end(); ++fitIt) {
+			parID = fcalcParID(fitIt->first, options.models.size());
+
+			if (particleToIsland_.at(parID) == island) {
+				particlesToSend.push_back(parID);
+				if (particlesToSend.size() == options.numToMigrate) {
+					break;
+				}
 			}
 		}
+
+	}else{
+
+		for (auto fitIt = particleBestFitsByFit_.begin(); fitIt != particleBestFitsByFit_.end(); ++fitIt) {
+			if (particleToIsland_.at(fitIt->second) == island) {
+				particlesToSend.push_back(fitIt->second);
+				if (particlesToSend.size() == options.numToMigrate) {
+					break;
+				}
+			}
+		}
+
 	}
 
 	// Choose the index of our receiver
@@ -3378,18 +3388,43 @@ void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vec
 		// Create a list of particles from the receiving island that will
 		// receive the migration set
 		vector<unsigned int> particlesToRecv;
-		for (map<double, unsigned int>::reverse_iterator fitIt = particleBestFitsByFit_.rbegin(); fitIt != particleBestFitsByFit_.rend(); ++fitIt) {
-			cout << fitIt->second << endl;
-			if (particleToIsland_[fitIt->second] == island) {
-				particlesToRecv.push_back(fitIt->second);
+		int parID = 0;
+
+		//Raquel: if the user provided constraints, then use the ranks calculated from the fit values and constraints combined in order to select the best particle
+		if(options.constraints_.size()>0){
+			//Raquel: this will receive the particles with the worst fit to migrate
+			for (vector<pair<int,float>>::reverse_iterator fitIt = subParRankFinal.rbegin(); fitIt != subParRankFinal.rend(); ++fitIt) {
+				cout << fitIt->first << endl;
+				parID = fcalcParID(fitIt->first, options.models.size());
+
+				if (particleToIsland_[parID] == island) {
+					particlesToRecv.push_back(parID);
+				}
 			}
+
+		}else{
+
+			for (map<double, unsigned int>::reverse_iterator fitIt = particleBestFitsByFit_.rbegin(); fitIt != particleBestFitsByFit_.rend(); ++fitIt) {
+				cout << fitIt->second << endl;
+
+				if (particleToIsland_[fitIt->second] == island) {
+					particlesToRecv.push_back(fitIt->second);
+				}
+			}
+
+
 		}
+
+
+
 
 		// Iterates through the list of receiving particles
 		auto recvIt = particlesToRecv.begin();
 		cout << 999 << endl;
 		// For each migration set destined for this island
 		unsigned int replacementCounter = 0;
+		int subParID = 0;
+
 		for (auto migrationSet = migrationSets[island].begin(); migrationSet != migrationSets[island].end();) {
 			cout << "Replacing " << migrationSet->size() << " params for particle " << *recvIt << " with fit value of " << particleBestFits_.at(*recvIt) << endl;
 			vector<string> paramStr;
@@ -3403,7 +3438,14 @@ void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vec
 				++i;
 			}
 			// Send the parameters to the particle
-			swarmComm->sendToSwarm(0, *recvIt, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramStr);
+			//Raquel updating to support subparticles
+			for(int mid = 0; mid < options.models.size(); mid++){
+
+				subParID = fcalcsubParID(*recvIt, mid, options.models.size());
+				swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramStr);
+
+			}
+			//swarmComm->sendToSwarm(0, *recvIt, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramStr);
 			// Next migration set, choose a new receiver from the island
 			++recvIt;
 			++replacementCounter;
@@ -3976,6 +4018,13 @@ void Swarm::runAGA() {
 	// Save swarm state
 	saveSwarmState();
 
+
+	string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+
+	outputRunSummary(outputPath);
+
+
+
 	// Breed generation
 	breedGenerationGA();
 
@@ -4083,6 +4132,7 @@ void Swarm::runAGA() {
 		cout << "RAQUEL: Finished saveSwarmState();" << endl;
 
 
+
 		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
 		if (options.deleteOldFiles) {
 			cout << "RAQUEL: Started cleanupFiles();" << endl;
@@ -4091,10 +4141,13 @@ void Swarm::runAGA() {
 
 		}
 
+		string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+
+		outputRunSummary(outputPath);
+
+
 		if (!stopCriteria) {
-			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
 			cout << "RAQUEL: Started outputRunSummary();" << endl;
-			outputRunSummary(outputPath);
 			cout << "RAQUEL: Finished outputRunSummary();" << endl;
 			cout << "RAQUEL: started breedGenerationGA();" << endl;
 			breedGenerationGA();
@@ -4199,11 +4252,13 @@ void Swarm::runAPSO() {
 
 		}
 
+		string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+		//cout << "RAQUEL: Started outputRunSummary();" << endl;
+		outputRunSummary(outputPath);
+		//cout << "RAQUEL: Finished outputRunSummary();" << endl;
+
+
 		if (!stopCriteria) {
-			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
-			//cout << "RAQUEL: Started outputRunSummary();" << endl;
-			outputRunSummary(outputPath);
-			//cout << "RAQUEL: Finished outputRunSummary();" << endl;
 			cout << "RAQUEL: started processParticlesPSO();" << endl;
 			for(auto i = finishedParticles_.begin(); i!=finishedParticles_.end(); ++i){
 				cout << "RAQUEL: processing particle number: " << *i << endl;
@@ -4505,6 +4560,10 @@ void Swarm::runADE() {
 		}
 
 
+		string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+
+		outputRunSummary(outputPath);
+
 
 
 
@@ -4645,6 +4704,7 @@ void Swarm::runADE() {
 		finishedParticles.clear();
 		numFinishedParticles = 0;
 
+
 		// Done processing params. Now we need to...
 		// Check each island to see if it has completed its generation
 		for (unsigned int island = 1; island <= options.numIslands; ++island) {
@@ -4706,10 +4766,6 @@ void Swarm::runADE() {
 			stopCriteria = checkStopCriteria();
 			cout << "Stop Criteria value: " << stopCriteria << endl;
 			//Raquel printing the output summary even if we didn't reach the stop criteria
-
-			string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
-
-			outputRunSummary(outputPath);
 
 
 			if (!stopCriteria) {
