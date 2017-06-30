@@ -484,13 +484,7 @@ Swarm * Config::createSwarmFromConfig () {
 	if(pairs.find("constraint_weight") != pairs.end()) {
 		swarm_->options.constraintWeight = stof(pairs.find("constraint_weight")->second);
 	}
-
-
 	/////////////////////////RAQUEL adding weight parameter for ranking models by constraint/////////////////////
-
-	if(pairs.find("constraint_weight") != pairs.end()) {
-		swarm_->options.constraintWeight = stof(pairs.find("constraint_weight")->second);
-	}
 
 
 #ifdef VER2
@@ -535,17 +529,17 @@ Swarm * Config::createSwarmFromConfig () {
 			}
 			else {
 				//Raquel: added constraint section to the config file
-				if(paramComponents.size() == 1){
+				if(paramComponents.size() == 5){
 					if (pair->first == "constraint" || pair->first == "constraints") {
 								//swarm_->options.constraints_.at(constraintIndex) = paramComponents[0];
-								swarm_->options.constraints_[constraintIndex]=paramComponents[0];
+								swarm_->options.constraints_[constraintIndex]=pair->second;
 								constraintIndex++;
 								 cout << "setting " << paramComponents[0] << endl;
 					}else{
-						swarm_->outputError("Error: Problem parsing your free parameter generation option in your .conf file. Each parameter generation option requires three components: the parameter name, minimum, and maximum.");
+						swarm_->outputError("Error: Problem parsing your free parameter generation option in your .conf file. Each parameter generation option requires three components: the parameter name, minimum, and maximum. Each constraint requires five components: logical operation, model 1, model2, time/iteration 1, time/iteration 2.");
 					}
 				}else{
-					swarm_->outputError("Error: Problem parsing your free parameter generation option in your .conf file. Each parameter generation option requires three components: the parameter name, minimum, and maximum.");
+					swarm_->outputError("Error: Problem parsing your free parameter generation option in your .conf file. Each parameter generation option requires three components: the parameter name, minimum, and maximum. Each constraint requires five components: logical operation, model 1, model2, time/iteration 1, time/iteration 2.");
 				}
 				//Raquel: end, added constraint section to the config file
 				//swarm_->outputError("Error: Problem parsing your free parameter generation option in your .conf file. Each parameter generation option requires three components: the parameter name, minimum, and maximum.");
