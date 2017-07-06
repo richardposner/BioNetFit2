@@ -10,4 +10,4 @@ For example:
 
       constraint=RLbonds>=pR 0 1 0 60
 
-where I'm comparint RLbonds from model 0 at time 0 versus pR from model 1 at time 60, and I'm checking if RLbonds is greater then or equal to pR
+where I'm comparing RLbonds from model 0 at time 0 versus pR from model 1 at time 60, and I'm checking if RLbonds is greater then or equal to pR
