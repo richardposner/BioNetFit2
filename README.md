@@ -17,10 +17,10 @@ where I'm comparing RLbonds from model 0 at time 0 versus pR from model 1 at tim
 
 
 
-Another new option was included so the user can specify the constraint weight, which can be any value between 0 and 1
-A very small number (i.e 0.1) = fit values matter the most
-A very large number (i.e 0.9) = constraints matter the most
-A balanced value (i.e 0.5) = both fit and contrsaint values are equally important
+Another new option was included so the user can specify the constraint weight, which can be any value between 0 and 1.
+A very small number (i.e 0.1) = fit values matter the most. 
+A very large number (i.e 0.9) = constraints matter the most.
+A balanced value (i.e 0.5) = both fit and contrsaint values are equally important.
 
 For example:
 
