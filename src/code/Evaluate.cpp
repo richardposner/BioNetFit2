@@ -351,19 +351,19 @@ int first = 0;
         	 	 //cout << namesValues[constraintValue1[i]][j] << " " << constraintOp[i] << " " << namesValues[constraintValue2[i]][j];
 
         	 	 //if both constraint values belong to observables (are not explicit numbers)
-        	 	 if(constraintValue1[i].find_first_not_of("01234567890.") != string::npos && constraintValue2[i].find_first_not_of("01234567890.") != string::npos){
+        	 	 if(constraintValue1[i].find_first_not_of("-01234567890.") != string::npos && constraintValue2[i].find_first_not_of("-01234567890.") != string::npos){
 
         		 	 result = constraintFunction(namesValues1[constraintValue1[i]][j], constraintOp[i], namesValues2[constraintValue2[i]][j]);
 
-        	 	 }else if(constraintValue1[i].find_first_not_of("01234567890.") != string::npos && constraintValue2[i].find_first_not_of("01234567890.") == string::npos){
+        	 	 }else if(constraintValue1[i].find_first_not_of("-01234567890.") != string::npos && constraintValue2[i].find_first_not_of("-01234567890.") == string::npos){
 
         	 		 result = constraintFunction(namesValues1[constraintValue1[i]][j], constraintOp[i], atof(constraintValue2[i].c_str()));
 
-        	 	 }else if(constraintValue1[i].find_first_not_of("01234567890.") == string::npos && constraintValue2[i].find_first_not_of("01234567890.") != string::npos){
+        	 	 }else if(constraintValue1[i].find_first_not_of("-01234567890.") == string::npos && constraintValue2[i].find_first_not_of("-01234567890.") != string::npos){
 
         		 	 result = constraintFunction(atof(constraintValue1[i].c_str()), constraintOp[i], namesValues2[constraintValue2[i]][j]);
 
-        	 	 }else if(constraintValue1[i].find_first_not_of("01234567890.") == string::npos && constraintValue2[i].find_first_not_of("01234567890.") == string::npos){
+        	 	 }else if(constraintValue1[i].find_first_not_of("-01234567890.") == string::npos && constraintValue2[i].find_first_not_of("-01234567890.") == string::npos){
 
         		 	 cout << "ERROR can't find any constraint value in the observable list!!!" << endl;
         		 	 cout << "constraint value 1: " << constraintValue1[i] << "constraint value 2: " << constraintValue2[i] << endl;
