@@ -5899,8 +5899,8 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 					 if(subParRankFinal[i].first==subParRankFit[j].first && subParRankFinal[i].first==subParRankCons[k].first){
 
 
-						 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << constraintsCount[i].second <<  endl;
-						 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << constraintsCount[i].second << endl;
+						 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << "\t" <<constraintsCount[i].second <<  endl;
+						 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << "\t" << constraintsCount[i].second << endl;
 
 						 found = 1;
 					 }
@@ -5910,8 +5910,8 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 				 if(found==0 && subParRankFinal[i].first==subParRankFit[j].first){
 
-					 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << "-" << "\t" << subParRankFinal[i].second << "-" << endl;
-					 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << "-" << "\t" << subParRankFinal[i].second << "-" << endl;
+					 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << "-" << "\t" << subParRankFinal[i].second << "\t-" << endl;
+					 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << "-" << "\t" << subParRankFinal[i].second << "\t-" << endl;
 
 
 				 }
