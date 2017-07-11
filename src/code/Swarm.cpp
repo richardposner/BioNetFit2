@@ -6364,7 +6364,7 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 
 					for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
 						//cout << "Raquel setting particle to island value" << endl;
-						if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+						if (fitVal->first > 0 && particleToIsland_[fitVal->second] == currIsland) {
 							//cout << "Raquel setting particle to island value done" << endl;
 
 							bestParticle = fitVal->second;
@@ -6378,7 +6378,7 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 				}
 
 
-		vector<double> bestParamSet = particleCurrParamSets_.at(bestParticle);
+		vector<double> bestParamSet = particleCurrParamSets_[bestParticle];
 		for (auto param = this->getFreeParams_().begin(); param != this->getFreeParams_().end(); ++param) {//for (auto param = options.model->getFreeParams_().begin(); param != options.model->getFreeParams_().end(); ++param) {
 			int p1 = 0;
 			int p2 = 0;
@@ -6391,10 +6391,10 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 				p4 = unif(generalRand);
 			}
 
-			double p1Param = particleCurrParamSets_.at(islandToParticle_.at(currIsland)[p1])[pi];
-			double p2Param = particleCurrParamSets_.at(islandToParticle_.at(currIsland)[p2])[pi];
-			double p3Param = particleCurrParamSets_.at(islandToParticle_.at(currIsland)[p3])[pi];
-			double p4Param = particleCurrParamSets_.at(islandToParticle_.at(currIsland)[p4])[pi];
+			double p1Param = particleCurrParamSets_[islandToParticle_[currIsland][p1]][pi];
+			double p2Param = particleCurrParamSets_[islandToParticle_[currIsland][p2]][pi];
+			double p3Param = particleCurrParamSets_[islandToParticle_[currIsland][p3]][pi];
+			double p4Param = particleCurrParamSets_[islandToParticle_[currIsland][p4]][pi];
 
 			mutatedParams.push_back(bestParamSet[pi] + f * (p1Param - p2Param) + f * (p3Param - p4Param));
 			++pi;
@@ -6417,7 +6417,7 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 
 						parID = fcalcParID(fitVal->first, options.models.size());
 
-						if (fitVal->second > 0 && particleToIsland_.at(parID) == currIsland) {
+						if (fitVal->second > 0 && particleToIsland_[parID] == currIsland) {
 							cout << "Raquel setting particle to island value done" << endl;
 
 							bestParticle = fitVal->second;
@@ -6433,7 +6433,7 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 
 					for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
 						//cout << "Raquel setting particle to island value" << endl;
-						if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+						if (fitVal->first > 0 && particleToIsland_[fitVal->second] == currIsland) {
 							//cout << "Raquel setting particle to island value done" << endl;
 
 							bestParticle = fitVal->second;
@@ -6447,7 +6447,7 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 				}
 
 
-		vector<double> bestParamSet = particleCurrParamSets_.at(bestParticle);
+		vector<double> bestParamSet = particleCurrParamSets_[bestParticle];
 		for (auto param = this->getFreeParams_().begin(); param != this->getFreeParams_().end(); ++param) { //for (auto param = options.model->getFreeParams_().begin(); param != options.model->getFreeParams_().end(); ++param) {
 			int p1 = 0;
 			int p2 = 0;
@@ -6483,7 +6483,7 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 
 						parID = fcalcParID(fitVal->first, options.models.size());
 
-						if (fitVal->second > 0 && particleToIsland_.at(parID) == currIsland) {
+						if (fitVal->second > 0 && particleToIsland_[parID] == currIsland) {
 							cout << "Raquel setting particle to island value done" << endl;
 
 							bestParticle = fitVal->second;
@@ -6499,7 +6499,7 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 
 					for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
 						//cout << "Raquel setting particle to island value" << endl;
-						if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
+						if (fitVal->first > 0 && particleToIsland_[fitVal->second] == currIsland) {
 							//cout << "Raquel setting particle to island value done" << endl;
 
 							bestParticle = fitVal->second;
@@ -6514,7 +6514,7 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 
 
 
-		vector<double> bestParamSet = particleCurrParamSets_.at(bestParticle);
+		vector<double> bestParamSet = particleCurrParamSets_[bestParticle];
 		for (auto param = this->getFreeParams_().begin(); param != this->getFreeParams_().end(); ++param) {//for (auto param = options.model->getFreeParams_().begin(); param != options.model->getFreeParams_().end(); ++param) {
 			int p1 = 0;
 			int p2 = 0;
@@ -6530,11 +6530,11 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 				p5 = unif(generalRand);
 			}
 
-			double p1Param = particleCurrParamSets_.at(islandToParticle_.at(currIsland)[p1])[pi];
-			double p2Param = particleCurrParamSets_.at(islandToParticle_.at(currIsland)[p2])[pi];
-			double p3Param = particleCurrParamSets_.at(islandToParticle_.at(currIsland)[p3])[pi];
-			double p4Param = particleCurrParamSets_.at(islandToParticle_.at(currIsland)[p4])[pi];
-			double p5Param = particleCurrParamSets_.at(islandToParticle_.at(currIsland)[p5])[pi];
+			double p1Param = particleCurrParamSets_[islandToParticle_[currIsland][p1]][pi];
+			double p2Param = particleCurrParamSets_[islandToParticle_[currIsland][p2]][pi];
+			double p3Param = particleCurrParamSets_[islandToParticle_[currIsland][p3]][pi];
+			double p4Param = particleCurrParamSets_[islandToParticle_[currIsland][p4]][pi];
+			double p5Param = particleCurrParamSets_[islandToParticle_[currIsland][p5]][pi];
 
 			mutatedParams.push_back(p1Param + f * (p2Param - p3Param) + f * (p4Param - p5Param));
 			++pi;
@@ -9599,7 +9599,7 @@ void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int>>
 	// Fill a vector with particles from this island, starting with best fits and ending with worst
 	vector<unsigned int> particlesToSend;
 	for (auto fitIt = particleBestFitsByFit_.begin(); fitIt != particleBestFitsByFit_.end(); ++fitIt) {
-		if (particleToIsland_.at(fitIt->second) == island) {
+		if (particleToIsland_[fitIt->second] == island) {
 			particlesToSend.push_back(fitIt->second);
 			if (particlesToSend.size() == options.numToMigrate) {
 				break;
