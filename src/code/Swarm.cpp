@@ -5887,8 +5887,8 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 		 outFile.open(outname);
 
-		 cout << "Particle\tModel\tFit_Rank\tConstraint_Rank\tFinal_Rank" << endl;
-		 outFile << "Particle\tModel\tFit_Rank\tConstraint_Rank\tFinal_Rank" << endl;
+		 cout << "Particle\tModel\tFit_Rank\tConstraint_Rank\tFinal_Rank\tConstraints" << endl;
+		 outFile << "Particle\tModel\tFit_Rank\tConstraint_Rank\tFinal_Rank\tConstraints" << endl;
 
 		 int maxPar = fcalcParID(subparticleFitIDMap.size(), options.models.size());
 
@@ -5909,8 +5909,8 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 					 if(subParRankFinal[i].first==subParRankFit[j].first && subParRankFinal[i].first==subParRankCons[k].first){
 
 
-						 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << endl;
-						 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << endl;
+						 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << "\t" <<constraintsCount[i].second <<  endl;
+						 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << "\t" << constraintsCount[i].second << endl;
 
 						 found = 1;
 					 }
@@ -5920,8 +5920,8 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 				 if(found==0 && subParRankFinal[i].first==subParRankFit[j].first){
 
-					 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << "-" << "\t" << subParRankFinal[i].second << endl;
-					 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << "-" << "\t" << subParRankFinal[i].second << endl;
+					 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << "-" << "\t" << subParRankFinal[i].second << "\t-" << endl;
+					 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << "-" << "\t" << subParRankFinal[i].second << "\t-" << endl;
 
 
 				 }
@@ -6002,20 +6002,34 @@ int result = 0;
 	string outname;
 
 	vector<pair<int,float>> constraintsCount;
+	map<int,string> constraint;
 
 	int pnumber;
 	int mnumber;
 	int subnumber;
+	float iteration1;
+	float iteration2;
 
+	vector<string> constraintParams;
+
+	/* for(auto it = subparticleCurrParamSets_.begin(); it!=subparticleCurrParamSets_.end(); ++it){
+		 //particle, model, parameters
+		 for(int i = 0; i < options.models.size(); i++){
+			 subnumber = fcalcsubParID(it->first, i, options.models.size());
+
+			 constraintsCount.push_back(make_pair(subnumber,0));
+		 }
+	 }
+*/
 	 for(auto it = subparticleCurrParamSets_.begin(); it!=subparticleCurrParamSets_.end(); ++it){
-		 //cout << "it :" << it->first << endl;
+		 cout << "particle :" << it->first << endl;
 
 		 for(int i = 0; i < options.models.size(); i++){
 
 			 //cout <<  "model: " << i << endl;
 			 for(int j= 0; j < options.models.size(); j++){
 
-				 if(i!=j && i<j){
+				 //if(i!=j && i<j){
 
 					 path = options.models.at(i)->getName();
 					 basename1 = getFilename(path);
@@ -6030,35 +6044,80 @@ int result = 0;
 					 //		std::map<int,string> constraints_; //Raquel: added constraint options support
 					 outname = outdir + basename1 + "_vs_" + basename2 + "_" + toString(it->first) + ".txt";
 					 //add outname as the fourth input
-					 result = evaluateResults(inputFile1,inputFile2,options.constraints_, outname);
+					 //Raquel: adding support to receive different model numbers and time points as input
+
+					 for(auto constraintIt = options.constraints_.begin(); constraintIt != options.constraints_.end(); ++constraintIt){
+
+						 constraintParams = split_string(constraintIt->second, " ");
+
+						 //cout << "consParam 0 " << constraintParams[0] << "consParam 1 " <<  constraintParams[1] << "consParam 2 " <<  constraintParams[2] << "consParam 3 " << constraintParams[3] << "consParam 4 " << endl;
+						 constraint.insert(make_pair(constraintIt->first,constraintParams[0]));
+
+						 if((i==atoi(constraintParams[1].c_str()) && j==atoi(constraintParams[2].c_str())) || (i==atoi(constraintParams[1].c_str()) && i==atoi(constraintParams[2].c_str())) || (j==atoi(constraintParams[1].c_str()) && j==atoi(constraintParams[2].c_str()))){
+
+							 iteration1 = atof(constraintParams[3].c_str());
+							 iteration2 = atof(constraintParams[4].c_str());
+							 result += evaluateResults(inputFile1,inputFile2,constraint, outname, iteration1, iteration2);
+
+							 constraint.clear();
+
+							 pnumber = it->first;
+							 mnumber = i;
+							 subnumber = fcalcsubParID(pnumber, mnumber, options.models.size());
+
+							 //for(auto conscountIt = constraintsCount.begin(); conscountIt != constraintsCount.end(); ++conscountIt){
+								 //if(conscountIt->first == subnumber){
+									 //constraintsCount.erase(conscountIt);
+									 //cout << "adding result " << toString(conscountIt->second+result) << " to constraint count to subpar" << subnumber << endl;
+									 //constraintsCount.push_back(make_pair(conscountIt->first, conscountIt->second+result));
+								// }
 
 
-					 pnumber = it->first;
-					 mnumber = j;
+							 //}
+							 //constraintsCount[subnumber] = constraintsCount[subnumber]+(float)result;
+							 //constraintsCount.push_back(make_pair(subnumber,(float)result));
+						 }
 
 
-					 subnumber = fcalcsubParID(pnumber, mnumber, options.models.size());
 
-					 constraintsCount.push_back (make_pair (subnumber,(float)result));
+					 }
 
-				 }
+
+
+
+
+				 //}
 
 			 }
 
+			 pnumber = it->first;
+			 mnumber = i;
+			 subnumber = fcalcsubParID(pnumber, mnumber, options.models.size());
+
+			 constraintsCount.push_back(make_pair(subnumber, result));
+
+			 result = 0;
 			 //Raquel: added this break so only the first model(wild type), is compared versus the others for now
-			break;
+			//break;
 
 		 }
 
 
 	 }
 
-	 for(auto it2 = particleIterationCounter_.begin(); it2!=particleIterationCounter_.end(); it2++){
-		 cout << "Iteration: " << it2->first << endl;
+	 //for(auto it2 = particleIterationCounter_.begin(); it2!=particleIterationCounter_.end(); it2++){
+	//	 cout << "Iteration: " << it2->first << endl;
 
-	 }
+	 //}
 
 	 return constraintsCount;
+
+	 for(auto i = constraintsCount.begin(); i != constraintsCount.end(); ++i){
+		 cout << "constraintCaount values: ";
+		 cout << i->first << " ";
+		 cout << i->second << endl;
+
+	 }
 
 }
 

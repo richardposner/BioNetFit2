@@ -13,6 +13,6 @@ using namespace std;
 
 int constraintFunction(double value1, string constraintOperator, double value2);
 
-int evaluateResults(string inputFile1, string inputFile2, map<int,string> constraints,  string outname);
+int evaluateResults(string inputFile1, string inputFile2, map<int,string> constraints,  string outname, float iteration1, float iteration2);
 
 vector<string> splitResults(const string &s, char delim);
