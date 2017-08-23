@@ -67,7 +67,7 @@ int evaluateResults(string inputFile1, string inputFile2, map<int,string> constr
      return 1;
   }
 */
-  outFile.open (outname);
+  outFile.open(outname, ios_base::app);
   simResult1.open (inputFile1);
   simResult2.open (inputFile2);
 
@@ -126,7 +126,6 @@ int evaluateResults(string inputFile1, string inputFile2, map<int,string> constr
 
         }else{constraintOp.push_back(line.substr(newpos,newpos2-newpos+1));}
 
-        //cout << constraintValue1[count] << "\t" <<  constraintOp[count] << "\t" << constraintValue2[count] << endl;
 
 
         count++;
@@ -326,6 +325,7 @@ int result;
 //added new model checking method
 int fulfilledConstrants = 0;
 int first = 0;
+vector<string> consList;
 //Now test if the constraints are fulfilled
  //And return a list of iterations or time points and whether they were fulfilled
  //cout << "Time" << "\t" << "Constraint" << "\t" << "Result(0=FALSE;1=TRUE)" << endl;
@@ -334,7 +334,8 @@ int first = 0;
  for(int i = 0; i < constraintValue1.size(); i++){
      //constraintFunction(0, "=", 0);
      //cout << "@@@" << constraintValue1[i] << "@@@map size" << namesValues1[constraintValue1[i]].size() << endl;
-     //cout << constraintValue1[i] << "\t" <<  constraintOp[i] << "\t" << constraintValue2[i] << endl;
+ //    cout << constraintValue1[i] << "\t" <<  constraintOp[i] << "\t" << constraintValue2[i] << endl;
+     cout << "Starting test for constraint: " << constraintValue1[i] << " " <<  constraintOp[i] << " " << constraintValue2[i] << " Iteration1 " << iteration1 << " Iteration2 " << iteration2 << endl;
 
      for (int j = 0; j < namesValues1[variableNames1[i]].size(); j++){
     	 //Raquel: added this if to check only the last time point
@@ -347,6 +348,8 @@ int first = 0;
         	 	 cout << "FOUND TIME POINT 1= " << iteration1 << " TIME POINT2= " << iteration2 << endl;
         	 	 cout << "MODEL 1 " << inputFile1 << endl;
         	 	 cout << "MODEL 2 " << inputFile2 << endl;
+        	 	cout << "Original constraint: " << constraintValue1[i] << " " << constraintOp[i] << " " << constraintValue2[i] << endl;
+
         	 	 //cout << "FOUND LAST TIME POINT j= " << j << " value " << namesValues1[variableNames1[0]][j] << endl;
         	 	 //cout << namesValues[constraintValue1[i]][j] << " " << constraintOp[i] << " " << namesValues[constraintValue2[i]][j];
 
@@ -354,14 +357,17 @@ int first = 0;
         	 	 if(constraintValue1[i].find_first_not_of("-01234567890.") != string::npos && constraintValue2[i].find_first_not_of("-01234567890.") != string::npos){
 
         		 	 result = constraintFunction(namesValues1[constraintValue1[i]][j], constraintOp[i], namesValues2[constraintValue2[i]][j]);
+            	 	 cout << "Constraint values: " << namesValues1[constraintValue1[i]][j] << " " << constraintOp[i] << " " << namesValues2[constraintValue2[i]][j] << endl;
 
         	 	 }else if(constraintValue1[i].find_first_not_of("-01234567890.") != string::npos && constraintValue2[i].find_first_not_of("-01234567890.") == string::npos){
 
         	 		 result = constraintFunction(namesValues1[constraintValue1[i]][j], constraintOp[i], atof(constraintValue2[i].c_str()));
+            	 	 cout << "Constraint values: " << namesValues1[constraintValue1[i]][j] << " " << constraintOp[i] << " " << atof(constraintValue2[i].c_str()) << endl;
 
         	 	 }else if(constraintValue1[i].find_first_not_of("-01234567890.") == string::npos && constraintValue2[i].find_first_not_of("-01234567890.") != string::npos){
 
         		 	 result = constraintFunction(atof(constraintValue1[i].c_str()), constraintOp[i], namesValues2[constraintValue2[i]][j]);
+            	 	 cout << "Constraint values: " << atof(constraintValue1[i].c_str()) << " " << constraintOp[i] << " " << namesValues2[constraintValue2[i]][j] << endl;
 
         	 	 }else if(constraintValue1[i].find_first_not_of("-01234567890.") == string::npos && constraintValue2[i].find_first_not_of("-01234567890.") == string::npos){
 
@@ -370,13 +376,14 @@ int first = 0;
 
         	 	 }
 
-
+        	 	 cout << "RESULT=" << result << endl;
         	 //cout << " = " << result << "; iteration = " << j << " constraints = " << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << endl;
 
         	 	 if(result==1){
 
         	 		 fulfilledConstrants++;
-
+        	 		 consList.push_back(constraintValue1[i]+constraintOp[i]+constraintValue2[i]);
+        	 		 result=0;
         	 	 }
         	 	 if( (variableNames1[0]=="time" || variableNames1[0]=="Time") && first==0){
         	 		 //cout << namesValues1[variableNames1[0]][j] << "\t";
@@ -410,7 +417,17 @@ int first = 0;
 
  }
 
- outFile << fulfilledConstrants << endl;
+ outFile << fulfilledConstrants << "\t";
+
+ for (int i = 0; i<consList.size(); i++){
+
+	 outFile << consList[i] << "\t";
+
+
+ }
+ 	 outFile << endl;
+
+ 	consList.clear();
 
 
  outFile.close();

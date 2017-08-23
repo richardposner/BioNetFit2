@@ -937,9 +937,9 @@ cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
 
 				int messageIndex = 0;
 				for (auto p = simParams_.at(mid).begin(); p != simParams_.at(mid).end(); ++p) {
-					//cout << id_ << " updating parameter " << p->first << " to " << sm->second.message[messageIndex] << endl;
+					cout << id_ << " updating parameter " << p->first << " to " << sm->second.message[messageIndex] << endl;
 					p->second = stod(sm->second.message[messageIndex]);
-					//cout << "updated param " << p->first << ": " << p->second << endl;
+					cout << "updated param " << p->first << ": " << p->second << endl;
 					++messageIndex;
 				}
 
@@ -1511,10 +1511,16 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 					double sim;
 					// TODO: Introduce fudge tolerance to account for precision loss in simulation control column
 					if (swarm_->options.smoothing == 1) {
+						cout << "trying smoothing" << endl;
 						sim = dataFiles_.at(mid).at(e->first).at(swarm_->options.smoothing)->dataCurrent->at(exp_col->first).at(timepoint->first);
+						//cout << dataCurrent->at(exp_col->first).at(timepoint->first) << endl;
+						cout << " [mid] " << mid << " [e->first] " << e->first << " [swarm_->options.smoothing] " << swarm_->options.smoothing << " exp_col->first " << exp_col->first << " timepoint->first " << timepoint->first << endl;
+						cout << "done " << endl;
 					}
 					else {
+						cout << "trying smoothing2 " << endl;
 						sim = dataFiles_.at(mid).at(e->first).at(swarm_->options.smoothing+1)->dataCurrent->at(exp_col->first).at(timepoint->first);
+						cout << "done" << endl;
 					}
 
 					double sum = (this->*objFuncPtr)(sim, timepoint->second, divisor);

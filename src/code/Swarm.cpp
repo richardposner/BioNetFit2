@@ -3205,13 +3205,15 @@ void Swarm::insertKeyByValue(multimap<double, unsigned int> &theMap, double key,
 string Swarm::mutateParamGA(FreeParam* fp, double paramValue) {
 	//Timer tmr;
 	//uniform_real_distribution<double> unif(0,1);
+	cout << "generating random dist" << endl;
 	boost::random::uniform_real_distribution<double> unif(0,1);
-
+	cout << "done" << endl;
 	// Generate a random number and see if it's less than our mutation rate.  If is, we mutate.
 	if (unif(generalRand) < fp->getMutationRate()) {
 		// Store our mutation factor
-		float maxChange = paramValue * fp->getMutationFactor();
-
+		cout << "setting maxrange" << endl;
+		float maxChange = abs(paramValue) * fp->getMutationFactor();
+		cout << "done" << endl;
 		// Generate a new distribution between 0 and double maxChange
 		//using param_t = uniform_real_distribution<>::param_type;
 		//param_t p{0.0, maxChange * 2};
@@ -5898,11 +5900,22 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 					 if(subParRankFinal[i].first==subParRankFit[j].first && subParRankFinal[i].first==subParRankCons[k].first){
 
+						 for(int r=0; r < constraintsCount.size(); r++){
 
-						 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << "\t" <<constraintsCount[i].second <<  endl;
-						 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << "\t" << constraintsCount[i].second << endl;
+							 if(subParRankFinal[i].first ==  constraintsCount[r].first ){
 
-						 found = 1;
+
+								 cout << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << "\t" <<constraintsCount[r].second <<  endl;
+								 outFile << pid << "\t" << mid << "\t" << subParRankFit[j].second << "\t" << subParRankCons[k].second << "\t" << subParRankFinal[i].second << "\t" << constraintsCount[r].second << endl;
+
+								 found = 1;
+
+
+							 }
+
+
+						 }
+
 					 }
 
 				 }
@@ -6103,7 +6116,7 @@ int result = 0;
 	 return constraintsCount;
 
 	 for(auto i = constraintsCount.begin(); i != constraintsCount.end(); ++i){
-		 cout << "constraintCaount values: ";
+		 cout << "constraintCount values: ";
 		 cout << i->first << " ";
 		 cout << i->second << endl;
 
@@ -6896,8 +6909,14 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 				subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
 
 				cout << "Sending to SubPar: " << subParID << endl;
-				swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, params);
+				cout << "parameters to send: " << endl;
+				for(int i = 0; i<params.size(); i++){
+					cout << "'" << params[i] << "'" << endl;
 
+				}
+
+				swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, params);
+				sleep(1);
 			}
 			++parent;
 			++childCounter;
@@ -6995,7 +7014,7 @@ cout << "start working on free param["<<pi<<"]: " << p->first << endl;
 cout << "p1: " << p1Param << endl;
 cout << "p2: " << p2Param << endl;
 			//Raquel: added
-			if(p1Param.find_first_not_of("01234567890.") != string::npos && p2Param.find_first_not_of("01234567890.") != string::npos){
+			if(p1Param.find_first_not_of("-01234567890.") != string::npos && p2Param.find_first_not_of("-01234567890.") != string::npos){
 				cout << "no more parameters, done" << endl;
 				break;
 			}
@@ -7006,13 +7025,14 @@ cout << "p2: " << p2Param << endl;
 				if (hasMutate && p->second->isHasMutation()) {
 cout << "about to mutate" << endl;
 				//Raquel: fixed problem when one model has less parameters then de other, the stod function returned an error
-				if(p1Param.find_first_not_of("01234567890.") != string::npos){
+				if(p1Param.find_first_not_of("-01234567890.") != string::npos){
 					cout << "p1: " << p1Param << " is not a number, skiping..." << endl;
 				}else{
 					//Raquel:  conversion from string to number worked
 					p1Param = mutateParamGA(p->second, stod(p1Param));
+					cout << p->second << " " << stod(p1Param) << endl;
 				}
-				if(p2Param.find_first_not_of("01234567890.") != string::npos){
+				if(p2Param.find_first_not_of("-01234567890.") != string::npos){
 					cout << "p2: " << p2Param << " is not a number, skiping..." << endl;
 				}else{
 					//Raquel: conversion from string to number worked
@@ -7030,7 +7050,7 @@ cout << "mutated" << endl;
 				}
 
 					cout << "swapping p1: " << p1Param << " with p2: " << p2Param << endl;
-					if(p1Param.find_first_not_of("01234567890.") == string::npos && p2Param.find_first_not_of("01234567890.") == string::npos ){
+					if(p1Param.find_first_not_of("-01234567890.") == string::npos && p2Param.find_first_not_of("01234567890.") == string::npos ){
 
 						c1Vec.push_back(p2Param);
 						particleNewParamSets[children[childCounter - 1]].push_back(stod(p2Param));
@@ -7041,13 +7061,13 @@ cout << "mutated" << endl;
 					}else{cout << "Error p2param or p1Param are not numbers" << endl;}
 			}
 			else {
-				if(p1Param.find_first_not_of("01234567890.") == string::npos){
+				if(p1Param.find_first_not_of("-01234567890.") == string::npos){
 
 				c1Vec.push_back(p1Vec[pi]);
 				particleNewParamSets[children[childCounter - 1]].push_back(stod(p1Vec[pi]));
 cout << "c1 final: " << p1Vec[pi] << endl;
 				}else{cout << "Error p2param or p1Param are not numbers" << endl;}
-				if(p2Param.find_first_not_of("01234567890.") == string::npos){
+				if(p2Param.find_first_not_of("-01234567890.") == string::npos){
 
 				c2Vec.push_back(p2Vec[pi]);
 				particleNewParamSets[children[childCounter]].push_back(stod(p2Vec[pi]));
@@ -7066,7 +7086,15 @@ cout << "sending to " << children[childCounter - 1] << endl;
 		subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
 		cout << "Sending to SubPar: " << subParID << endl;
 
+		for(int i = 0; i<c1Vec.size(); i++){
+			cout << "'" << c1Vec[i] << "'" << endl;
+
+		}
+
+
 		swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, c1Vec);
+		sleep(1);
+
 
 	}
 
@@ -7084,8 +7112,14 @@ cout << "sending to " << children[childCounter - 1] << endl;
 		subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
 		cout << "Sending to SubPar: " << subParID << endl;
 
+		for(int i = 0; i<c2Vec.size(); i++){
+			cout << "'" << c2Vec[i] << "'" << endl;
+
+		}
 
 		swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
+		sleep(1);
+
 
 	}
 	//		swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
@@ -7107,7 +7141,7 @@ for(int veci = 0; veci < c1Vec.size(); veci++){
 
 cout << "c2Vec:" << endl;
 for(int veci = 0; veci < c2Vec.size(); veci++){
-	cout << c1Vec[veci] << endl;
+	cout << c2Vec[veci] << endl;
 
 }
 
@@ -9478,21 +9512,26 @@ void Swarm::insertKeyByValue(multimap<double, unsigned int> &theMap, double key,
 	}
 }
 
-string Swarm::mutateParamGA(FreeParam* fp, double paramValue) {
+//string Swarm::mutateParamGA(FreeParam* fp, double paramValue) {
+
+string Swarm::mutateParamGA(double paramValue) {
+
 	//Timer tmr;
 	//uniform_real_distribution<double> unif(0,1);
-	boost::random::uniform_real_distribution<double> unif(0,1);
-
+	cout <<"generating random dist" << endl;
+	boost::random::uniform_real_distribution<double> unif(0.0,1.0);
+	cout << "done"
 	// Generate a random number and see if it's less than our mutation rate.  If is, we mutate.
 	if (unif(generalRand) < fp->getMutationRate()) {
 		// Store our mutation factor
+		cout << "factor" << endl;
 		float maxChange = paramValue * fp->getMutationFactor();
 
 		// Generate a new distribution between 0 and double maxChange
 		//using param_t = uniform_real_distribution<>::param_type;
 		//param_t p{0.0, maxChange * 2};
 		//unif.param(p);
-
+		cout << "max range " << maxChange << endl;
 		boost::random::uniform_real_distribution<double> unif(0.0, maxChange * 2);
 
 		// Ger our new random number between 0 and maxChange, subtract maxChange.

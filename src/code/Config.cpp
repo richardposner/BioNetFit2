@@ -74,6 +74,7 @@ Swarm * Config::createSwarmFromConfig () {
 					name = matches[1];
 					value = matches[2];
 					pairs.insert(make_pair(name,value));
+					//cout << "name " << name << " value " << value << endl;
 				}
 				else {
 					boost::regex keyVal("^\\s*([a-zA-Z_]+)\\s+(.*)\\s*$");
@@ -147,7 +148,7 @@ Swarm * Config::createSwarmFromConfig () {
 			string bngcmd = pairs.find("bng_command")->second;
 			string abspath = convertToAbsPath(bngcmd);
 			if (!checkIfFileExists(abspath)) {
-				//swarm_->outputError("Error: The specified bng command: " + swarm_->options.bngCommand + " does not exist. Quitting.");
+				swarm_->outputError("Error: The specified bng command: " + bngcmd + " does not exist. Quitting.");
 				char *bnfroot = getenv("BNFROOT");
 				if (bnfroot != NULL) {
 					fs::path bnfr(bnfroot);

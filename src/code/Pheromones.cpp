@@ -275,7 +275,7 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 
 	if (swarm_->options.useCluster) {
 		//swarmMessage smessage;
-		std::string serializedMessage;
+		//std::string serializedMessage;
 		while (1) {
 			//std::cout << "rcv loop" << std::endl;
 
