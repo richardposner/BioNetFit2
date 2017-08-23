@@ -426,8 +426,11 @@ void Swarm::setExpPath(std::string prefixPath, std::string path, int mid){
 
 		for(int i=0; i< Paths.size(); ++i){
 			fs::path path(Paths.at(i));
-			fs::path abspath = prefix / path;
-
+			fs::path abspath = path;
+			
+			if (!fs::exists(path.string())){
+				abspath = prefix / path;
+			}
 			absPaths.clear();
 			expfile = abspath.string();
 cout<<"*** exp file found"<<expfile<< " set for model:"<<i<<endl;
@@ -443,8 +446,11 @@ cout<<"*** exp file found"<<expfile<< " set for model:"<<i<<endl;
 			absPaths.clear();
 			for(int i=0; i< Paths.size(); ++i){
 				fs::path path(Paths.at(i));
-				fs::path abspath = prefix / path;
-
+				fs::path abspath = path;
+				
+				if (!fs::exists(path.string())){
+					abspath = prefix / path;
+				}
 				expfile = abspath.string();
 				absPaths.push_back(expfile);
 cout<<"*** exp file found"<<expfile<<endl;
@@ -473,7 +479,11 @@ void Swarm::setModels(std::string pathPrefix, std::string path, bool overwrite){
 	paths = split_string(path, ",");
 	for(int i=0; i< paths.size(); ++i){
 		fs::path path(paths.at(i));
-		fs::path abspath = prefix / path;
+		fs::path abspath = path;
+		
+		if (!fs::exists(path.string())){
+		                abspath = prefix / path;
+		}
 
 		setModel(abspath.string(), i, overwrite);
 		if (options.verbosity >=3) cout<<"Model["<<i<<"]  :"<<paths.at(i)<<" is added to the list of models.\n" << endl;
