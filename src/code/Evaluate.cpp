@@ -344,6 +344,7 @@ vector<string> consList;
 
     	 for(int k = 0; k < namesValues2[variableNames2[i]].size(); k++){
     		 //if we reach the correct time point/iteration specified by the user
+
     		 if(namesValues1[variableNames1[0]][j] == iteration1 && namesValues2[variableNames2[0]][k] == iteration2){
         	 	 cout << "FOUND TIME POINT 1= " << iteration1 << " TIME POINT2= " << iteration2 << endl;
         	 	 cout << "MODEL 1 " << inputFile1 << endl;

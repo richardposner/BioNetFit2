@@ -6059,20 +6059,24 @@ int result = 0;
 					 //add outname as the fourth input
 					 //Raquel: adding support to receive different model numbers and time points as input
 
+
 					 for(auto constraintIt = options.constraints_.begin(); constraintIt != options.constraints_.end(); ++constraintIt){
 
 						 constraintParams = split_string(constraintIt->second, " ");
 
 						 //cout << "consParam 0 " << constraintParams[0] << "consParam 1 " <<  constraintParams[1] << "consParam 2 " <<  constraintParams[2] << "consParam 3 " << constraintParams[3] << "consParam 4 " << endl;
 						 constraint.insert(make_pair(constraintIt->first,constraintParams[0]));
+						 //cout << "COUNSTRAINT size from swarm: " << constraint.size() << endl;
 
-						 if((i==atoi(constraintParams[1].c_str()) && j==atoi(constraintParams[2].c_str())) || (i==atoi(constraintParams[1].c_str()) && i==atoi(constraintParams[2].c_str())) || (j==atoi(constraintParams[1].c_str()) && j==atoi(constraintParams[2].c_str()))){
+						 if((i==atoi(constraintParams[1].c_str()) && j==atoi(constraintParams[2].c_str()))){
+						 //if((i==atoi(constraintParams[1].c_str()) && j==atoi(constraintParams[2].c_str())) || (i==atoi(constraintParams[1].c_str()) && i==atoi(constraintParams[2].c_str())) || (j==atoi(constraintParams[1].c_str()) && j==atoi(constraintParams[2].c_str()))){
 
 							 iteration1 = atof(constraintParams[3].c_str());
 							 iteration2 = atof(constraintParams[4].c_str());
+
+
 							 result += evaluateResults(inputFile1,inputFile2,constraint, outname, iteration1, iteration2);
 
-							 constraint.clear();
 
 							 pnumber = it->first;
 							 mnumber = i;
@@ -6090,6 +6094,7 @@ int result = 0;
 							 //constraintsCount[subnumber] = constraintsCount[subnumber]+(float)result;
 							 //constraintsCount.push_back(make_pair(subnumber,(float)result));
 						 }
+						 constraint.clear();
 
 
 
