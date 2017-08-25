@@ -1,5 +1,24 @@
 # BioNetFit2
 
+# Operating systems supported
+
+	Linux, tested on Ubuntu and Red Hat
+	Windows, tested in Windows 7 and Windows 10 with 64bit cygwin
+	
+# Requirements
+
+	gcc compiler (GCC), v5.2.0 and v5.4.0 tested and working
+	mpicc, compiled with the required version of gcc
+	boost library v1.59.0, included and pre-compiled for Linux
+
+# Installation at NAU's cluster (Red Hat 7 GNU/Linux with GCC v5.2.0)
+
+	module add gcc/5.2.0
+	cd BioNetFit2
+	make clean
+	make
+
+
 # New Features in the .conf file
 
 The implementation for multiple models and model checking is complete for the GA, PSO, and DE. So they can be used as templates to update the SA algorithm.
