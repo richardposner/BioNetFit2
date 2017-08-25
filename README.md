@@ -18,6 +18,11 @@
 	make clean
 	make
 
+# Local installation in Linux (Ubuntu 14.04 and Ubuntu 16.04 with GCC v5.4.0
+
+	cd BioNetFit2
+	make clean
+	make
 
 # New Features in the .conf file
 
