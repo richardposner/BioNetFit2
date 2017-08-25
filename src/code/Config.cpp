@@ -784,7 +784,7 @@ void Config::checkConsistency() {
 		swarm_->outputError("Error: You set email_when_finished to true, but did not specify an email address. Quitting.");
 	}
 
-	if (swarm_->options.useCluster && !swarm_->options.clusterSoftware.empty() && (swarm_->options.clusterSoftware != "mpi" || swarm_->options.clusterSoftware != "slurm" || swarm_->options.clusterSoftware != "torque")) {
+	if (swarm_->options.useCluster && !swarm_->options.clusterSoftware.empty() && (swarm_->options.clusterSoftware != "mpi" && swarm_->options.clusterSoftware != "slurm" && swarm_->options.clusterSoftware != "torque")) {
 		swarm_->outputError("Error: You set cluster_software to an invalid option. Quitting.");
 	}
 
