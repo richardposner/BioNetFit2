@@ -55,7 +55,7 @@ int constraintFunction(double value1, string constraintOperator, double value2){
 
 //Raquel: this function will parse the results, apply the logical operations for testing for constraints
 //Raquel: this function will write TRUE or FALSE in the output, depending on whether the constraints are fulfilled
-int evaluateResults(string inputFile1, string inputFile2, map<int,string> constraints, string outname, float iteration1, float iteration2) {
+float evaluateResults(string inputFile1, string inputFile2, map<int,string> constraints, string outname, float iteration1, float iteration2) {
   ifstream simResult1;
   ifstream simResult2;
   ofstream outFile;
@@ -320,10 +320,10 @@ int evaluateResults(string inputFile1, string inputFile2, map<int,string> constr
 
   //cout << "Done reading Result File 2." << endl;
 
-
-int result;
+float constraintDist;
+float result;
 //added new model checking method
-int fulfilledConstrants = 0;
+float fulfilledConstrants = 0;
 int first = 0;
 vector<string> consList;
 //Now test if the constraints are fulfilled
@@ -359,17 +359,33 @@ vector<string> consList;
 
         		 	 result = constraintFunction(namesValues1[constraintValue1[i]][j], constraintOp[i], namesValues2[constraintValue2[i]][j]);
             	 	 cout << "Constraint values: " << namesValues1[constraintValue1[i]][j] << " " << constraintOp[i] << " " << namesValues2[constraintValue2[i]][j] << endl;
+            	 	 // (expected_value/(constraint_diff+expected_value))
+            	 	 if(result==0){
+            	 		 constraintDist = sqrt( pow( ( namesValues2[constraintValue2[i]][j]-namesValues1[constraintValue1[i]][j] ), 2) );
+            	 		 result=( namesValues2[constraintValue2[i]][j] / (constraintDist + namesValues2[constraintValue2[i]][j]) );
+
+            	 	 }
+
 
         	 	 }else if(constraintValue1[i].find_first_not_of("-01234567890.") != string::npos && constraintValue2[i].find_first_not_of("-01234567890.") == string::npos){
 
         	 		 result = constraintFunction(namesValues1[constraintValue1[i]][j], constraintOp[i], atof(constraintValue2[i].c_str()));
             	 	 cout << "Constraint values: " << namesValues1[constraintValue1[i]][j] << " " << constraintOp[i] << " " << atof(constraintValue2[i].c_str()) << endl;
+            	 	 if(result==0){
+            	 		 constraintDist = sqrt( pow( ( atof(constraintValue2[i].c_str())-namesValues1[constraintValue1[i]][j] ), 2) );
+            	 		 result=( atof(constraintValue2[i].c_str()) / (constraintDist + atof(constraintValue2[i].c_str()) ) );
 
+            	 	 }
         	 	 }else if(constraintValue1[i].find_first_not_of("-01234567890.") == string::npos && constraintValue2[i].find_first_not_of("-01234567890.") != string::npos){
 
         		 	 result = constraintFunction(atof(constraintValue1[i].c_str()), constraintOp[i], namesValues2[constraintValue2[i]][j]);
             	 	 cout << "Constraint values: " << atof(constraintValue1[i].c_str()) << " " << constraintOp[i] << " " << namesValues2[constraintValue2[i]][j] << endl;
 
+            	 	 if(result==0){
+            	 		 constraintDist = sqrt( pow( ( namesValues2[constraintValue2[i]][j]-atof(constraintValue1[i].c_str()) ), 2) );
+            	 		 result=( namesValues2[constraintValue2[i]][j] / (constraintDist + namesValues2[constraintValue2[i]][j]) );
+
+            	 	 }
         	 	 }else if(constraintValue1[i].find_first_not_of("-01234567890.") == string::npos && constraintValue2[i].find_first_not_of("-01234567890.") == string::npos){
 
         		 	 cout << "ERROR can't find any constraint value in the observable list!!!" << endl;
@@ -380,11 +396,18 @@ vector<string> consList;
         	 	 cout << "RESULT=" << result << endl;
         	 //cout << " = " << result << "; iteration = " << j << " constraints = " << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << endl;
 
-        	 	 if(result==1){
+        	 	 if(result<=1 && result>0){
 
-        	 		 fulfilledConstrants++;
-        	 		 consList.push_back(constraintValue1[i]+constraintOp[i]+constraintValue2[i]);
-        	 		 result=0;
+        	 		 fulfilledConstrants+=result;
+        	 		 if(result==1){
+            	 		 consList.push_back(constraintValue1[i]+constraintOp[i]+constraintValue2[i]);
+        	 		 }
+        	 		 result = 0;
+        	 		 constraintDist = 0;
+        	 	 }else{
+        	 		 cout << "ERROR invalid constraint result: " << result << endl;
+        	 		 result = 0;
+        	 		 constraintDist=0;
         	 	 }
         	 	 if( (variableNames1[0]=="time" || variableNames1[0]=="Time") && first==0){
         	 		 //cout << namesValues1[variableNames1[0]][j] << "\t";

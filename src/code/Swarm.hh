@@ -75,7 +75,7 @@ class access;
 }
 }
 
-int evaluateResults(string inputFile1, string inputFile2, map<int,string> constraints,  string outname);
+float evaluateResults(string inputFile1, string inputFile2, map<int,string> constraints,  string outname);
 
 class Swarm {
 public:

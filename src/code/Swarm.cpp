@@ -6002,7 +6002,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 //Raquel: result checking function, will call Evaluate.cpp
 vector<pair<int,float>> Swarm::resultChecking(){
-int result = 0;
+float result = 0;
 	string outdir = options.outputDir + "/" + options.jobName + "/" + toString(currentGeneration-1) + "/";
 
 	string inputFile1;
