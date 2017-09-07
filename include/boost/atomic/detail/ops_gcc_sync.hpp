@@ -33,6 +33,8 @@ namespace detail {
 
 struct gcc_sync_operations_base
 {
+    static BOOST_CONSTEXPR_OR_CONST bool is_always_lock_free = true;
+
     static BOOST_FORCEINLINE void fence_before_store(memory_order order) BOOST_NOEXCEPT
     {
         if ((order & memory_order_release) != 0)
@@ -143,11 +145,6 @@ struct gcc_sync_operations :
         if (order == memory_order_seq_cst)
             __sync_synchronize();
     }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
-    }
 };
 
 #if BOOST_ATOMIC_INT8_LOCK_FREE > 0
@@ -165,6 +162,17 @@ struct operations< 1u, Signed > :
     public extending_cas_based_operations< gcc_sync_operations< typename make_storage_type< 16u, Signed >::type >, 1u, Signed >
 #endif
 {
+#if defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1)
+    typedef typename make_storage_type< 1u, Signed >::aligned aligned_storage_type;
+#elif defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_2)
+    typedef typename make_storage_type< 2u, Signed >::aligned aligned_storage_type;
+#elif defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
+    typedef typename make_storage_type< 4u, Signed >::aligned aligned_storage_type;
+#elif defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8)
+    typedef typename make_storage_type< 8u, Signed >::aligned aligned_storage_type;
+#else
+    typedef typename make_storage_type< 16u, Signed >::aligned aligned_storage_type;
+#endif
 };
 #endif
 
@@ -181,6 +189,15 @@ struct operations< 2u, Signed > :
     public extending_cas_based_operations< gcc_sync_operations< typename make_storage_type< 16u, Signed >::type >, 2u, Signed >
 #endif
 {
+#if defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_2)
+    typedef typename make_storage_type< 2u, Signed >::aligned aligned_storage_type;
+#elif defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
+    typedef typename make_storage_type< 4u, Signed >::aligned aligned_storage_type;
+#elif defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8)
+    typedef typename make_storage_type< 8u, Signed >::aligned aligned_storage_type;
+#else
+    typedef typename make_storage_type< 16u, Signed >::aligned aligned_storage_type;
+#endif
 };
 #endif
 
@@ -195,6 +212,13 @@ struct operations< 4u, Signed > :
     public extending_cas_based_operations< gcc_sync_operations< typename make_storage_type< 16u, Signed >::type >, 4u, Signed >
 #endif
 {
+#if defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
+    typedef typename make_storage_type< 4u, Signed >::aligned aligned_storage_type;
+#elif defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8)
+    typedef typename make_storage_type< 8u, Signed >::aligned aligned_storage_type;
+#else
+    typedef typename make_storage_type< 16u, Signed >::aligned aligned_storage_type;
+#endif
 };
 #endif
 
@@ -207,6 +231,11 @@ struct operations< 8u, Signed > :
     public extending_cas_based_operations< gcc_sync_operations< typename make_storage_type< 16u, Signed >::type >, 8u, Signed >
 #endif
 {
+#if defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8)
+    typedef typename make_storage_type< 8u, Signed >::aligned aligned_storage_type;
+#else
+    typedef typename make_storage_type< 16u, Signed >::aligned aligned_storage_type;
+#endif
 };
 #endif
 
@@ -215,6 +244,7 @@ template< bool Signed >
 struct operations< 16u, Signed > :
     public gcc_sync_operations< typename make_storage_type< 16u, Signed >::type >
 {
+    typedef typename make_storage_type< 16u, Signed >::aligned aligned_storage_type;
 };
 #endif
 

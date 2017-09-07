@@ -18,11 +18,11 @@
 
 #include <intrin.h>
 #include <boost/memory_order.hpp>
-#include <boost/type_traits/make_signed.hpp>
 #include <boost/atomic/detail/config.hpp>
 #include <boost/atomic/detail/interlocked.hpp>
 #include <boost/atomic/detail/storage_type.hpp>
 #include <boost/atomic/detail/operations_fwd.hpp>
+#include <boost/atomic/detail/type_traits/make_signed.hpp>
 #include <boost/atomic/capabilities.hpp>
 #include <boost/atomic/detail/ops_msvc_common.hpp>
 
@@ -53,6 +53,8 @@ namespace detail {
 
 struct msvc_arm_operations_base
 {
+    static BOOST_CONSTEXPR_OR_CONST bool is_always_lock_free = true;
+
     static BOOST_FORCEINLINE void hardware_full_fence() BOOST_NOEXCEPT
     {
         __dmb(0xB); // _ARM_BARRIER_ISH, see armintr.h from MSVC 11 and later
@@ -103,7 +105,7 @@ struct msvc_arm_operations :
 
     static BOOST_FORCEINLINE storage_type fetch_sub(storage_type volatile& storage, storage_type v, memory_order order) BOOST_NOEXCEPT
     {
-        typedef typename make_signed< storage_type >::type signed_storage_type;
+        typedef typename boost::atomics::detail::make_signed< storage_type >::type signed_storage_type;
         return Derived::fetch_add(storage, static_cast< storage_type >(-static_cast< signed_storage_type >(v)), order);
     }
 
@@ -122,11 +124,6 @@ struct msvc_arm_operations :
     {
         Derived::store(storage, (storage_type)0, order);
     }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
-    }
 };
 
 template< bool Signed >
@@ -135,6 +132,7 @@ struct operations< 1u, Signed > :
 {
     typedef msvc_arm_operations< typename make_storage_type< 1u, Signed >::type, operations< 1u, Signed > > base_type;
     typedef typename base_type::storage_type storage_type;
+    typedef typename make_storage_type< 1u, Signed >::aligned aligned_storage_type;
 
     static BOOST_FORCEINLINE void store(storage_type volatile& storage, storage_type v, memory_order order) BOOST_NOEXCEPT
     {
@@ -300,6 +298,7 @@ struct operations< 2u, Signed > :
 {
     typedef msvc_arm_operations< typename make_storage_type< 2u, Signed >::type, operations< 2u, Signed > > base_type;
     typedef typename base_type::storage_type storage_type;
+    typedef typename make_storage_type< 2u, Signed >::aligned aligned_storage_type;
 
     static BOOST_FORCEINLINE void store(storage_type volatile& storage, storage_type v, memory_order order) BOOST_NOEXCEPT
     {
@@ -465,6 +464,7 @@ struct operations< 4u, Signed > :
 {
     typedef msvc_arm_operations< typename make_storage_type< 4u, Signed >::type, operations< 4u, Signed > > base_type;
     typedef typename base_type::storage_type storage_type;
+    typedef typename make_storage_type< 4u, Signed >::aligned aligned_storage_type;
 
     static BOOST_FORCEINLINE void store(storage_type volatile& storage, storage_type v, memory_order order) BOOST_NOEXCEPT
     {
@@ -630,6 +630,7 @@ struct operations< 8u, Signed > :
 {
     typedef msvc_arm_operations< typename make_storage_type< 8u, Signed >::type, operations< 8u, Signed > > base_type;
     typedef typename base_type::storage_type storage_type;
+    typedef typename make_storage_type< 8u, Signed >::aligned aligned_storage_type;
 
     static BOOST_FORCEINLINE void store(storage_type volatile& storage, storage_type v, memory_order order) BOOST_NOEXCEPT
     {

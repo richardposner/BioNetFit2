@@ -378,7 +378,7 @@ inline concepts::std_real_concept epsilon(BOOST_MATH_EXPLICIT_TEMPLATE_TYPE_SPEC
 }
 
 template <>
-inline int digits<concepts::std_real_concept>(BOOST_MATH_EXPLICIT_TEMPLATE_TYPE_SPEC(concepts::std_real_concept))
+inline BOOST_MATH_CONSTEXPR int digits<concepts::std_real_concept>(BOOST_MATH_EXPLICIT_TEMPLATE_TYPE_SPEC(concepts::std_real_concept)) BOOST_NOEXCEPT
 { // Assume number of significand bits is same as std_real_concept_base_type,
   // unless std::numeric_limits<T>::is_specialized to provide digits.
    return digits<concepts::std_real_concept_base_type>();
@@ -399,7 +399,3 @@ using concepts::llround;
 } // namespace boost
 
 #endif // BOOST_MATH_STD_REAL_CONCEPT_HPP
-
-
-
-
