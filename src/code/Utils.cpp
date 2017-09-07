@@ -428,6 +428,19 @@ int readCommandLine(int argc, const char *argv[], map<string,vector<string>> &cm
 	return 1;
 }
 
+string commonPath( const std::vector<std::string> & dirs , char separator ) {
+	std::vector<std::string>::const_iterator vsi = dirs.begin( ) ;
+	int maxCharactersCommon = vsi->length( ) ;
+	std::string compareString = *vsi ;
+	for ( vsi = dirs.begin( ) + 1 ; vsi != dirs.end( ) ; vsi++ ) {
+		std::pair<std::string::const_iterator , std::string::const_iterator> p =
+		std::mismatch( compareString.begin( ) , compareString.end( ) , vsi->begin( ) ) ;
+		if (( p.first - compareString.begin( ) ) < maxCharactersCommon )
+		maxCharactersCommon = p.first - compareString.begin( ) ;
+	}
+	std::string::size_type found = compareString.rfind( separator , maxCharactersCommon ) ;
+	return compareString.substr( 0 , found ) ;
+}
 
 
 #else

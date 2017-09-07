@@ -321,7 +321,8 @@ Swarm * Config::createSwarmFromConfig () {
 		vector<string> timeElements;
 		split(pairs.find("max_fit_time")->second, timeElements, ":");
 		long timeInSeconds = (stol(timeElements[0]) * 3600) + (stol(timeElements[1]) * 60) + stol(timeElements[2]);
-		swarm_->options.maxFitTime = timeInSeconds;
+		//swarm_->options.maxFitTime = timeInSeconds;
+		swarm_->options.maxFitTime = pairs.find("max_fit_time")->second; //Raquel fix slurm support
 	}
 
 	// Update the maximum number of parallel threads (non-cluster only)
@@ -784,7 +785,8 @@ void Config::checkConsistency() {
 		swarm_->outputError("Error: You set email_when_finished to true, but did not specify an email address. Quitting.");
 	}
 
-	if (swarm_->options.useCluster && !swarm_->options.clusterSoftware.empty() && (swarm_->options.clusterSoftware != "mpi" && swarm_->options.clusterSoftware != "slurm" && swarm_->options.clusterSoftware != "torque")) {
+	if (swarm_->options.useCluster && !swarm_->options.clusterSoftware.empty() && (swarm_->options.clusterSoftware != "mpi" && swarm_->options.clusterSoftware != "slurm" && swarm_->options.clusterSoftware != "torque" && swarm_->options.clusterSoftware != "BNF2mpi")) {
+		cout << swarm_->options.clusterSoftware << endl;
 		swarm_->outputError("Error: You set cluster_software to an invalid option. Quitting.");
 	}
 

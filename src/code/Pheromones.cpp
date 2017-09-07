@@ -23,7 +23,12 @@ Pheromones::Pheromones() {
 
 Pheromones::~Pheromones() {
 	if (swarm_->options.useCluster) {
+
+		cout << "my rank is " << world_->rank() << " starting ~environment()" << endl;
 		env_->~environment();
+		//MPI_Finalize();
+		cout << "~environment() done" << endl;
+
 	}
 	else {
 		for (auto mq = smq_.begin(); mq != smq_.end(); ++mq) {
@@ -37,11 +42,25 @@ void Pheromones::init(Swarm *s) {
 	unsigned int nSubPar= swarm_->options.swarmSize * swarm_->options.models.size()+1; //razi:number of subparticles, +1 since starts from 1
 
 	// Using MPI
-	if (swarm_->options.useCluster) {
+	if (swarm_->options.useCluster && swarm_->options.clusterSoftware == "mpi" || swarm_->options.clusterSoftware == "slurm") {
 		// Set up our MPI environment and communicator
 		std::cout<<"Pheromones Initialization: MPI\n";
 		env_ = new mpi::environment();
+		cout << "Defined mpi environment" << endl;
 		world_ = new mpi::communicator();
+		cout << "Defined world communicator" << endl;
+		//  boost::mpi::environment env;
+		 // boost::mpi::communicator world_;
+		//scout << "Hello World! from process " << world_.rank() << endl;
+	}
+	else if (swarm_->options.clusterSoftware == "BNF2mpi"){
+			cout << "Detected BNF2mpi in Pheromones init()" << endl;
+			env_ = new mpi::environment();
+			cout << "Defined mpi environment" << endl;
+			world_ = new mpi::communicator();
+			cout << "Defined world communicator" << endl;
+			int myrank = world_->rank();
+			cout << "My rank is " << myrank << endl;
 	}
 	// Using IPC
 	else {
@@ -131,23 +150,31 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 		// Loop through receivers and perform the send operation
 		for (std::vector<int>::iterator i = receivers.begin(); i != receivers.end(); ++i) {
 			// Blocking send
-			if (block) {
-				std::cout << "attempting a block send from " << senderID << " to " << receiverID << std::endl;
-				try{
-				world_->send(receiverID, tag, serializedMessage, smString.length());
-				} catch (interprocess_exception& e) {
-			        cout << e.what( ) << std::endl;
-			    }
-				std::cout << "block send from " << senderID << " to " << receiverID << " succeeded" << std::endl;
-			}
-			// Non-blocking send
-			else {
-				std::cout << "attempting a non-block send from " << senderID << " to " << receiverID << std::endl;
-				recvRequest_ = world_->isend(receiverID, tag, serializedMessage, smString.length());
-				std::cout << "non-block send from " << senderID << " to " << receiverID << " succeeded" << std::endl;
-				//recvStatus_ = recvRequest_.wait();
-				//std::cout << "tag: " << recvStatus_.tag() << std::endl;
-				//std::cout << "error: " << recvStatus_.error() << std::endl;
+			cout << "receiverID: " << endl;
+			cout << "world size: " << world_->size() << endl;
+			if(receiverID < world_->size()){
+
+
+
+				if (block) {
+					std::cout << "attempting a block send from " << senderID << " to " << receiverID << std::endl;
+					try{
+					world_->send(receiverID, tag, serializedMessage, smString.length());
+					} catch (interprocess_exception& e) {
+						cout << e.what( ) << std::endl;
+			    	}
+					std::cout << "block send from " << senderID << " to " << receiverID << " succeeded" << std::endl;
+				}
+				// Non-blocking send
+				else {
+					std::cout << "attempting a non-block send from " << senderID << " to " << receiverID << std::endl;
+					recvRequest_ = world_->isend(receiverID, tag, serializedMessage, smString.length());
+					std::cout << "non-block send from " << senderID << " to " << receiverID << " succeeded" << std::endl;
+					//recvStatus_ = recvRequest_.wait();
+					//std::cout << "tag: " << recvStatus_.tag() << std::endl;
+					//std::cout << "error: " << recvStatus_.error() << std::endl;
+				}
+
 			}
 		}
 	}else {
@@ -278,18 +305,26 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 		//std::string serializedMessage;
 		while (1) {
 			//std::cout << "rcv loop" << std::endl;
+			serializedMessage.resize(1000);
+			usleep(10000);
 
 			if (boost::optional<boost::mpi::status> recvStatus = world_->iprobe(senderID, tag)) {
-				//std::cout << "status: " << recvStatus->tag() << std::endl;
+				cout << "status: " << recvStatus->tag() << std::endl;
 
 				boost::optional<int> msgLength = recvStatus->count<char>();
-				char smChar[*msgLength+1];
+				//char smChar[*msgLength+1];
+				char smChar[1000];
+
+				//cout << "recvStatus->tag() " << recvStatus->tag() << " DONE_BREEDING " << DONE_BREEDING << endl;
 
 				//if (block) {
-				//std::cout << "trying a blocking receive to " << receiverID << " from " << senderID << std::endl;
+				cout << "trying a blocking receive to receiverID " << receiverID << " from senderID " << senderID << endl;
+				cout << "Tag: " << tag << "; smChar legth: " << sizeof(smChar) << "; *msgLength: " << *msgLength << endl;
+				//world_->recv(senderID, tag, smChar, *msgLength);
 				world_->recv(senderID, tag, smChar, *msgLength);
+				//world_->recv(boost::mpi::any_source, tag, *msgLength);
 				block = false;
-
+				cout << "RRR passed receive step." << endl;
 				swarmMessage smessage = deserializeSwarmMessage(std::string(smChar));
 				serializedMessage.clear();
 

@@ -651,7 +651,10 @@ void Swarm::initFit () {  //razi: modified version
 				cout << "Generating initial .net file with command: " << command << endl;
 
 				if (options.useCluster) {
-					command = generateSlurmCommand(command, false, 1);
+					if(options.clusterSoftware == "slurm"){
+						command = generateSlurmCommand(command, false, 1);
+					}
+
 				}
 
 				int ret; ret= runCommand(command);
@@ -869,10 +872,18 @@ void Swarm::setJobOutputDir(string path) {
 		string input;
 		string answer;
 		while (1) {
-			cout << "Warning: Your output directory " << options.jobOutputDir << " already exists. Overwrite? (Y or N) ";
-			getline(cin, input);
-			stringstream myInp(input);
-			myInp >> answer;
+
+			//Raquel fixing MPI support issues
+			if(options.clusterSoftware != "mpi" && options.clusterSoftware != "BNF2mpi"){
+				cout << "Warning: Your output directory " << options.jobOutputDir << " already exists. Overwrite? (Y or N) ";
+				getline(cin, input);
+				stringstream myInp(input);
+				myInp >> answer;
+			}
+
+			if(options.clusterSoftware == "mpi" || options.clusterSoftware == "BNF2mpi"){
+				answer = "Y";
+			}
 
 			if (answer == "Y" || answer == "y") {
 				string cmd = "rm -r " + options.jobOutputDir;
@@ -2115,6 +2126,7 @@ command = command + " >> pOUT 2>&1";
 		}
 	}
 
+	cout << "Adding subparticle " << subParID << " to the list of running particles." << endl;
 	runningSubParticles_.insert(subParID); //razi: was //runningParticles_.insert(pID);
 	//cout << "RAQUEL sending message to supar" << subParID << "message=NEXT_GEN" << endl;
 	swarmComm->sendToSwarm(0, subParID, NEXT_GENERATION, false, swarmComm->univMessageSender);
@@ -2123,6 +2135,15 @@ command = command + " >> pOUT 2>&1";
 
 void Swarm::runGeneration () {   //razi: modified to include subparticles
 	// TODO: Implement walltime
+
+	//Raquel added, master will handle the directory creation
+	string path = options.jobOutputDir + toString(currentGeneration) + "/";
+
+	if (!checkIfFileExists(path)) {
+		runCommand("mkdir " + path);
+	}
+
+
 	unsigned int nModels = options.models.size();
 	if(options.verbosity >= 1) {
 		cout << "Running generation " << currentGeneration << " with " << options.swarmSize << " particles..." << endl;
@@ -2150,6 +2171,8 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 	int maxSubPar = fcalcsubParID(options.swarmSize, options.models.size()-1, options.models.size());
 	int tries = 0;
 
+	cout << "Maxsubpar = "  << maxSubPar << endl;
+
 	while (finishedSubParticles_.size() < maxSubPar && runningSubParticles_.size() < maxSubPar) { //razi: loop over particles, each particle includes nModels subPArticles
 
 		if (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
@@ -2167,7 +2190,7 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 		usleep(250000);
 		//cout << "RAQUEL Entering checkMasterMessages" << endl;
 		newFinishedParticles = checkMasterMessages();
-		//cout << "RAQUEL Done checkMasterMessages newFinishedParticles.size() " << newFinishedParticles.size() << endl;
+		//cout << "RAQUEL Done checkMasterMessages finishedSubParticles_.size() " << finishedSubParticles_.size() << endl;
 
 		//cout << "finishedSubParticles_.size() " << finishedSubParticles_.size() << " runningSubParticles_.size() " << runningSubParticles_.size() << " maxSubPar " << maxSubPar << " sp " << sp << endl;
 		numFinishedParticles = finishedParticles_.size();
@@ -2499,7 +2522,7 @@ void Swarm::getClusterInformation() {
 		}
 	}
 	else {
-		if (options.clusterSoftware != "slurm" && options.clusterSoftware != "torque" && options.clusterSoftware != "mpi") {
+		if (options.clusterSoftware != "slurm" && options.clusterSoftware != "torque" && options.clusterSoftware != "mpi" && options.clusterSoftware != "BNF2mpi") {
 			outputError("You specified an unrecognized cluster type in your .conf file. BioNetFit only supports 'torque' or 'slurm' cluster types.");
 		}
 	}
@@ -2553,9 +2576,13 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 		smhRange = swarmComm->univMessageReceiver.equal_range(SIMULATION_END);
 
 		for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {
-			unsigned int subParID = sm->second.sender;
+
+			unsigned int subParID;
+			subParID = sm->second.sender;
+
 			pID = fcalcParID(subParID, options.models.size());
 			mid= fcalcMID(subParID, options.models.size());
+
 
 			if (options.verbosity >= 3) {
 				cout << "subParticle [" << subParID << ":"<< pID <<"-"<< mid <<"] finished simulation" << endl;
@@ -2565,6 +2592,13 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 			// Then remove it
 			if (runningSubParticlesIterator_ == runningSubParticles_.end()) {
 				string errMsg = "Error: Couldn't remove subParticle " + toString(subParID) + " from runningParticle list.";
+				cout << "Size of runningSubParticles_: " << runningSubParticles_.size() << endl;
+				cout << "Subparticles in running list are: " << endl;
+				for(auto myIt = runningSubParticles_.begin(); myIt != runningSubParticles_.end(); myIt++){
+					cout << "first: " << *myIt << endl;
+
+				}
+				cout << "Done listing running particles. " << endl;
 				outputError(errMsg);
 			}
 			cout << "Master messages Added supar " << subParID << " to finnished list and removed it from running list" << endl;
@@ -2665,12 +2699,12 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 		}
 
 		// TODO: When sending NEXT_GENERATION, make sure failed particles have actually run again. If not, they need re-launched.
-		//cout << "RAQUEL: before univMessageReceiver.equal_range(SIMULATION_FAIL)" << endl;
+		cout << "RAQUEL: before univMessageReceiver.equal_range(SIMULATION_FAIL)" << endl;
 		cout << "Number of runnning subparticles before" << runningSubParticles_.size() << endl;
 
 		smhRange = swarmComm->univMessageReceiver.equal_range(SIMULATION_FAIL);
 
-		//out << "RAQUEL: after univMessageReceiver.equal_range(SIMULATION_FAIL);" << endl;
+		cout << "RAQUEL: after univMessageReceiver.equal_range(SIMULATION_FAIL);" << endl;
 
 		for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {
 
@@ -2704,9 +2738,9 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 			// Store particle ID in our list of failed particles
 
 		}
-		//cout << "RAQUEL: After for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {" << endl;
+		cout << "RAQUEL: After for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {" << endl;
 		int messageCount = 0;
-		//cout << "RAQUEL: Before for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) { {" << endl;
+		cout << "RAQUEL: Before for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) { {" << endl;
 
 		smhRange = swarmComm->univMessageReceiver.equal_range(GET_RUNNING_PARTICLES);
 		for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {
@@ -2724,7 +2758,7 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 		}
 
 
-		//cout << "RAQUEL: After for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) { {" << endl;
+		cout << "RAQUEL: After for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) { {" << endl;
 
 
 		swarmComm->univMessageReceiver.clear();
@@ -2774,6 +2808,13 @@ unordered_map<unsigned int, vector<double>> Swarm::checkMasterMessagesDE() {
 			// Then remove it
 			if (runningSubParticlesIterator_ == runningSubParticles_.end()) {
 				string errMsg = "Error: Couldn't remove subParticle " + toString(subParID) + " from runningParticle list.";
+				cout << "Size of runningSubParticles_(2): " << runningSubParticles_.size() << endl;
+				cout << "Subparticles in running list are: " << endl;
+				for(auto myIt = runningSubParticles_.begin(); myIt != runningSubParticles_.end(); myIt++){
+					cout << "first: " << *myIt << endl;
+
+				}
+				cout << "Done listing running particles. " << endl;
 				outputError(errMsg);
 			}
 			runningSubParticles_.erase(runningSubParticlesIterator_);
@@ -2947,7 +2988,12 @@ string Swarm::getClusterCommand(string runCmd) {
 		return generateTorqueBatchScript(runCmd);
 	}
 	else if (options.clusterSoftware == "mpi") {
+		cout << "runCmd is: " << runCmd << endl;
 		return generateMPICommand(runCmd);
+	}
+	else if (options.clusterSoftware == "BNF2mpi") {
+			cout << "runCmd is: " << runCmd << endl;
+			return generateBNF2MPICommand(runCmd);
 	}
 	else {
 		return 0;
@@ -2955,6 +3001,7 @@ string Swarm::getClusterCommand(string runCmd) {
 }
 
 string Swarm::generateMPICommand(string cmd) {
+
 	//sbatch << "mpirun -prepend-rank -np 1 " << runCmd << " load " << sConf_ << " : -np " << options.swarmSize << " " << runCmd << " particle 0 run " << sConf_ << endl;
 	string newCmd = "mpirun -nooversubscribe ";
 	if (options.hostfile.size()) {
@@ -2962,7 +3009,7 @@ string Swarm::generateMPICommand(string cmd) {
 	}
 #ifdef VER2
 	cout<<"Swarm::generateMPICommand may need some modifications 654\n";
-	newCmd += "-tag-output -np 1 " + cmd + " load " + sConf_[0] + " : -nooversubscribe ";
+	newCmd += "-tag-output -np 1 " + cmd + " -a load -c " + sConf_[0] + " : -nooversubscribe ";
 #else
 	newCmd += "-tag-output -np 1 " + cmd + " load " + sConf_ + " : -nooversubscribe ";
 #endif
@@ -2971,7 +3018,7 @@ string Swarm::generateMPICommand(string cmd) {
 	}
 #ifdef VER2
 	cout<<"Swarm::generateMPICommand may need some modifications 654\n";
-	newCmd += "-tag-output -np " + toString(options.swarmSize) + " " + cmd + " particle 0 run " + sConf_[0];
+	newCmd += "-tag-output -np " + toString(options.swarmSize) + " " + cmd + " -t particle -p 0 -a run -c" + sConf_[0];
 #else
 	newCmd += "-tag-output -np " + toString(options.swarmSize) + " " + cmd + " particle 0 run " + sConf_;
 #endif
@@ -2982,16 +3029,85 @@ string Swarm::generateMPICommand(string cmd) {
 	return newCmd;
 }
 
+
+string Swarm::generateBNF2MPICommand(string cmd) {
+
+	cout << "Entering generateBNF2MPICommand()" << endl;
+
+	int maxSubPar = 0;
+	maxSubPar = fcalcsubParID(options.swarmSize, options.models.size()-1, options.models.size());
+
+
+	//sbatch << "mpirun -prepend-rank -np 1 " << runCmd << " load " << sConf_ << " : -np " << options.swarmSize << " " << runCmd << " particle 0 run " << sConf_ << endl;
+	string newCmd = "mpirun -oversubscribe ";
+	if (options.hostfile.size()) {
+		newCmd += "-hostfile " + options.hostfile + " ";
+	}
+#ifdef VER2
+	cout<<"Swarm::generateMPICommand may need some modifications 654\n";
+	newCmd += "-tag-output -np 1 " + cmd + " -a load -c " + sConf_[0] + " : -oversubscribe ";
+#else
+	newCmd += "-tag-output -np 1 " + cmd + " load " + sConf_ + " : -nooversubscribe ";
+#endif
+	if (options.hostfile.size()) {
+		newCmd += "-hostfile " + options.hostfile + " ";
+	}
+#ifdef VER2
+	cout<<"Swarm::generateMPICommand may need some modifications 654\n";
+	newCmd += "-tag-output -np " + toString(maxSubPar) + " " + cmd + " -t particle -p 0 -a run -c " + sConf_[0];
+#else
+	newCmd += "-tag-output -np " + toString(options.swarmSize) + " " + cmd + " particle 0 run " + sConf_;
+#endif
+
+	if (options.saveClusterOutput) {
+		newCmd += " > " + options.outputDir + "/" + options.jobName + "_cluster_output/" + options.jobName + " 2>&1";
+	}
+	cout << "MPI command built from generateBNF2MPICommand: " << endl << newCmd << endl;
+	return newCmd;
+}
+
 string Swarm::generateSlurmMultiProgCmd(string runCmd) {
 	string multiProgConfPath = options.jobOutputDir + "multiprog.conf";
 	ofstream multiprog(multiProgConfPath, ios::out);
 
 	if (multiprog.is_open()) {
 #ifdef VER2
-		multiprog << "0 " << runCmd << " load " << sConf_[0] << endl;
+
+		vector<string> paths;
+		paths.push_back(sConf_[0]);
+		paths.push_back(expPaths_[0][0]);
+		paths.push_back(exePath_);
+
+		string mycommonPath = commonPath(paths, '/');
+		string expsubPath;
+		string exesubPath;
+		string sconfsubPath;
+
+		multiprog << "#SBATCH --workdir=" << mycommonPath << endl;
+
+		string command = exePath_ + " -a load -c " + sConf_[0];
+		//multiprog << "0 " << runCmd << " load " << sConf_[0] << endl;
+		multiprog << "0 " << command << endl;
+		int subPID;
 		for (unsigned int id = 1; id <= options.swarmSize; ++id) {
-			for (unsigned int mid = 0; mid < options.models.size(); ++mid)
-				multiprog << toString(id) + " " << runCmd << " particle " << toString(id) << " run " << sConf_[mid] << endl;
+			for (unsigned int mid = 0; mid < options.models.size(); ++mid){
+
+				subPID = fcalcsubParID(id, mid, options.models.size());
+
+				exesubPath = exePath_.substr(mycommonPath.length(), mycommonPath.length()+exePath_.length());
+				expsubPath = expPaths_[mid][0].substr(mycommonPath.length(), mycommonPath.length()+expPaths_[mid][0].length());
+				sconfsubPath = sConf_[mid].substr(mycommonPath.length(), mycommonPath.length()+sConf_[mid].length());
+
+				//multiprog << toString(subPID) + " " << runCmd << " particle " << toString(id) << " run " << sConf_[mid] << endl;
+				//				multiprog << toString(id) + " " << runCmd << " particle " << toString(id) << " run " << sConf_[mid] << endl;
+				command = "." + exesubPath + " -t particle -p " + toString(subPID) + " -a cluster -g " + toString(currentGeneration) + " -c ." + sconfsubPath + " -e ." + expsubPath;  //razi: consider more than 1 exp
+				command = command + " -n " + toString(this->getNumModels());
+				//command = command + " >> pOUT 2>&1";
+				multiprog << toString(subPID) + " " << command << endl;
+
+
+
+			}
 		}
 #else
 		multiprog << "0 " << runCmd << " load " << sConf_ << endl;
@@ -3032,8 +3148,11 @@ string Swarm::generateTorqueBatchScript(string cmd) {
 
 		batchScript << "#PBS -l procs=" << options.swarmSize + 1 << ",";
 
-		if (options.maxFitTime != MAX_LONG) {
-			batchScript << " walltime=00:00:" << toString(options.maxFitTime) << ",";
+		//if (options.maxFitTime != MAX_LONG) {
+		//	batchScript << " walltime=00:00:" << toString(options.maxFitTime) << ",";
+		//}
+		if (!options.maxFitTime.empty()) { //Raquel fixed torque support
+			batchScript << " walltime=" << options.maxFitTime << ","; //Raquel fixed torque support
 		}
 
 		batchScript << endl << endl;
@@ -3074,8 +3193,10 @@ string Swarm::generateSlurmCommand(string cmd, bool multiProg, unsigned int nCPU
 		command += " --mail-type=END,FAIL --mail-user=" + options.emailAddress;
 	}
 
-	if (options.maxFitTime != MAX_LONG) {
-		command += " -t 00:00:" + toString(options.maxFitTime);
+	//if (options.maxFitTime != MAX_LONG) {
+	if (!options.maxFitTime.empty()) { //Raquel fixed slurm support
+		//command += " -t 00:00:" + toString(options.maxFitTime);
+		command += " -t " + options.maxFitTime; //Raquel fixed slurm support
 	}
 
 	// Specify output directory if needed
@@ -3087,7 +3208,10 @@ string Swarm::generateSlurmCommand(string cmd, bool multiProg, unsigned int nCPU
 	}
 
 	if (nCPU == 0) {
-		command += " -n" + toString(options.parallelCount + 1);
+		int subParID;
+		subParID = fcalcsubParID(options.parallelCount, options.models.size(), options.models.size());
+		//command += " -n" + toString(options.parallelCount + 1);
+		command += " -n" + toString(subParID);
 	}
 	else {
 		command += " -n" + toString(nCPU);
@@ -6058,7 +6182,7 @@ float result = 0;
 					 outname = outdir + basename1 + "_vs_" + basename2 + "_" + toString(it->first) + ".txt";
 					 //add outname as the fourth input
 					 //Raquel: adding support to receive different model numbers and time points as input
-
+					 //cout << "Starting model checking, testing for " << options.constraints_.size() << " contraints." << endl;
 
 					 for(auto constraintIt = options.constraints_.begin(); constraintIt != options.constraints_.end(); ++constraintIt){
 
@@ -6262,7 +6386,7 @@ void Swarm::killAllParticles(int tag) {
 		for(mid=0; mid < options.models.size(); mid++){//Raquel modified this
 			//sp = (p-1)*getNumModels()+ mid + 1; //Raquel replaced by code bellow
 			sp = fcalcsubParID(p, mid, options.models.size());
-			//cout << "RAQUEL sending message to subPar " << sp << "message=" << tag << endl;
+			cout << "RAQUEL sending message to subPar " << sp << "message=" << tag << endl;
 			swarmComm->sendToSwarm(0, sp, tag, false, swarmComm->univMessageSender);
 		}
 	}
@@ -6767,6 +6891,8 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	//use functions in the Util
 	//function parse model, creates the file qith the contents of the model
 	//children
+	unsigned int numFinishedBreeding = 0;
+
 	cout << "RAQUEL number of children received: " << children.size() << endl;
 	//later:
 	//where the parameters are comming from, full list of consolidate
@@ -6855,7 +6981,6 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 
 	}
 
-
 	if (weightSum == 0) {
 		finishFit();
 		outputError("Your population has converged. Quitting.");
@@ -6932,6 +7057,19 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 
 				swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, params);
 				sleep(1);
+
+
+				while (numFinishedBreeding < (subParID)) {
+					cout << "checking for DONEBREED" << endl;
+					unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
+
+			//		int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
+
+					numFinishedBreeding += numMessages;
+					cout << numFinishedBreeding << endl;
+					cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
+
+				}
 			}
 			++parent;
 			++childCounter;
@@ -7111,6 +7249,18 @@ cout << "sending to " << children[childCounter - 1] << endl;
 		sleep(1);
 
 
+		while (numFinishedBreeding < (subParID)) {
+			cout << "checking for DONEBREED" << endl;
+			unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
+
+	//		int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
+
+			numFinishedBreeding += numMessages;
+			cout << numFinishedBreeding << endl;
+			cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
+
+		}
+
 	}
 
 //		swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c1Vec);
@@ -7135,6 +7285,25 @@ cout << "sending to " << children[childCounter - 1] << endl;
 		swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
 		sleep(1);
 
+
+		cout << "waiting for " << subParID << endl;
+
+		//cout << "RAQUEL: children size " << children.size() << endl;
+		//cout << "RAQUEL: swarm size" << options.swarmSize << endl;
+		//cout << "RAQUEL: failed particles " << failedParticles_.size() << endl;
+		//subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
+
+			while (numFinishedBreeding < (subParID)) {
+				cout << "checking for DONEBREED" << endl;
+				unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
+
+		//		int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
+
+				numFinishedBreeding += numMessages;
+				cout << numFinishedBreeding << endl;
+				cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
+
+			}
 
 	}
 	//		swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
@@ -7176,27 +7345,6 @@ for(int veci = 0; veci < c2Vec.size(); veci++){
 	}
 
 
-
-cout << "waiting for " << childCounter - 1 << endl;
-
-
-//cout << "RAQUEL: children size " << children.size() << endl;
-//cout << "RAQUEL: swarm size" << options.swarmSize << endl;
-//cout << "RAQUEL: failed particles " << failedParticles_.size() << endl;
-
-unsigned int numFinishedBreeding = 0;
-
-	while (numFinishedBreeding < (childCounter - 1)) {
-cout << "checking for DONEBREED" << endl;
-		unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
-
-//		int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
-
-		numFinishedBreeding += numMessages;
-cout << numFinishedBreeding << endl;
-cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
-
-	}
 
 cout << "done?" << endl;
 
@@ -7788,10 +7936,18 @@ void Swarm::setJobOutputDir(string path) {
 		string input;
 		string answer;
 		while (1) {
-			cout << "Warning: Your output directory " << options.jobOutputDir << " already exists. Overwrite? (Y or N) ";
-			getline(cin, input);
-			stringstream myInp(input);
-			myInp >> answer;
+
+
+			if(options.clusterSoftware != "mpi" && options.clusterSoftware != "BNF2mpi"){
+				cout << "Warning: Your output directory " << options.jobOutputDir << " already exists. Overwrite? (Y or N) ";
+				getline(cin, input);
+				stringstream myInp(input);
+				myInp >> answer;
+			}
+
+			if(options.clusterSoftware == "mpi" || options.clusterSoftware == "BNF2mpi"){
+				answer = "Y";
+			}
 
 			if (answer == "Y" || answer == "y") {
 				string cmd = "rm -r " + options.jobOutputDir;
@@ -7799,10 +7955,11 @@ void Swarm::setJobOutputDir(string path) {
 					cout << "Deleting old output directory, this may take a few minutes..." << endl;
 				}
 
-				if(runCommand(cmd) != 0) {
-					outputError("Error: Couldn't delete existing output directory with the command: " + cmd + ". Quitting.");
+				if(options.clusterSoftware == "mpi" || options.clusterSoftware == "BNF2mpi"){
+					answer = "Y";
+
 				}
-				break;
+
 			}
 			else if (answer == "N" || answer == "n") {
 				outputError("Error: Output directory already exists. Quitting.");
@@ -8912,7 +9069,7 @@ void Swarm::getClusterInformation() {
 		}
 	}
 	else {
-		if (options.clusterSoftware != "slurm" && options.clusterSoftware != "torque" && options.clusterSoftware != "mpi") {
+		if (options.clusterSoftware != "slurm" && options.clusterSoftware != "torque" && options.clusterSoftware != "mpi" && options.clusterSoftware != "BNF2mpi") {
 			outputError("You specified an unrecognized cluster type in your .conf file. BioNetFit only supports 'torque' or 'slurm' cluster types.");
 		}
 	}
@@ -9262,6 +9419,7 @@ string Swarm::getClusterCommand(string runCmd) {
 		return generateTorqueBatchScript(runCmd);
 	}
 	else if (options.clusterSoftware == "mpi") {
+		cout << "runCmd is: " << runCmd << endl;
 		return generateMPICommand(runCmd);
 	}
 	else {

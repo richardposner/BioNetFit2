@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 	string configFile;
 	string type;
 	int pID, nModels,ret;
-	bool verbose;
+	bool verbose = false;
 	string execPath;
 
 	execPath = boost::filesystem::canonical(boost::filesystem::system_complete(argv[0])).string();
@@ -34,21 +34,24 @@ int main(int argc, char *argv[]) {
 
 
 
-	cout<<"This program is under test and modification by A. Razi: Ver:2.0 !!!"<<endl;
+	cout<<"This program is under test and modification by A. Razi: Ver:2.0!!!"<<endl;
 
 	if (argc < 2){
 		cout <<"Please provide enough information, type BioNetFit -h for help. I am quitting .... \n";
 		return 0;
 	}
-
+    cout << "1" << endl;
 	map <string, vector <string>> cmdLine;
 	map <string, vector <string>>::iterator it;
+
+	cout << "2" << endl;
 
 	if (readCommandLine(argc, const_cast<const char **> (argv), cmdLine)==0){
 		cout<<"Invalid command line format, quitting ..."<<endl;
 		return 0;
 	}
 
+	cout << "Parsed command line" << endl;
 
 /*
 	for(it=cmdLine.begin(); it!=cmdLine.end(); it++){
@@ -77,7 +80,7 @@ int main(int argc, char *argv[]) {
 	configFiles.clear();
 	for(it=cmdLine.begin(); it!=cmdLine.end(); it++){
 		if (it->first=="a"){
-				if (it->second.size()!=1){
+				if (it->second.size()==0){
 					cout<<"Specify only one action"<<endl;
 					return 0;
 				}
@@ -89,8 +92,9 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (it->first=="t"){
-				if (it->second.size()!=1){
+				if (it->second.size()==0){
 					cout<<"Specify only one type, check help for more info..."<<endl;
+					cout << "type " << it->second.at(0) << endl;
 					return 0;
 				}
 				type = it->second.at(0);
@@ -110,7 +114,7 @@ int main(int argc, char *argv[]) {
 				}
 		}
 		if (it->first=="e"){
-//			cout<<"-e  #of files :"<<it->second.size();int ik; cin>>ik;
+			cout<<"-e  #of files :"<<it->second.size();int ik; cin>>ik;
 			if (it->second.size()==1){
 				expFile = it->second.at(0);   if (verbose) cout<<"exp file found: -e "<< expFile <<endl;
 			}else{
@@ -153,11 +157,16 @@ int main(int argc, char *argv[]) {
 			verbose=true;
 		}
 	}
+
+	cout << "Finished command line argument parsing" << endl;
+
+
 	if ((type != "particle") && (pID!=0)){
 		cout<<"particle id entered, but type is not set to particle, I am quitting ..."<<endl;	return 0;
 	}
 
-	
+	cout << "Finished testing for errors" << endl;
+
 
 	if (verbose){
 		cout <<endl<< "************************************************************************************************"<<endl;
@@ -166,6 +175,7 @@ int main(int argc, char *argv[]) {
 		cout << "Type: " << type << endl;
 		cout << "Action: " << action << endl;
 		cout << "Config files: ";
+
 
 		for (unsigned int ii=0; ii<configFiles.size(); ii++)
 			cout<<configFiles.at(ii)<<", ";
@@ -185,10 +195,12 @@ int main(int argc, char *argv[]) {
  		cout << "************************************************************************************************"<<endl;
 	}
 
-	if(configFiles.size()!=1){
-		cout<<"Error: More than one config file is not supported ...."<<endl;
-		return 0;
-	}else{
+	cout << "going through config files " << endl;
+
+	//if(configFiles.size()!=1){
+	//	cout<<"Error: More than one config file is not supported ...."<<endl;
+	//	return 0;
+	//}else{
 		configFile = configFiles.at(0);  //razi: this line added 2017-1-9, later check for master mode XXX
 		if (verbose) cout<<"GenFit: Processing Config File:  "<< configFile<<endl;
 		configFile = convertToAbsPath(configFile);
@@ -197,7 +209,7 @@ int main(int argc, char *argv[]) {
 			cout << "Config File: "<<configFile<<" does not exist, I am quitting"<<endl; return 0;
 		}
 		configFiles.at(0) = configFile;
-	}
+	//}
 
 
 
@@ -230,7 +242,7 @@ int main(int argc, char *argv[]) {
 //cout<<"XXX1-AA1\n"; mypause();
 			if (verbose) try{myconfig.printDetails();}catch(int e) {cout<<"error occurred wile debugging Err-no:"<<e<<endl;};
 
-			if (s->options.useCluster) {
+			if (s->options.useCluster && s->options.clusterSoftware!="BNF2mpi") {
 				action = "cluster";
 			}
 
@@ -270,7 +282,10 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (action == "cluster") {
-			string runCmd = s->getClusterCommand(string(convertToAbsPath(argv[0])));
+			//string runCmd = s->getClusterCommand(string(convertToAbsPath(argv[0])));
+
+			string runCmd = s->getClusterCommand(execPath);
+
 			if (verbose) cout<<"Cluster Command is: "<<runCmd<<endl;
 
 			if (s->options.saveClusterOutput) {
@@ -349,7 +364,7 @@ int main(int argc, char *argv[]) {
 					if (ofs.is_open()) {
 						s->setsConf(convertToAbsPath(serializedSwarmPath), mid);
 						//cout << "Path is: " << s->getsConf() << endl;
-
+						cout << "serializedSwarmPath " << serializedSwarmPath << endl;
 						boost::archive::binary_oarchive ar(ofs);
 						ar & s;
 						ofs.close();
@@ -357,7 +372,8 @@ int main(int argc, char *argv[]) {
 				}
 
 				s->isMaster = true;
-				string runCmd = s->generateSlurmMultiProgCmd(string(convertToAbsPath(argv[0])));
+				//string runCmd = s->generateSlurmMultiProgCmd(string(convertToAbsPath(argv[0])));
+				string runCmd = s->generateSlurmMultiProgCmd(execPath);
 
 				if (s->options.saveClusterOutput) {
 					string outputPath = s->options.outputDir + "/" + s->options.jobName + "_cluster_output";
@@ -366,7 +382,9 @@ int main(int argc, char *argv[]) {
 						if (runCommand(makeClusterOutputDirCmd) != 0) {
 							cout << "Warning: Couldn't create cluster output directory with command: " << makeClusterOutputDirCmd << ". Turning off save_cluster_output" << endl;
 							s->options.saveClusterOutput = false;
-							runCmd = s->generateSlurmMultiProgCmd(string(convertToAbsPath(argv[0])));
+							//runCmd = s->generateSlurmMultiProgCmd(string(convertToAbsPath(argv[0])));
+							runCmd = s->generateSlurmMultiProgCmd(execPath);
+
 						}
 					}
 				}
@@ -411,7 +429,8 @@ int main(int argc, char *argv[]) {
 	// We are a particle
 	else if (type == "particle"){
 
-//cout<<"1-GenFit:Particle:   started.... Reading sconfig file:"<<configFile <<endl;
+
+cout<<"1-GenFit:Particle:   started.... Reading sconfig file:"<<configFile <<endl;
 
 		// Try to open the serialized swarm
 		while(1) {
@@ -430,7 +449,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-//cout<<"2-GenFit:Particle:   File opened ...\n"<<endl;
+cout<<"2-GenFit:Particle:   File opened ...\n"<<endl;
 
 		//in Particle mode, the model is provided as serialized config file
 
@@ -446,14 +465,18 @@ int main(int argc, char *argv[]) {
 		//razi: extract particle Id from subparticle id and number of models M,
 		// P1=[s1,s2,...sM], P2=[s2M-1 s2M-2    s2M], ....
 		//unsigned int parId = pID; unsigned int subParId = 0; //just one subparticle for each instance of running (in particle mode)
-
+		s->initComm();
+		if (s->options.clusterSoftware == "BNF2mpi"){
+			subParID = s->swarmComm->getRank();
+		}
+		cout << "RRR subParID " << subParID << endl;
 		mid = fcalcMID(subParID, s->getNumModels());
 		pID = fcalcParID(subParID,s->getNumModels());
 
 		s->setDefaultModelIndex(mid);
-		if (verbose) {cout<<"Slave:  Working on Particle:"<< pID<<"   subParticle:" << subParID<< "   Model id:"<< mid << "  Model file:"<< s->getModelName(mid,false)<<endl;}
+		if (s->options.verbosity >= 3) {cout<<"Slave:  Working on Particle:"<< pID<<"   subParticle:" << subParID<< "   Model id:"<< mid << "  Model file:"<< s->getModelName(mid,false)<<endl;}
 
-//cout<<"setting Exp file:"<< expFile <<" for model id:"<<mid <<endl;
+cout<<"setting Exp file:"<< expFile <<" for model id:"<<mid <<endl;
 		s->setExpPath("", expFile,mid); //the problem is here--> s->addExp() --> new Data(path, this, true) --> Data::parseData --> the exp file in not in the action list
 
 		s->printDetails();
@@ -465,16 +488,18 @@ int main(int argc, char *argv[]) {
 		//cout<<"3-GenFit:Particle:   Exe path is set to : "<<(mainpath()+"/bin/BioNetFit")<<endl;
 		//was s->setExePath(convertToAbsPath(argv[0]));
 
-//cout<<"4-GenFit:Particle:   init command"<<endl; mypause();
-		s->initComm();
-
+cout<<"4-GenFit:Particle:   init command"<<endl;
+		//s->initComm();
+		//subParID = s->swarmComm->getRank();
+cout << "RRR supar" << subParID << endl;
 		if (pID == 0) {
 			pID = s->swarmComm->getRank();
 		}
+		cout << " pID = s->swarmComm->getRank(); result: " << pID << endl;
 
 		s->initRNGS(s->options.seed + pID);
 
-//cout<<"5-GenFit:Particle:   create particle."<<endl;  mypause();
+cout<<"5-GenFit:Particle:   create particle."<<endl;
 
 
 

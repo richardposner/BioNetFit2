@@ -19,12 +19,13 @@
 #include <fstream>
 //razi changed was #include <tr1/random>
 //#if(defined _WIN32 || defined  _WIN64)
-	#include <boost/tr1/tr1/random>
+	//#include <boost/tr1/tr1/random>
 //#else
 //	#include <tr1/random>
 //#endif
 
-#include <boost/tr1/tr1/random>
+//#include <boost/tr1/tr1/random>
+#include <boost/random.hpp>//new Boost 1.65
 #include <iomanip>
 #include <chrono>
 #include <cstdio>
@@ -173,6 +174,7 @@ public:
 	std::string generateSlurmMultiProgCmd(std::string runCmd);
 	std::string generateSlurmBatchFile(std::string runCmd);
 	std::string generateMPICommand(std::string runCmd);
+	std::string generateBNF2MPICommand(std::string runCmd);
 
 	Pheromones *swarmComm;
 
@@ -236,7 +238,8 @@ public:
 		unsigned int smoothing;
 		unsigned int keepParents;
 
-		unsigned long maxFitTime;	// Maximum amount of time to let the fit run
+		string maxFitTime; //Raquel fix SLURM support
+		//unsigned long maxFitTime;	// Maximum amount of time to let the fit run
 		unsigned long maxNumSimulations; // Maximum number of simulations to run
 
 		// PSO options
@@ -298,6 +301,7 @@ public:
 			ar & freeParams_;
 			ar & models;
 			ar & defaultModel;
+			ar & constraints_;
 #else
 			ar & model;
 #endif

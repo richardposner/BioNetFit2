@@ -65,6 +65,7 @@ std::string toString (unsigned long theNumber);
 	unsigned int fcalcsubParID(unsigned int ParID, unsigned int mid, unsigned int nModels);
 	unsigned int fcalcMID(unsigned int subParID, unsigned int nModels);
 	unsigned int fcalcParID(unsigned int subParID, unsigned int nModels);
+	std::string commonPath( const std::vector<std::string> & dirs , char separator );
 #endif //VER2
 
 

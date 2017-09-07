@@ -722,6 +722,7 @@ void Particle::setParam(pair<std::string, double> myParams, unsigned int mid){
 void subParticle::runModel(unsigned int iteration, bool localSearch) {
 
 	unsigned int pID = parParticle->id_;
+	cout << "RRR parParticle->id_: " << pID << endl;
 	Swarm * swp = parParticle->swarm_;  if(!swp){cout<<"subParticle::runModel: Invalid subParticle with no parent..."; return;}
 	Model * mdl = parParticle->models.at(this->mid_);  if(!swp){cout<<"subParticle::runModel: Invalid subParticle with no model..."; return;}
 	unsigned int mid = this->mid_;
@@ -946,6 +947,7 @@ cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
 				path = swarm_->options.jobOutputDir + toString(currentGeneration_ + 1) + "/";
 
 				if (!checkIfFileExists(path)) {
+					cout << "trying to create path " << path << endl;
 					runCommand("mkdir " + path);
 				}
 
@@ -993,9 +995,10 @@ cout << "RAQUEL PASSED IF numCheckedMessages >= numMessages" << endl;
 
 
 		if (swarm_->swarmComm->univMessageReceiver.find(FIT_FINISHED) != swarm_->swarmComm->univMessageReceiver.end()) {
-			cout << "RAQUEL entering pheromones" << endl;
+			cout << "RAQUEL entering ~pheromones" << endl;
 			swarm_->swarmComm->~Pheromones();
-			cout << "RAQUEL exiting pheromones" << endl;
+			cout << "RAQUEL exiting ~pheromones" << endl;
+			//return;
 			exit(0);
 		}
 
@@ -1168,6 +1171,7 @@ string path;
 		cout << "RAQUEL entering while from function that takes mid as input" << endl;
 		string path; //Raquel: declaring it outside the while loop
 
+
 		while (1) {
 			// Retrieve any messages
 			int numCheckedMessages = 0;
@@ -1244,9 +1248,11 @@ string path;
 
 			if (swarm_->swarmComm->univMessageReceiver.find(FIT_FINISHED) != swarm_->swarmComm->univMessageReceiver.end()) {
 				cout << "RAQUEL entering pheromones" << endl;
+
 				swarm_->swarmComm->~Pheromones();
 				cout << "RAQUEL exiting pheromones" << endl;
 				exit(0);
+				//return;
 			}
 
 			if (swarm_->swarmComm->univMessageReceiver.find(NEW_BOOTSTRAP) != swarm_->swarmComm->univMessageReceiver.end()) {
@@ -1613,8 +1619,6 @@ void Particle::smoothRuns(unsigned int mid) {
 	if (!getSubParticle(mid)) cout<<"E3\n";
 	if (!models.at(mid))  cout<<"E4\n";
 	if (dataFiles_.at(mid).empty()) cout<<"E5\n";
-
-
 
 
 		outputError("smoothRun Failed. Invalid SubParticle.  PID:"+ toString(id_) + "  model id:" + toString(mid)+ "  subParID:" + toString(subParID)+". Quitting !!!");
