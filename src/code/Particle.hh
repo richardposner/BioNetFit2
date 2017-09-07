@@ -13,6 +13,7 @@
 #include "Model.hh"
 #include "Swarm.hh"
 #include "Setting.hh"
+#include <random> //Fixing support for other versions of gcc/++ and mpicc/++
 
 class Swarm;
 class Data;
