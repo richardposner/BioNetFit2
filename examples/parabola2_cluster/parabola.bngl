@@ -1,0 +1,63 @@
+begin model
+
+  begin parameters
+    # roots of 5th degree polynomial y(x)-1000
+#    r1 1
+#    r2 1.5
+#    r3 4
+#    r4 7
+#    r5 100
+#These values above are the original ones, now lets convert them to free parameters so our software will have to guess what values they are
+
+
+#Parabola A:    Y = P1*(X^2)  +  P2*X   +  P3
+#Parabola B:    Y = -P1*(X^2)  + P4 *X  +  P5
+
+
+
+    p1 p1__FREE__
+    p2 p2__FREE__
+    p3 p3__FREE__
+    p4 p4__FREE__
+    p5 p5__FREE__
+
+  end parameters
+
+  begin molecule types
+    counter()
+  end molecule types
+
+  begin seed species
+    # initial conditions
+    counter() -10
+  end seed species
+
+  begin observables
+    Molecules x counter()
+  end observables
+
+  begin functions
+ #   y()=(x-p1)*(x-p2)*(x-p3)*(x-p4)*(x-p5)+1000
+
+#    y()=(p1*x^2)+(p2*x)+p3
+    y()=p1*(x^2)+(p2*x)+p3
+    z()=-p1*(x^2)+(p4*x)+p5
+  end functions
+
+  begin reaction rules
+    0->counter() 1
+  end reaction rules
+
+end model
+
+begin actions
+  generate_network({overwrite=>1})
+#  simulate({method=>"ode",t_start=>0,t_end=>10,n_steps=>100,print_functions=>1})
+   simulate({method=>"ode",t_start=>-10,t_end=>10,n_steps=>20,print_functions=>1,prefix=>"parabola"})
+#  simulate({method=>"ode",t_start=>0,t_end=>60,sample_times=>[0,5,10,15,20,25,30,35,40,45,50,55,60],prefix=>"exMutM1"})
+
+#simulate({method=>"ode",t_start=>0,t_end=>60,sample_times=>[0,5,10,15,20,25,30,35,40,45,50,55,60],prefix=>"exMutM1"})
+
+end actions
+
+
