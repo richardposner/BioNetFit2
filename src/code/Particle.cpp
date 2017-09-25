@@ -1970,6 +1970,8 @@ cout << "Particle " << id_ << " starting" << endl;
 	while(doContinue) {
 		if (swarm_->bootstrapCounter > 0 && currentGeneration_ == 1) {
 			swarm_->swarmComm->recvMessage(0, id, NEXT_GENERATION, true, swarm_->swarmComm->univMessageReceiver);
+			//int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
+
 			swarm_->swarmComm->univMessageReceiver.clear();
 		}
 
@@ -2195,7 +2197,7 @@ void Particle::checkMessagesGenetic() {
 				}
 
 				// Tell the master we have our new params and are ready for the next generation
-				cout << id_ << "RAQUEL: telling master we're finished " << endl;
+				cout << id_ << "RAQUEL: telling master we're finished id_: " << id_ << endl;
 				swarm_->swarmComm->sendToSwarm(id_, 0, DONE_BREEDING, false, swarm_->swarmComm->univMessageSender);
 
 				//double t = tmr.elapsed();

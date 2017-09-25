@@ -774,7 +774,7 @@ int main(int argc, char *argv[]) {
 				std::ofstream ofs(serializedSwarmPath);
 				if (ofs.is_open()) {
 					s->setsConf(convertToAbsPath(serializedSwarmPath));
-					//cout << "Path is: " << s->getsConf() << endl;
+					cout << "Path is: " << s->getsConf() << endl;
 
 					boost::archive::binary_oarchive ar(ofs);
 					ar & s;

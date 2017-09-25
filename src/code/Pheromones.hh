@@ -14,6 +14,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <mpi.h> //Raquel classic MPI support
+
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
 
