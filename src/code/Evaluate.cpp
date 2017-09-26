@@ -158,7 +158,7 @@ float evaluateResults(string inputFile1, string inputFile2, map<int,string> cons
 
   }
 
-  for (int i = 0; i < variableNames1.size(); i++){
+  for (unsigned int i = 0; i < variableNames1.size(); i++){
       if (variableNames1[i].empty() || variableNames1[i]=="#"){
          //cout << "Found empty string at " << i << endl;
          variableNames1.erase(variableNames1.begin()+i);
@@ -192,7 +192,7 @@ float evaluateResults(string inputFile1, string inputFile2, map<int,string> cons
 
       }
 
-      for(int i = 0; i < variableValues1.size(); i++){
+      for(unsigned int i = 0; i < variableValues1.size(); i++){
           if (variableValues1[i].empty()){
              //cout << "Found empty string at " << i << endl;
              variableValues1.erase(variableValues1.begin()+i);
@@ -204,7 +204,7 @@ float evaluateResults(string inputFile1, string inputFile2, map<int,string> cons
        //start making the map here
        //make a map with the variable names (string) vs their index (int), pointing to values (double)
        //example map[variableNames[i]][count] = variableValues[i];
-       for(int i = 0; i < variableNames1.size(); i++){
+       for(unsigned int i = 0; i < variableNames1.size(); i++){
 
           if(variableNames1[i] != "Iteration" || variableNames1[i] != "iteration" || variableNames1[i] != "time" || variableNames1[i] != "Time"){
              tmpStr = static_cast<string>(variableValues1[i]);
@@ -251,7 +251,7 @@ float evaluateResults(string inputFile1, string inputFile2, map<int,string> cons
 
   }
 
-  for (int i = 0; i < variableNames2.size(); i++){
+  for (unsigned int i = 0; i < variableNames2.size(); i++){
       if (variableNames2[i].empty() || variableNames2[i]=="#"){
          //cout << "Found empty string at " << i << endl;
          variableNames2.erase(variableNames2.begin()+i);
@@ -283,7 +283,7 @@ float evaluateResults(string inputFile1, string inputFile2, map<int,string> cons
 
       }
 
-      for(int i = 0; i < variableValues2.size(); i++){
+      for(unsigned int i = 0; i < variableValues2.size(); i++){
           if (variableValues2[i].empty()){
              //cout << "Found empty string at " << i << endl;
              variableValues2.erase(variableValues2.begin()+i);
@@ -296,7 +296,7 @@ float evaluateResults(string inputFile1, string inputFile2, map<int,string> cons
        //make a map with the variable names (string) vs their index (int), pointing to values (double)
        //example map[variableNames[i]][count] = variableValues[i];
 
-      for(int i = 0; i < variableNames2.size(); i++){
+      for(unsigned int i = 0; i < variableNames2.size(); i++){
 
           if(variableNames2[i] != "Iteration" || variableNames2[i] != "iteration"){
 
@@ -331,18 +331,18 @@ vector<string> consList;
  //cout << "Time" << "\t" << "Constraint" << "\t" << "Result(0=FALSE;1=TRUE)" << endl;
  //outFile << "Time" << "\t" << "Constraint" << "\t" << "Result(0=FALSE;1=TRUE)" << endl; //old mode
 	outFile << "Time" << "\t" << "Constraints_fulfilled" << endl;
- for(int i = 0; i < constraintValue1.size(); i++){
+ for(unsigned int i = 0; i < constraintValue1.size(); i++){
      //constraintFunction(0, "=", 0);
      //cout << "@@@" << constraintValue1[i] << "@@@map size" << namesValues1[constraintValue1[i]].size() << endl;
  //    cout << constraintValue1[i] << "\t" <<  constraintOp[i] << "\t" << constraintValue2[i] << endl;
      cout << "Starting test for constraint: " << constraintValue1[i] << " " <<  constraintOp[i] << " " << constraintValue2[i] << " Iteration1 " << iteration1 << " Iteration2 " << iteration2 << endl;
 
-     for (int j = 0; j < namesValues1[variableNames1[i]].size(); j++){
+     for (unsigned int j = 0; j < namesValues1[variableNames1[i]].size(); j++){
     	 //Raquel: added this if to check only the last time point
          //if(j==namesValues1[variableNames1[i]].size()-1){
     	 //if found the desired time point
 
-    	 for(int k = 0; k < namesValues2[variableNames2[i]].size(); k++){
+    	 for(unsigned int k = 0; k < namesValues2[variableNames2[i]].size(); k++){
     		 //if we reach the correct time point/iteration specified by the user
 
     		 if(namesValues1[variableNames1[0]][j] == iteration1 && namesValues2[variableNames2[0]][k] == iteration2){
@@ -443,7 +443,7 @@ vector<string> consList;
 
  outFile << fulfilledConstrants << "\t";
 
- for (int i = 0; i<consList.size(); i++){
+ for (unsigned int i = 0; i<consList.size(); i++){
 
 	 outFile << consList[i] << "\t";
 

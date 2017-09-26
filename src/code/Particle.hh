@@ -106,7 +106,7 @@ public:
 	std::vector <subParticle *> subParticles;
 	std::vector <unsigned int> subParIDs;
 
-	void addSubParticle(subParticle* subparticle, int mid, bool overwrite);
+	void addSubParticle(subParticle* subparticle, unsigned int mid, bool overwrite);
 	bool subParExist(unsigned int subParID);
 	unsigned int getNumSubParticle();
 	subParticle * getSubParticle(unsigned int subParIndex){return subParticles.at(subParIndex);} //razi: in master it is equAL TO MODEL ID

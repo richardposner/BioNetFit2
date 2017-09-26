@@ -320,7 +320,7 @@ Swarm * Config::createSwarmFromConfig () {
 	if(pairs.find("max_fit_time") != pairs.end()) {
 		vector<string> timeElements;
 		split(pairs.find("max_fit_time")->second, timeElements, ":");
-		long timeInSeconds = (stol(timeElements[0]) * 3600) + (stol(timeElements[1]) * 60) + stol(timeElements[2]);
+		//long timeInSeconds = (stol(timeElements[0]) * 3600) + (stol(timeElements[1]) * 60) + stol(timeElements[2]);
 		//swarm_->options.maxFitTime = timeInSeconds;
 		swarm_->options.maxFitTime = pairs.find("max_fit_time")->second; //Raquel fix slurm support
 	}
@@ -485,6 +485,7 @@ Swarm * Config::createSwarmFromConfig () {
 
 	if(pairs.find("constraint_weight") != pairs.end()) {
 		swarm_->options.constraintWeight = stof(pairs.find("constraint_weight")->second);
+		cout << "CONSTRAINT WEIGHT = "<< swarm_->options.constraintWeight << endl;
 	}
 	/////////////////////////RAQUEL adding weight parameter for ranking models by constraint/////////////////////
 
@@ -653,7 +654,7 @@ std::pair <std::unordered_multimap<string,string>::iterator, std::unordered_mult
 */
 	for (map<string, Data*>::iterator i = swarm_->options.expFiles.begin(); i != swarm_->options.expFiles.end(); ++i) {
 		bool exp_linked = false;
-		for (int mid = 0; mid < swarm_->options.models.size(); ++mid){
+		for (unsigned int mid = 0; mid < swarm_->options.models.size(); ++mid){
 			curmodel = swarm_->options.models.at(mid);
 			prefixedActions = prefixedActionsMatrix.at(mid);
 			// Have exp but no prefix
@@ -823,7 +824,7 @@ void Config::checkConsistency() {
 
 	if (swarm_->options.fitType == "sa") {
 #ifdef VER2
-		if (swarm_->options.swarmSize < (swarm_->options.models[0]->getNumFreeParams() + 1)) {
+		if ((unsigned) swarm_->options.swarmSize < (swarm_->options.models[0]->getNumFreeParams() + 1)) {
 			swarm_->outputError("Error: You are using simulated annealing but your swarm size is less than N+1, where N is the number of free parameters in your model. Quitting.");
 		}
 #else

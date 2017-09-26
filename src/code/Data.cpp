@@ -92,13 +92,13 @@ void Data::parseData(){  //parsing .exp file
 	double value;
 	Model * mdl=0;
 #ifdef VER2
-	if ((mid_ >= 0)&& (mid_ < swarm_->getNumModels()))
+	if ((mid_ >= 0)&& ( (unsigned) mid_ < swarm_->getNumModels())) //Raquel Fixing unsigned vs signed warnings
 		mdl=swarm_->options.models[mid_];
 #else
 	mdl=swarm_->options.model;
 #endif
 
-int ii;
+//int ii; Raquel fixing unised variable warnings
 //cout<<"Data::parseData AAA1. File:"<< dataPath <<".  Enter a number..."; mypause();
 
 	if (swarm_->options.usePipes){

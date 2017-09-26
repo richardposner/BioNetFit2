@@ -40,7 +40,7 @@ public:
 	std::map<std::string, double> colAverages;
 
 #ifdef VER2
-	unsigned int mid_;
+	int mid_; //Raquel removing Wsigned warnings
 #endif
 
 private:

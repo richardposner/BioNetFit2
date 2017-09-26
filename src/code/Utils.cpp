@@ -183,7 +183,7 @@ try{
 	std::string line, oline;
 	std::string word;
 	int wcnt, linecnt;
-	int val, rnd1, rnd;
+	int val, rnd1; //Raquel removed unused, rnd;
 	std::string::size_type pos = 0;
 	std::string::size_type prev = 0;
 	boost::random::mt19937 generalRand;

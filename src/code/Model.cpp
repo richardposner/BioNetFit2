@@ -341,5 +341,6 @@ bool check_model_consistency(std::vector<Model *> models){
 		}
 		return consflag;
 	}
+	return 0; //Raquel Fixing warnings
 }
 #endif

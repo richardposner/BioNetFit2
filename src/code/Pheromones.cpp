@@ -44,7 +44,7 @@ void Pheromones::init(Swarm *s) {
 	unsigned int nSubPar= swarm_->options.swarmSize * swarm_->options.models.size()+1; //razi:number of subparticles, +1 since starts from 1
 
 	// Using MPI
-	if (swarm_->options.useCluster && swarm_->options.clusterSoftware == "mpi" || swarm_->options.clusterSoftware == "slurm") {
+	if (swarm_->options.useCluster && (swarm_->options.clusterSoftware == "mpi" || swarm_->options.clusterSoftware == "slurm") ) {
 		// Set up our MPI environment and communicator
 		std::cout<<"Pheromones Initialization: MPI\n";
 		//env_ = new mpi::environment();
@@ -203,7 +203,7 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 
 			if(receiverID < world_size){
 
-				usleep(10000);
+				//usleep(10000);
 
 
 				if (block) {
@@ -225,7 +225,7 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 				else {
 					std::cout << "attempting a non-block send from " << senderID << " to " << receiverID << std::endl;
 
-					MPI_Request req;
+					//MPI_Request req;
 					//recvRequest_ = world_->isend(receiverID, convertedTag, serializedMessage, smString.length());
 					//recvRequest_ = world_->isend(receiverID, convertedTag, smString);
 					//MPI_Isend(smString.c_str(), smString.length(), MPI_CHAR, receiverID, tag, MPI_COMM_WORLD, &req);
@@ -349,7 +349,7 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 			if (block) {
 				bool foundMessage = true;
 				while (foundMessage) {
-					usleep(150000);
+					//usleep(150000);
 					//std::cout << senderID << "loop" << std::endl;
 
 					// TODO: This non-erasing recvMessage might slow down the receiver finding the message since it
@@ -377,7 +377,7 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 	if (swarm_->options.useCluster) {
 		//swarmMessage smessage;
 		//std::string serializedMessage;
-		cout << "RRR recvMessage senderID: " << senderID << " receiverID: " << receiverID << " tag: " << tag <<endl;
+		//cout << "RRR recvMessage senderID: " << senderID << " receiverID: " << receiverID << " tag: " << tag <<endl;
 		std::string msg;
 		MPI_Status status;
 		int flag = 0;
@@ -386,7 +386,7 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 
 		while (1) {
 			//std::cout << "rcv loop" << std::endl;
-			usleep(10000);
+			//usleep(10000);
 
 			MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
 			//MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -548,7 +548,7 @@ sleep(1);
 			}
 		}
 	}
-	cout << "RAQUEL inside recvMessage exiting with num messages: " << numMessages << endl;
+	//cout << "RAQUEL inside recvMessage exiting with num messages: " << numMessages << endl;
 
 	return numMessages;
 

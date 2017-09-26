@@ -70,7 +70,8 @@ Swarm::Swarm() {
 	options.smoothing = 1;
 	options.keepParents = 0;
 
-	options.maxFitTime = MAX_LONG;
+	//options.maxFitTime = MAX_LONG;
+	options.maxFitTime = std::string("700:00:00");
 	options.maxNumSimulations = MAX_LONG;
 
 	// PSO options
@@ -256,8 +257,8 @@ void Swarm::consolidate_model_params(){
 		if(options.verbosity >= 3) cout<<"No need to consolidate models. Less than two models exist"<<endl;
 		return;
 	}
-/*
-/* Bug Note by Raquel
+ *
+ * Bug Note by Raquel
  * There was a bug in the consolidation function bellow
  * When you have more then 2 models that share equal paramaters, the command:
  * delete options.models.at(j)->freeParams_[fj->first];
@@ -265,12 +266,18 @@ void Swarm::consolidate_model_params(){
  * this will cause an error of memory access violation
  * I solved this problem by creating a new map containing only the unique parameters
  */
+
+
+
 	map<string,FreeParam*> uniqueList;
 	int uniqueIndex = 0;
 	//remove dulicate free parameters
 	unsigned int i,j, k, cnt=0;
 
-	for (i=0; i <options.models.size()-1; i++){  //k-1 first models
+
+	if(options.models.size() > 1 ){
+
+	for (i=0; i <options.models.size(); i++){  //k-1 first models
 		//cout << "in the first loop" << endl;
 		for (j=i+1; j <options.models.size(); j++){  //the subsequent model to the end
 			//cout << "in the second loop" << endl;
@@ -310,7 +317,12 @@ void Swarm::consolidate_model_params(){
 
 	if(options.verbosity >= 3) cout<<"Removing duplicate free parameters is finished. "<<cnt<<" duplicate free parameters are deleted."<<endl;
 
-	if(options.models.size() >1){
+	}else{
+
+		uniqueList = options.models.at(0)->freeParams_;
+	}
+
+
 
 		for (i=0; i <options.models.size(); i++){
 			options.models.at(i)->freeParams_ = uniqueList;
@@ -321,7 +333,7 @@ void Swarm::consolidate_model_params(){
 		options.freeParams_.clear(); cnt=0;
 		options.freeParams_ = uniqueList;
 		cnt = options.freeParams_.size();
-	}
+
 	 //razi make full list of union of free parameters
 	options.freeParams_.clear(); cnt=0;
 	for (i=0; i <options.models.size(); i++){  //razi: all models, was k-1 first models, later test
@@ -365,7 +377,7 @@ void Swarm::consolidate_model_params(){
 
 
 
-void Swarm::setsConf(std::string sConf, unsigned int mid){  //razi added
+void Swarm::setsConf(std::string sConf, int mid){  //razi added
 	if (options.verbosity>=3) cout<<"Setting sConf id:" << mid << " File:" << sConf <<endl;
 	int sz = sConf_.size();
 	if (mid < 0){
@@ -376,7 +388,7 @@ void Swarm::setsConf(std::string sConf, unsigned int mid){  //razi added
 		sConf_.at(mid) = sConf;
 	}else if ((mid >= 0) && (mid > sz)){
 
-		for(unsigned int i = 0; i < mid - sz; i++){
+		for(int i = 0; i < mid - sz; i++){
 			sConf_.push_back("");
 		}
 		sConf_.at(mid) = sConf;
@@ -424,7 +436,7 @@ void Swarm::setExpPath(std::string prefixPath, std::string path, int mid){
 
 	if (mid==-1){ //razi: means that each file is for one model [in the sqame order]
 
-		for(int i=0; i< Paths.size(); ++i){
+		for(unsigned int i=0; i< Paths.size(); ++i){
 			fs::path path(Paths.at(i));
 			fs::path abspath = path;
 			
@@ -442,9 +454,9 @@ cout<<"*** exp file found"<<expfile<< " set for model:"<<i<<endl;
 
 
 	}else{
-		if((mid>=0)&&(mid < options.models.size())){
+		if((mid>=0)&&((unsigned) mid < options.models.size())){
 			absPaths.clear();
-			for(int i=0; i< Paths.size(); ++i){
+			for(unsigned int i=0; i< Paths.size(); ++i){
 				fs::path path(Paths.at(i));
 				fs::path abspath = path;
 				
@@ -477,7 +489,7 @@ void Swarm::setModels(std::string pathPrefix, std::string path, bool overwrite){
 
 	if  (options.verbosity >= 3) cout<<"Swarm::setModels:  processing model files:"<<path<<endl;
 	paths = split_string(path, ",");
-	for(int i=0; i< paths.size(); ++i){
+	for(unsigned int i=0; i< paths.size(); ++i){
 		fs::path path(paths.at(i));
 		fs::path abspath = path;
 		
@@ -496,10 +508,10 @@ void Swarm::setModel(std::string path, int mid, bool overwrite){
 	std::string modelfile = convertToAbsPath(path);
 	unsigned int  nmodel=getNumModels();
 
-	if (mid == nmodel){
+	if ((unsigned) mid == nmodel){
 		this->options.models.push_back(new Model(this, modelfile));  //add to the end
 		if(options.verbosity >=4) cout<<" Model["<< mid<<"]: "<<path<<" is appended to the list of models."<<endl;
-	}else if (mid < nmodel){ //model may exist
+	}else if ((unsigned) mid < nmodel){ //model may exist
 		if ((overwrite) || (! options.models.at(mid))){ //if no model is set or overwrite is allowed
 			this->options.models[mid] = new Model(this, modelfile); //you may need to kill the overwritten model
 			if(options.verbosity >=4) cout<<" Model["<< mid<<"]: "<<path<<" is added to the list of models."<<endl;
@@ -515,7 +527,7 @@ void Swarm::setModel(std::string path, int mid, bool overwrite){
 
 
 void Swarm::setDefaultModelIndex(int mid){
-	if((mid>=0) &&(mid < this->options.models.size())){
+	if((mid>=0) &&((unsigned) mid < this->options.models.size())){
 		//this->options.model = this->options.models.at(mid);
 		options.defaultModel = mid;
 		if (options.verbosity >= 3) cout<<"Default model not set, Index is set to " << mid << " # of models:"<< this->options.models.size()<<endl;
@@ -612,7 +624,7 @@ void Swarm::initFit () {  //razi: modified version
 
 		Particle p = Particle(this, 1); bool genNetworkFlag = false;
 		vector<subParticle *> sp(nModels);
-		for (unsigned int mid=0; mid <nModels; mid++){
+		for (int mid=0; mid <nModels; mid++){
 			if (options.models.at(mid)->getHasGenerateNetwork() && bootstrapCounter == 0) {
 
 				genNetworkFlag = true;
@@ -697,7 +709,7 @@ void Swarm::initFit () {  //razi: modified version
 			params.push_back(0);
 		}
 
-		for (unsigned int particle = 1; particle <= options.swarmSize; ++particle) {
+		for (int particle = 1; particle <= options.swarmSize; ++particle) {
 			particleCurrParamSets_.insert(pair<int, vector<double>>(particle, params));
 
 			//razi: init for each subparticle
@@ -712,22 +724,22 @@ void Swarm::initFit () {  //razi: modified version
 
 
 		if (options.fitType == "pso") {
-			for (unsigned int particle = 1; particle <= options.swarmSize; ++particle) {
+			for (int particle = 1; particle <= options.swarmSize; ++particle) {
 				particleParamVelocities_[particle] = params;
 				particleBestParamSets_[particle] = params;
 				particleWeights_[particle] = 0;
-				for (unsigned mid=0; mid<nModels; mid++)
+				for (int mid=0; mid<nModels; mid++)
 					particleIterationCounter_[particle][mid] = 0;
 			}
 		}
 		if (options.fitType == "pso" || "de") {
 			int subPar = 0;
 
-			for (unsigned int particle = 1; particle <= options.swarmSize; ++particle) {
+			for (int particle = 1; particle <= options.swarmSize; ++particle) {
 				particleBestFits_[particle] = 0;
 
 				//Raquel: added support for subparticles
-				for(int mid = 0; mid < options.models.size(); mid++){
+				for(int mid = 0; (unsigned) mid < options.models.size(); mid++){
 					subPar = fcalcsubParID(particle, mid, options.models.size());
 					subparticleBestFits_[subPar] = 0;
 				}//Raquel: added support for subparticles
@@ -738,12 +750,12 @@ void Swarm::initFit () {  //razi: modified version
 			for (unsigned int island = 0; island <= options.numIslands; ++island) {
 				islandToParticle_.push_back(vector<unsigned int>(options.swarmSize / options.numIslands,0));
 			}
-			for (unsigned int particle = 1; particle <= options.swarmSize; ++particle) {
+			for (int particle = 1; particle <= options.swarmSize; ++particle) {
 				particleToIsland_.push_back(0);
 				particleBestFitsByFit_.insert(pair<double, unsigned int>(0, particle));
 
 				//Raquel added this loop to support subparticles
-				for(int mid = 0; mid < options.models.size(); mid++){
+				for(unsigned int mid = 0; mid < options.models.size(); mid++){
 					subPar = fcalcsubParID(particle, mid, options.models.size());
 					subparticleBestFitsByFit_.insert(pair<double, unsigned int>(0, subPar));
 
@@ -752,11 +764,11 @@ void Swarm::initFit () {  //razi: modified version
 			}
 		}
 		if (options.fitType == "sa") {
-			for (unsigned int particle = 1; particle <= options.swarmSize; ++particle) {
+			for (int particle = 1; particle <= options.swarmSize; ++particle) {
 				particleBestFitsByFit_.insert(pair<double, unsigned int>(0, particle));
 
 				//Raquel added this loop to support subparticles
-				for(int mid = 0; mid < options.models.size(); mid++){
+				for(unsigned int mid = 0; mid < options.models.size(); mid++){
 					subPar = fcalcsubParID(particle, mid, options.models.size());
 					subparticleBestFitsByFit_.insert(pair<double, unsigned int>(0, subPar));
 					currentsubparticleBestFitsByFit_.insert(pair<double, unsigned int>(0, subPar));
@@ -820,30 +832,49 @@ void Swarm::addMutate(std::string mutateString) {
 
 vector<double> Swarm::calcQPSOmBests() {
 	// Eq 2b Liu et al
-	cout<<"Modification needed\n...."; mypause();
-/*
+	//cout<<"Modification needed\n...."; mypause();
+
 	vector<double> mBests;
 
-	for (unsigned int param = 0; param < options.model->getFreeParams_().size(); ++param) {
+	//for (unsigned int param = 0; param < options.model->getFreeParams_().size(); ++param) {
+	//for (auto param = this->getFreeParams_().begin(); param != this->getFreeParams_().end(); ++param) { //for (auto param = options.model->getFreeParams_().begin(); param != options.model->getFreeParams_().end(); ++param) {
+	unsigned int i = 0;
+
+
+
 		double sum = 0;
-		for (unsigned int particle = 1; particle <= options.swarmSize; ++particle) {
-			sum += abs(particleBestParamSets_.at(particle)[param]);
+		for (int particle = 1; particle <= options.swarmSize; ++particle) {
+			i = 0;
+			for (auto param = particleCurrParamSets_.at(particle).begin(); param != particleCurrParamSets_.at(particle).end(); ++param) {
+
+//				for(int mid=0; mid < options.models.size(); mid++){
+
+					sum += abs(particleBestParamSets_.at(particle)[i]);
+
+	//			}
+				++i;
+			}
+
+
+
+			double mean = sum / (double)options.swarmSize;
+
+			// TODO: Adaptive mutation ala Liu 2005
+			if (options.mutateQPSO) {
+				boost::random::cauchy_distribution<double> dist(0, cauchyMutator_);
+				double mutator = dist(generalRand);
+				mean += mutator;
+				//cout << mean << " mutated by: " << mutator << endl;
+			}
+			mBests.push_back(sum / (double)options.swarmSize);
+
 		}
 
-		double mean = sum / (double)options.swarmSize;
 
-		// TODO: Adaptive mutation ala Liu 2005
-		if (options.mutateQPSO) {
-			boost::random::cauchy_distribution<double> dist(0, cauchyMutator_);
-			double mutator = dist(generalRand);
-			mean += mutator;
-			//cout << mean << " mutated by: " << mutator << endl;
-		}
-		mBests.push_back(sum / (double)options.swarmSize);
-	}
+	//}
 
 	return mBests;
-	*/
+
 }
 
 
@@ -1100,7 +1131,7 @@ void Swarm::updateParticleWeights() {
 		cout << "Updating particle weights" << endl;
 	}
 
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
+	for (int p = 1; p <= options.swarmSize; ++p) {
 		particleWeights_[p] = calcParticleWeight(p);
 	}
 
@@ -1114,9 +1145,9 @@ double Swarm::calcWeightedAveragePosition() {
 	}
 
 	double sum = 0;
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
+	for (int p = 1; p <= options.swarmSize; ++p) {
 
-		if (p == particleBestFitsByFit_.begin()->second) {
+		if ((unsigned) p == particleBestFitsByFit_.begin()->second) {
 			continue;
 		}
 
@@ -1132,10 +1163,10 @@ double Swarm::calcParticleWeight(unsigned int particle) {
 
 	// Eq 8 in Moraes et al
 	double sum = 0;
-	for (unsigned int i = 1; i <= options.swarmSize; ++i) {
+	for (int i = 1; i <= options.swarmSize; ++i) {
 		// Make sure we're not using the particle with the best fit -- it will
 		// result in a div_by_0
-		if (i == particleBestFitsByFit_.begin()->second) {
+		if ((unsigned)i == particleBestFitsByFit_.begin()->second) {
 			continue;
 		}
 
@@ -1428,7 +1459,7 @@ void Swarm::processParticlesPSO(vector<unsigned int> particles, bool newFlight) 
 			if(++retryCounter >= 100) {
 				outputError("Error: Couldn't create " + options.jobOutputDir + toString(currentGeneration) + " to hold next generation's output.");
 			}
-			sleep(1);
+			//sleep(1);
 			cout << "Trying again to create dir" << endl;
 		}
 	}
@@ -1520,7 +1551,7 @@ void Swarm::processParticlesPSO(vector<unsigned int> particles, bool newFlight) 
 		//Raquel: had to change the line above to send the message to subparticles
 
 		cout << "RAQUEL total models " << options.models.size() << endl;
-		for(int i = 0; i < options.models.size(); i++){
+		for(unsigned int i = 0; i < options.models.size(); i++){
 
 			sp = fcalcsubParID(*particle, i, options.models.size());
 
@@ -1743,7 +1774,7 @@ vector<double> Swarm::getNeighborhoodBestPositions(unsigned int particle) {
 		//Raquel: also look at other models inside the same particle
 		if(options.models.size()>1){
 
-			for(int mid=1; mid < options.models.size(); mid++){
+			for(unsigned int mid=1; mid < options.models.size(); mid++){
 
 				subPar = fcalcsubParID(particle, mid, options.models.size());
 				if(subParRankFinal[subPar].second < currBestFit){
@@ -1807,7 +1838,7 @@ vector<double> Swarm::getNeighborhoodBestPositions(unsigned int particle) {
 			//Raquel: also look into other models from the same particle
 			if(options.models.size()>1){
 
-				for(int mid=1; mid < options.models.size(); mid++){
+				for(unsigned int mid=1; mid < options.models.size(); mid++){
 
 					subPar = fcalcsubParID(*neighbor, mid, options.models.size());
 					it2 = subParRankFinal[subPar].second;
@@ -1843,7 +1874,7 @@ vector<double> Swarm::getNeighborhoodBestPositions(unsigned int particle) {
 }
 
 void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, double fit) {
-	unsigned int mid = fcalcMID(subParID,options.models.size());
+	//unsigned int mid = fcalcMID(subParID,options.models.size());
 	unsigned int pID = fcalcParID(subParID,options.models.size());
 
 	if (options.verbosity >= 3) {
@@ -1864,7 +1895,7 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 			particleCurrParamSets_[pID][i] = *param;
 
 			//Raquel added: now parameters for subparticles are processed as well
-			for(int mid=0; mid < options.models.size(); mid++){
+			for(unsigned int mid=0; mid < options.models.size(); mid++){
 				subparticleCurrParamSets_[pID][mid][i] = *param;
 			}
 
@@ -1905,7 +1936,7 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 			++i;
 		}
 
-		for(int mid = 0; mid < options.models.size(); mid++){
+		for(unsigned int mid = 0; mid < options.models.size(); mid++){
 			update_cur_particle_params(pID, mid, true);
 		}
 
@@ -1941,7 +1972,7 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 			subparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, subParID)); //Raquel added support to subparticles
 			currentsubparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, subParID)); //Raquel added support to subparticles
 
-			for(int mid = 0; mid < options.models.size(); mid++){
+			for(unsigned int mid = 0; mid < options.models.size(); mid++){
 				update_cur_particle_params(pID, mid, true);
 			}
 	}
@@ -1958,7 +1989,7 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 
 //Raquel added this function
 void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, double fit) {
-	unsigned int mid = fcalcMID(subParID,options.models.size());
+	//unsigned int mid = fcalcMID(subParID,options.models.size());
 	unsigned int pID = fcalcParID(subParID,options.models.size());
 
 	if (options.verbosity >= 3) {
@@ -1979,7 +2010,7 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 			particleCurrParamSets_[pID][i] = *param;
 
 			//Raquel added: now parameters for subparticles are processed as well
-			for(int mid=0; mid < options.models.size(); mid++){
+			for(unsigned int mid=0; mid < options.models.size(); mid++){
 				subparticleCurrParamSets_[pID][mid][i] = *param;
 			}
 
@@ -2026,7 +2057,7 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 
 
 		cout << "updating params" << endl;
-		for(int mid = 0; mid < options.models.size(); mid++){
+		for(unsigned int mid = 0; mid < options.models.size(); mid++){
 			update_cur_particle_params(pID, mid, true);
 		}
 		cout << "done" << endl;
@@ -2074,7 +2105,7 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 
 
 		cout << "updating params" << endl;
-		for(int mid = 0; mid < options.models.size(); mid++){
+		for(unsigned int mid = 0; mid < options.models.size(); mid++){
 			update_cur_particle_params(pID, mid, true);
 		}
 		cout << "done" << endl;
@@ -2084,7 +2115,7 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 
 void Swarm::launchParticle(unsigned int pID, bool nextGen) {
 	//run all subparticles associated with different models
-	for(int mid=0; mid<options.models.size(); ++mid)
+	for(unsigned int mid=0; mid<options.models.size(); ++mid)
 		launchSubParticle(pID, mid, nextGen);
 }
 
@@ -2168,7 +2199,7 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 	currentsubswarmBestFits_.clear();
 	finishedParticles_.clear();
 	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
-	int maxSubPar = fcalcsubParID(options.swarmSize, options.models.size()-1, options.models.size());
+	unsigned int maxSubPar = fcalcsubParID(options.swarmSize, options.models.size()-1, options.models.size());
 	int tries = 0;
 
 	cout << "Maxsubpar = "  << maxSubPar << endl;
@@ -2187,7 +2218,7 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 			tries = 0;
 		}
 		// Check for any messages from particles
-		usleep(250000);
+		//usleep(250000);
 		//cout << "RAQUEL Entering checkMasterMessages" << endl;
 		newFinishedParticles = checkMasterMessages();
 		//cout << "RAQUEL Done checkMasterMessages finishedSubParticles_.size() " << finishedSubParticles_.size() << endl;
@@ -2196,6 +2227,11 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 		numFinishedParticles = finishedParticles_.size();
 		//cout << "RAQUEL rungeneration numFinishedParticles " << numFinishedParticles << endl;
 		//tries++; // Enable this fix if the program stays stuck waiting for a message from the slave, even though the master already sent the message
+
+		if(options.verbosity >= 5) {
+			cout << numFinishedParticles << " finished particles" << endl;
+
+		}
 		if(tries > 50){
 
 			cout << "RAQUEL " << runningSubParticles_.size() << " subparticles failed in generation " << currentGeneration << endl;
@@ -2234,11 +2270,14 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 
 	if ( options.verbosity >=3){ cout<< "running a swarm generation finished ....\n";}
 
-	if (failedParticles_.size() > (options.swarmSize - 3) ) {
+	if (failedParticles_.size() > (unsigned) (options.swarmSize - 3) ) {
 		finishFit();
 		outputError("Error: You had too many failed runs. Check simulation output (.BNG_OUT files) or adjust walltime.");
 	}
 	currentGeneration += 1;
+
+
+
 }
 
 
@@ -2250,7 +2289,7 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 		cout << "Running generation " << currentGeneration << " with " << options.swarmSize << " particles..." << endl;
 	}
 
-	unsigned int numFinishedParticles = 0;
+	//unsigned int numFinishedParticles = 0;
 
 //	vector<unsigned int, vector<bool>> runningParticles;
 //vector<unsigned int, vector<bool>> finishedParticles;
@@ -2269,7 +2308,7 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 	currentsubswarmBestFits_.clear();
 	finishedParticles_.clear();
 	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
-	int maxSubPar = fcalcsubParID(options.swarmSize, options.models.size()-1, options.models.size());
+	unsigned int maxSubPar = fcalcsubParID(options.swarmSize, options.models.size()-1, options.models.size());
 	int tries = 0;
 
 	if(options.swarmSize<2){
@@ -2280,7 +2319,7 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 
 	}
 
-	while ( (finishedParticles_.size() < options.swarmSize/2 || finishedParticles_.size() < 2 ) && runningParticles_.size() < maxSubPar ) { //razi: loop over particles, each particle includes nModels subPArticles
+	while ( (finishedParticles_.size() < (unsigned) (options.swarmSize/2) || finishedParticles_.size() < 2 ) && runningParticles_.size() < maxSubPar ) { //razi: loop over particles, each particle includes nModels subPArticles
 
 		if (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
 			sp++;
@@ -2294,14 +2333,14 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 			tries = 0;
 		}
 		// Check for any messages from particles
-		usleep(250000);
+		//usleep(250000);
 		//cout << "RAQUEL Entering checkMasterMessages" << endl;
 		newFinishedParticles = checkMasterMessages();
 		flightCounter_ += newFinishedParticles.size();
 		//cout << "RAQUEL Done checkMasterMessages newFinishedParticles.size() " << newFinishedParticles.size() << endl;
 		//cout << "Flight counter = " << flightCounter_ << endl;
 		//cout << "finishedSubParticles_.size() " << finishedSubParticles_.size() << " runningSubParticles_.size() " << runningSubParticles_.size() << " maxSubPar " << maxSubPar << " sp " << sp << endl;
-		numFinishedParticles = finishedParticles_.size();
+		//numFinishedParticles = finishedParticles_.size();
 		//cout << "RAQUEL rungeneration numFinishedParticles " << numFinishedParticles << endl;
 		//tries++; // Enable this fix if the program stays stuck waiting for a message from the slave, even though the master already sent the message
 		if(tries > 50){
@@ -2342,7 +2381,7 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 
 	if ( options.verbosity >=3){ cout<< "running a swarm generation finished ....\n";}
 
-	if (failedParticles_.size() > (options.swarmSize - 3) ) {
+	if (failedParticles_.size() > (unsigned) (options.swarmSize - 3) ) {
 		finishFit();
 		outputError("Error: You had too many failed runs. Check simulation output (.BNG_OUT files) or adjust walltime.");
 	}
@@ -2400,7 +2439,7 @@ void Swarm::finishFit() {
 
 			int errorCounter = 0;
 			while (runCommand(command) != 0 && errorCounter < 10) {
-				sleep(1);
+				//sleep(1);
 				++errorCounter;
 			}
 
@@ -2439,7 +2478,7 @@ void Swarm::finishFit() {
 
 		int errorCounter = 0;
 		while (runCommand(command) != 0 && errorCounter < 10) {
-			sleep(1);
+			//sleep(1);
 			++errorCounter;
 		}
 
@@ -2559,13 +2598,13 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 	unsigned int pID, mid, NumNewlyFinishedParticles=0;
 	std::vector<unsigned int> NewlyFinishedParticles;
 
-	if (options.verbosity >= 4) {
+	if (options.verbosity >= 3) {
 		cout << "Checking messages" << endl;
 	}
 
 	// First let's check interswarm communication
-	int numMessages = swarmComm->recvMessage(-1, 0, -1, false, swarmComm->univMessageReceiver);
-
+	int numMessages = swarmComm->recvMessage(-1, 0, -1, true, swarmComm->univMessageReceiver);
+	//if we set false in the boolean above, the program still works for multiple models, but doesn't work for single models, who knows why...
 	if (numMessages >= 1) {
 		if (options.verbosity >= 3) {
 			cout << "Found " << numMessages << " messages" << endl;
@@ -2606,6 +2645,7 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 			finishedSubParticles_.insert(subParID); //razi: add to the list
 			++particleIterationCounter_[pID][mid];
 			cout << "Master messages running sub" << runningSubParticles_.size() << " finished size " << finishedSubParticles_.size() << endl;
+			update_cur_particle_params(pID, mid, true); //razi: TODO  the same procedure should be done in other places, the slave sends theliust of free parameters for subparticle that should be reordered for particles
 
 			//finishedsubParticles.push_back(subParID);
 
@@ -2643,7 +2683,7 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 			// Store the parameters given to us by the particle
 
 
-cout<< "check messages: this part may need modifications ...."<<endl;
+//cout<< "check messages: this part may need modifications ...."<<endl;
 
 //razi: just for debugging, later del
 /*int i1, i2;
@@ -2666,17 +2706,18 @@ for (auto ii=subparticleCurrParamSets_.begin(); ii!=subparticleCurrParamSets_.en
 				paramsVec.push_back(stod(*m));
 				if (options.fitType == "ga") {
 					subparticleCurrParamSets_[pID][mid][i] = stod(*m);   //razi: the list and order of free params can be different for  different models
-					//razi, was: particleCurrParamSets_[pID][i] = stod(*m);
+					cout << "pID " << pID << " mid " << mid << " i " << i << " *m " << *m << endl;
+					particleCurrParamSets_[pID][i] = stod(*m);
 				}
 				++i;
 			}
 cout<<i <<" Params collected for one subparticle: "<<paramsString<<endl; //mypause();
 			update_cur_particle_params(pID, mid, true); //razi: TODO  the same procedure should be done in other places, the slave sends theliust of free parameters for subparticle that should be reordered for particles
 
-			if (options.verbosity>= 4) {cout << "params are stored" << endl;} //mypause();}
+			if (options.verbosity>= 3) {cout << "params are stored" << endl;} //mypause();}
 
 			double fitCalc = stod(sm->second.message[0]);
-			if (options.verbosity>= 4) {cout << "fitCalc: " << fitCalc <<endl;} //mypause();}
+			if (options.verbosity>= 3) {cout << "fitCalc: " << fitCalc <<endl;} //mypause();}
 
 
 			update_fitCalcs(); //razi: TODO: later develop and test this function
@@ -2767,16 +2808,19 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 
 	// Now let's check for any external messages
 	//checkExternalMessages();
-	if (options.verbosity>= 4) cout<<"checking message is finished.\n";
+	if (options.verbosity>= 4) {
 
-	//cout << "RAQUEL: NewlyFinishedParticles = " << toString(NewlyFinishedParticles.size()) << endl;
+		cout<<"checking message is finished.\n";
+		cout << "RAQUEL: NewlyFinishedParticles = " << toString(NewlyFinishedParticles.size()) << endl;
+	}
+
 	return NewlyFinishedParticles;
 
 }
 
 unordered_map<unsigned int, vector<double>> Swarm::checkMasterMessagesDE() {
 
-	unsigned int pID, subParID, mid, newlyFinishedParticles=0;
+	unsigned int pID, subParID, mid=0; //Removed newlyFinishedParticles
 	if (options.verbosity >= 3) { //razi: TODO test for multiple models
 		//cout << "Checking messages DE, may need some modifications/test to support sbParticle" << endl;
 	}
@@ -2957,7 +3001,7 @@ void Swarm::checkExternalMessages() {
 
 					int errorCounter = 0;
 					while (!runCommand(command) && errorCounter < 10) {
-						sleep(1);
+						//sleep(1);
 						++errorCounter;
 					}
 
@@ -3089,7 +3133,7 @@ string Swarm::generateSlurmMultiProgCmd(string runCmd) {
 		//multiprog << "0 " << runCmd << " load " << sConf_[0] << endl;
 		multiprog << "0 " << command << endl;
 		int subPID;
-		for (unsigned int id = 1; id <= options.swarmSize; ++id) {
+		for (int id = 1; id <= options.swarmSize; ++id) {
 			for (unsigned int mid = 0; mid < options.models.size(); ++mid){
 
 				subPID = fcalcsubParID(id, mid, options.models.size());
@@ -3296,11 +3340,13 @@ string Swarm::generateSlurmBatchFile(string runCmd) {
 unsigned int Swarm::pickWeighted(double weightSum, multimap<double, unsigned int> &weights, unsigned int extraWeight) {
 	double lowerBound = 0;
 	double upperBound = weightSum;
+	cout << "lower limit = " << lowerBound << "; upper limit = " << upperBound << endl;
 
 	// TODO: Better error handling here?
 	if (upperBound <= 0) {
 		return 0;
 	}
+	cout << "lower limit = " << lowerBound << "; upper limit = " << upperBound << endl;
 
 	boost::random::uniform_real_distribution<double> unif(lowerBound, upperBound);
 
@@ -3384,7 +3430,7 @@ void Swarm::saveSwarmState() {
 
 void Swarm::initPSOswarm(bool resumeFit) {
 	vector<unsigned int> finishedParticles;
-	unsigned int numFinishedParticles = 0;
+	//unsigned int numFinishedParticles = 0;
 
 	if (options.verbosity >= 3) {
 		cout << "Launching swarm" << endl;
@@ -3419,7 +3465,7 @@ void Swarm::initPSOswarm(bool resumeFit) {
 
 	// Fill a vector with all pID's to send for processing
 	vector<unsigned int> allParticles;
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
+	for (int p = 1; p <= options.swarmSize; ++p) {
 		allParticles.push_back(p);
 	}
 
@@ -3575,7 +3621,7 @@ void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vec
 			}
 			// Send the parameters to the particle
 			//Raquel updating to support subparticles
-			for(int mid = 0; mid < options.models.size(); mid++){
+			for(unsigned int mid = 0; mid < options.models.size(); mid++){
 
 				subParID = fcalcsubParID(*recvIt, mid, options.models.size());
 				swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramStr);
@@ -3668,12 +3714,12 @@ void Swarm::runSPSO() {
 
 	bool stopCriteria = false;
 
-	int numFinishedParticles = 0;
+	//int numFinishedParticles = 0;
 
-	unsigned int p = 1;
-	int mid; //Raquel added
-	int sp = 0; //Raquel added
-	int nModels = options.models.size(); //Raquel added
+	//unsigned int p = 1;
+	//int mid; //Raquel added
+	//int sp = 0; //Raquel added
+	//int nModels = options.models.size(); //Raquel added
 
 
 	while (!stopCriteria) {
@@ -3720,7 +3766,7 @@ void Swarm::runSPSO() {
 	*/
 
 
-		sp=0;
+		//sp=0;
 
 	/*	finishedParticles_.clear();
 		finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
@@ -3746,11 +3792,11 @@ void Swarm::runSPSO() {
 		}
 
 */
-			numFinishedParticles = options.swarmSize;
+			//numFinishedParticles = options.swarmSize;
 
 				//cout << "RAQUEL: starting runGeneration" << endl;
 				runGeneration();
-				usleep(250000);
+				//usleep(250000);
 
 				//cout << "RAQUEL: finished runGeneration" << endl;
 				//cout << "RAQUEL: starting checkStopCriteria" << endl;
@@ -3869,12 +3915,12 @@ void Swarm::runSDE() {
 	//vector<unsigned int> particlestoProcess;
 
 
-	int numFinishedParticles = 0;
+	//int numFinishedParticles = 0;
 
-	unsigned int p = 1;
-	int mid; //Raquel added
+	//unsigned int p = 1;
+	//int mid; //Raquel added
 	int sp = 0; //Raquel added
-	int nModels = options.models.size(); //Raquel added
+	//int nModels = options.models.size(); //Raquel added
 
 
 
@@ -3882,11 +3928,11 @@ void Swarm::runSDE() {
 	while(!stopCriteria) {
 
 
-		numFinishedParticles = options.swarmSize;
+		//numFinishedParticles = options.swarmSize;
 
 		//cout << "RAQUEL: starting runGeneration" << endl;
 		runGeneration();
-		usleep(250000);
+		//usleep(250000);
 
 		saveSwarmState();
 		//cout << "RAQUEL: finished saveSwarmState" << endl;
@@ -3948,7 +3994,7 @@ void Swarm::runSDE() {
 
 		if (finished.size()) {
 			finishedParticles.insert(finished.begin(), finished.end());
-			numFinishedParticles = finished.size();
+			//numFinishedParticles = finished.size();
 		}
 		int counter = 0;
 
@@ -4044,7 +4090,7 @@ void Swarm::runSDE() {
 		}
 */
 		finishedParticles.clear();
-		numFinishedParticles = 0;
+		//numFinishedParticles = 0;
 
 		// Done processing params. Now we need to...
 		// Check each island to see if it has completed its generation
@@ -4081,7 +4127,7 @@ void Swarm::runSDE() {
 //					swarmComm->sendToSwarm(0, *particle, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
 
 					//Raquel updated the interprocess communication, added the loop bellow
-					for(int mid = 0; mid < options.models.size(); mid++){
+					for(unsigned int mid = 0; mid < options.models.size(); mid++){
 						sp = fcalcsubParID(*particle, mid, options.models.size());
 						swarmComm->sendToSwarm(0, sp, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
 					}
@@ -4143,7 +4189,7 @@ void Swarm::runAGA() {
 		}
 	}
 
-	int sp = 0;
+	//int sp = 0;
 
 	// Holds finished particles
 	vector<unsigned int> finishedParticles;
@@ -4166,7 +4212,7 @@ void Swarm::runAGA() {
 
 
 	// Re-launch the particles in to the Swarm proper
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
+	for (int p = 1; p <= options.swarmSize; ++p) {
 
 
 		//for(int mid = 0; mid < options.models.size(); mid++){
@@ -4178,10 +4224,10 @@ void Swarm::runAGA() {
 		launchParticle(p, false);
 	}
 
-	int newFinishedPar = 0;
+	//int newFinishedPar = 0;
 
 	//bool stopCriteria = false;
-	int iteration = 0;
+	//int iteration = 0;
 
 	/*
 	cout << "==================================ENTERING LOOP==================================" << endl;
@@ -4656,12 +4702,12 @@ void Swarm::runADE() {
 	//vector<unsigned int> particlestoProcess;
 
 
-	int numFinishedParticles = 0;
+	//int numFinishedParticles = 0;
 
-	unsigned int p = 1;
-	int mid; //Raquel added
+	//unsigned int p = 1;
+	//int mid; //Raquel added
 	int sp = 0; //Raquel added
-	int nModels = options.models.size(); //Raquel added
+	//int nModels = options.models.size(); //Raquel added
 
 
 	bool first = true;
@@ -4669,7 +4715,7 @@ void Swarm::runADE() {
 	while(!stopCriteria) {
 
 
-		numFinishedParticles = options.swarmSize;
+		//numFinishedParticles = options.swarmSize;
 
 		//cout << "RAQUEL: starting runGeneration" << endl;
 		if(first == true){
@@ -4681,7 +4727,7 @@ void Swarm::runADE() {
 
 		}
 
-		usleep(250000);
+		//usleep(250000);
 
 		saveSwarmState();
 		//cout << "RAQUEL: finished saveSwarmState" << endl;
@@ -4742,7 +4788,7 @@ void Swarm::runADE() {
 
 		if (finished.size()) {
 			finishedParticles.insert(finished.begin(), finished.end());
-			numFinishedParticles = finished.size();
+			//numFinishedParticles = finished.size();
 		}
 		int counter = 0;
 
@@ -4838,7 +4884,7 @@ void Swarm::runADE() {
 		}
 */
 		finishedParticles.clear();
-		numFinishedParticles = 0;
+		//numFinishedParticles = 0;
 
 
 		// Done processing params. Now we need to...
@@ -4876,7 +4922,7 @@ void Swarm::runADE() {
 //					swarmComm->sendToSwarm(0, *particle, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
 
 					//Raquel updated the interprocess communication, added the loop bellow
-					for(int mid = 0; mid < options.models.size(); mid++){
+					for(unsigned int mid = 0; mid < options.models.size(); mid++){
 						sp = fcalcsubParID(*particle, mid, options.models.size());
 						swarmComm->sendToSwarm(0, sp, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
 					}
@@ -4955,7 +5001,7 @@ void Swarm::runASA() {
 
 	// Launch the initialization population and map
 	// CPUs to particles
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
+	for (int p = 1; p <= options.swarmSize; ++p) {
 		launchParticle(p);
 		cpuToParticle[p] = p;
 		particleToController[p] = p;
@@ -4963,7 +5009,7 @@ void Swarm::runASA() {
 
 	unordered_map<unsigned int, vector<double>> finishedParticles;
 	unordered_map<unsigned int, vector<double>> initFinishedParticles;
-	unsigned int numFinishedParticles = 0;
+	int numFinishedParticles = 0;
 
 	// Wait for initialization population to finish simulations
 	while (numFinishedParticles < options.swarmSize) {
@@ -5149,13 +5195,13 @@ void Swarm::runSSA() {
 
 	// Launch the initialization population and map
 	// CPUs to particles
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
+	for (int p = 1; p <= options.swarmSize; ++p) {
 		launchParticle(p);
 		cpuToParticle[p] = p;
 	}
 
 	unordered_map<unsigned int, vector<double>> finishedParticles;
-	unsigned int numFinishedParticles = 0;
+	int numFinishedParticles = 0;
 
 	// Wait for initialization population to finish simulations
 	while (numFinishedParticles < options.swarmSize) {
@@ -5178,7 +5224,7 @@ vector<double> Swarm::generateParticleTemps() {
 	//cout << fixed << setprecision(10) << "ct is " << ct << endl;
 
 	vector<double> temps = vector<double>(options.swarmSize + 1, 0);
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
+	for (int p = 1; p <= options.swarmSize; ++p) {
 		temps[p] = exp(0 - (ct * (p - 1)));
 		//cout << fixed << setprecision(10) << "temp of " << p << " is " << temps[p] << endl;
 	}
@@ -5193,7 +5239,7 @@ vector<double> Swarm::generateParticleRadii() {
 	float cr = (1 / ((double)options.swarmSize - 1)) * log(rMax / options.minRadius);
 
 	vector<double> radii = vector<double>(options.swarmSize + 1, 0);
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
+	for (int p = 1; p <= options.swarmSize; ++p) {
 		radii[p] = exp(0 - (cr * (p - 1)));
 		//cout << "radius of " << p << " is " << radii[p] << endl;
 	}
@@ -5207,7 +5253,7 @@ vector<float> Swarm::generateParticleFs() {
 
 	vector<float> Fs = vector<float>(options.swarmSize + 1, 0);
 
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
+	for (int p = 1; p <= options.swarmSize; ++p) {
 		float r = (float)rand() / (float)RAND_MAX;
 		float diff = max - min;
 
@@ -5223,7 +5269,7 @@ vector<float> Swarm::generateParticleCRs() {
 
 	vector<float> CRs = vector<float>(options.swarmSize + 1, 0);
 
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
+	for (int p = 1; p <= options.swarmSize; ++p) {
 		float r = (float)rand() / (float)RAND_MAX;
 		float diff = max - min;
 
@@ -5239,7 +5285,7 @@ unsigned int Swarm::pickWeightedSA() {
 
 	// Calculate the reimann sum
 	float sum = 0;
-	for (unsigned int r = 1; r <= options.swarmSize; ++r) {
+	for (int r = 1; r <= options.swarmSize; ++r) {
 		sum += exp(0 - (signed)r);
 		//cout << "0 - r: " << 0 - (signed)r << endl;
 	}
@@ -5650,7 +5696,7 @@ void Swarm::outputRunSummary(string outputPath) {
 	vector<string> paramList; //Raquel: This is the global list of parameters
 	int paramCounter; //Raquel: this is the index of the parameter name
 
-	int parID = 0;
+	//int parID = 0;
 
 	string paramString;
 
@@ -5669,7 +5715,10 @@ void Swarm::outputRunSummary(string outputPath) {
 	outputFile.open(outputPath.c_str(), ios::out | ios::app);
 
 	cout << "entering if" << endl;
-	int paramIndex = 0;
+	//int paramIndex = 0;
+
+
+
 
 	if (outputFile.is_open()){
 
@@ -5697,7 +5746,9 @@ void Swarm::outputRunSummary(string outputPath) {
 
 		 		    for(auto it2 = subparticleCurrParamSets_.begin(); it2!=subparticleCurrParamSets_.end(); ++it2){//loops through subparticle IDs
 		 		    	particleCounter++;
+		 		    	//cout << "subparticleCurrParamSets_ first " << it2->first << endl;
 		 		      	for(auto it3 = it2->second.begin(); it3 != it2->second.end(); ++it3){//loops through model IDs
+		 		      		//cout << "model i " << i << endl;
 		 		    		if(it3->first==i){
 		 		    			if (options.verbosity >=3){
 		 		    				cout << "parameter for index " <<  counter  << " : "  << it3->second[counter] << endl;
@@ -5721,7 +5772,7 @@ void Swarm::outputRunSummary(string outputPath) {
 		 outputFile << left << setw(16) << "Particle";
  		 cout << left << setw(16) << "Particle";
 
- 		 for(int i = 0; i < options.models.size(); i++){
+ 		 for(unsigned int i = 0; i < options.models.size(); i++){
 
  			 cout << "Fit_M";
  			 cout << left << setw(11) << i;
@@ -5731,7 +5782,7 @@ void Swarm::outputRunSummary(string outputPath) {
  		 }
 
 
-		 for(int i = 0; i < paramList.size(); i++){
+		 for(unsigned int i = 0; i < paramList.size(); i++){
 			 cout << left << setw(16) << paramList[i];
 			 outputFile << left << setw(16) << paramList[i];
 
@@ -5740,7 +5791,7 @@ void Swarm::outputRunSummary(string outputPath) {
 		 cout << endl;
 		 outputFile << endl;
 
-		 int foundModel;
+		// int foundModel;
 
 int foundParam;
 int pcounter = 0; //index of the particles
@@ -5801,7 +5852,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 				 }
 
 
-				 for(int i = 0; i < paramList.size(); i++){
+				 for(unsigned int i = 0; i < paramList.size(); i++){
 					 foundParam = 0;
 					 for(auto ri3 = ri2->second.begin(); ri3 != ri2->second.end(); ++ri3){//loop through parameters
 
@@ -5828,10 +5879,13 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 		 }
 
+
+		 if(options.constraintWeight!=0){
+
+			 cout << "CONSTRAINT WEIGHT DIFFERENT OF ZERO: " << options.constraintWeight << endl;
 		 //this variable will store the number of constraints fulfilled per subparticle
 		 vector<pair<int,float>> constraintsCount;
 		 int mid = 0;
-
 		 constraintsCount = resultChecking();
 
 		 //sort results from the larger number of constraints to the smaller
@@ -5845,7 +5899,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 		 vector<pair<int,float>> subParRankCons;
 
 		 //rank the results based on the number of constraints
-		 for (int i = 0 ; i < constraintsCount.size(); i++){
+		 for (unsigned int i = 0 ; i < constraintsCount.size(); i++){
 		     cout << constraintsCount[i].first << " " << constraintsCount[i].second << "\n";
 		     if(previous!=constraintsCount[i].second){
 		    	 constraintRank++;
@@ -5856,7 +5910,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 		 cout << "SubParID\tConstraintRank" << endl;
 
-		 for (int i = 0 ; i < subParRankCons.size(); i++){
+		 for (unsigned int i = 0 ; i < subParRankCons.size(); i++){
 		     cout << subParRankCons[i].first << " " << subParRankCons[i].second << "\n";
 		 }
 
@@ -5885,7 +5939,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 		 vector<pair<int,float>> subParRankFit;
 
 		 //rank the results based on the Fit value
-		 for (int i = 0 ; i < fitCount.size(); i++){
+		 for (unsigned int i = 0 ; i < fitCount.size(); i++){
 		     cout << fitCount[i].first << " " << fitCount[i].second << "\n";
 		     if(previousFit!=fitCount[i].second){
 		    	 fitRank++;
@@ -5897,10 +5951,9 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 		 cout << "SubParID\tFitRank" << endl;
 
-		 for (int i = 0 ; i < subParRankFit.size(); i++){
+		 for (unsigned int i = 0 ; i < subParRankFit.size(); i++){
 		     cout << subParRankFit[i].first << " " << subParRankFit[i].second << "\n";
 		 }
-
 
 
 		 vector<pair<int,float>> finalScore;
@@ -5945,10 +5998,10 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 */
 		 int found;
 
-		 for (int i = 0 ; i < subParRankFit.size(); i++){
+		 for (unsigned int i = 0 ; i < subParRankFit.size(); i++){
 
 			 found = 0;
-			 for (int j = 0 ; j < subParRankCons.size(); j++){
+			 for (unsigned int j = 0 ; j < subParRankCons.size(); j++){
 
 				 if(subParRankCons[j].first == subParRankFit[i].first){
 					 //Here it defines how important the cnsraints will be
@@ -5985,7 +6038,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 		 //vector<pair<int,float>> subParRankFinal;
 		 subParRankFinal.clear();
 		 //rank the results based on the Fit value
-		 for (int i = 0 ; i < finalScore.size(); i++){
+		 for (unsigned int i = 0 ; i < finalScore.size(); i++){
 		     cout << finalScore[i].first << " " << finalScore[i].second << "\n";
 		     if(previousFit!=finalScore[i].second){
 		    	 fitRank++;
@@ -5996,7 +6049,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 		 cout << "SubParID\tFinal_Rank" << endl;
 
-		 for (int i = 0 ; i < subParRankFinal.size(); i++){
+		 for (unsigned int i = 0 ; i < subParRankFinal.size(); i++){
 		     cout << subParRankFinal[i].first << " " << subParRankFinal[i].second << "\n";
 		 }
 
@@ -6016,25 +6069,25 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 		 cout << "Particle\tModel\tFit_Rank\tConstraint_Rank\tFinal_Rank\tConstraints" << endl;
 		 outFile << "Particle\tModel\tFit_Rank\tConstraint_Rank\tFinal_Rank\tConstraints" << endl;
 
-		 int maxPar = fcalcParID(subparticleFitIDMap.size(), options.models.size());
+		 //int maxPar = fcalcParID(subparticleFitIDMap.size(), options.models.size());
 
 		 //int mid;
 		 int pid;
 
-		 for (int i = 0 ; i < subParRankFinal.size(); i++){
+		 for (unsigned int i = 0 ; i < subParRankFinal.size(); i++){
 
 			 mid = fcalcMID(subParRankFinal[i].first,options.models.size());
 			 pid = fcalcParID(subParRankFinal[i].first, options.models.size());
 
-			 for (int j = 0 ; j < subParRankFit.size(); j++){
+			 for (unsigned int j = 0 ; j < subParRankFit.size(); j++){
 
 
 				 found = 0;
-				 for (int k = 0 ; k < subParRankCons.size(); k++){
+				 for (unsigned int k = 0 ; k < subParRankCons.size(); k++){
 
 					 if(subParRankFinal[i].first==subParRankFit[j].first && subParRankFinal[i].first==subParRankCons[k].first){
 
-						 for(int r=0; r < constraintsCount.size(); r++){
+						 for(unsigned int r=0; r < constraintsCount.size(); r++){
 
 							 if(subParRankFinal[i].first ==  constraintsCount[r].first ){
 
@@ -6070,7 +6123,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 		 }
 
-
+		 }
 		 /*
 		 //rank results
 		 int maxPar = fcalcParID(allGenFits.size(), options.models.size());
@@ -6161,10 +6214,10 @@ float result = 0;
 	 for(auto it = subparticleCurrParamSets_.begin(); it!=subparticleCurrParamSets_.end(); ++it){
 		 cout << "particle :" << it->first << endl;
 
-		 for(int i = 0; i < options.models.size(); i++){
+		 for(unsigned int i = 0; i < options.models.size(); i++){
 
 			 //cout <<  "model: " << i << endl;
-			 for(int j= 0; j < options.models.size(); j++){
+			 for(unsigned int j= 0; j < options.models.size(); j++){
 
 				 //if(i!=j && i<j){
 
@@ -6192,7 +6245,7 @@ float result = 0;
 						 constraint.insert(make_pair(constraintIt->first,constraintParams[0]));
 						 //cout << "COUNSTRAINT size from swarm: " << constraint.size() << endl;
 
-						 if((i==atoi(constraintParams[1].c_str()) && j==atoi(constraintParams[2].c_str()))){
+						 if((i == (unsigned) atoi(constraintParams[1].c_str()) && j== (unsigned) atoi(constraintParams[2].c_str()))){
 						 //if((i==atoi(constraintParams[1].c_str()) && j==atoi(constraintParams[2].c_str())) || (i==atoi(constraintParams[1].c_str()) && i==atoi(constraintParams[2].c_str())) || (j==atoi(constraintParams[1].c_str()) && j==atoi(constraintParams[2].c_str()))){
 
 							 iteration1 = atof(constraintParams[3].c_str());
@@ -6252,14 +6305,15 @@ float result = 0;
 
 	 //}
 
+
+	// for(auto i = constraintsCount.begin(); i != constraintsCount.end(); ++i){
+	//	 cout << "constraintCount values: ";
+	//	 cout << i->first << " ";
+	//	 cout << i->second << endl;
+//
+//	 }
+
 	 return constraintsCount;
-
-	 for(auto i = constraintsCount.begin(); i != constraintsCount.end(); ++i){
-		 cout << "constraintCount values: ";
-		 cout << i->first << " ";
-		 cout << i->second << endl;
-
-	 }
 
 }
 
@@ -6380,7 +6434,8 @@ void Swarm::outputBootstrapSummary() {
 }
 
 void Swarm::killAllParticles(int tag) {
-	unsigned int p, sp, mid;
+	int p, sp;
+	unsigned int mid;
 	for (p = 1; p <= options.swarmSize; ++p) {
 		//cout << "killing " << p << " with tag: " << tag << endl;
 		for(mid=0; mid < options.models.size(); mid++){//Raquel modified this
@@ -6907,7 +6962,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	}
 
 	if (children.size() == 0) {
-		for (unsigned int i = 1; i <= options.swarmSize; ++i) {
+		for (int i = 1; i <= options.swarmSize; ++i) {
 			children.push_back(i);
 		}
 	}
@@ -6925,7 +6980,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 			if(++retryCounter >= 100) {
 				outputError("Error: Couldn't create " + options.jobOutputDir + toString(currentGeneration) + " to hold next generation's output.");
 			}
-			sleep(1);
+			//sleep(1);
 			cout << "Trying again to create dir" << endl;
 		}
 	}
@@ -6948,12 +7003,12 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	}else{
 		// Create an iterator to our fit list, use it to get our maximum fit value, then reset the iterator to the beginning of the list
 		//Raquel updated to use subparticles
+
 		w = subswarmBestFits_.begin();
 		advance(w, (options.swarmSize*options.models.size()) - 1);
 		maxWeight = w->first;
 		w = subswarmBestFits_.begin();
 		cout << "WWWWWWWWWWWWWWWWWWWW      " << w->first << "    WWWWWWWWWWWWWWWWWWW     " << w->second << endl;
-
 	}
 
 
@@ -6972,11 +7027,15 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 
 	}else{
 		//Raquel updated to use subparticles
-		for (unsigned int i = 0; i < options.swarmSize*options.models.size(); ++i) {
+		for(auto w = subswarmBestFits_.begin(); w!=subswarmBestFits_.end();++w){
+		//for (unsigned int i = 0; i < options.swarmSize*options.models.size(); ++i) {
 			diff = maxWeight - w->first;
+			cout << "diff= " << diff << endl;
+			cout << "maxWeight = " << maxWeight << endl;
+			cout << "w->first= " << w->first << endl;
 			weightSum += diff;
 			weightDiffs.insert(pair<double, unsigned int>(diff, w->second));
-			++w;
+			//++w;
 		}
 
 	}
@@ -6986,7 +7045,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 		outputError("Your population has converged. Quitting.");
 	}
 
-	if (options.verbosity >= 4){  //LATER COMMENT
+	if (options.verbosity >= 3){
 		cout << "max: " << maxWeight << endl;
 		cout << "weight sum: " << weightSum << endl;
 		for (auto i = weightDiffs.begin(); i != weightDiffs.end(); ++i) {
@@ -7010,7 +7069,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	int nModels = options.models.size();
 	int pID = 0;
 	// Only keep parents if we're doing an entire generation at once
-	if (children.size() == options.swarmSize) {
+	if (children.size() == (unsigned) options.swarmSize) {
 		auto parent = allGenFits.begin();
 		for (unsigned int p = 1; p <= options.keepParents; ++p) {
 
@@ -7050,16 +7109,16 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 
 				cout << "Sending to SubPar: " << subParID << endl;
 				cout << "parameters to send: " << endl;
-				for(int i = 0; i<params.size(); i++){
+				for(unsigned int i = 0; i<params.size(); i++){
 					cout << "'" << params[i] << "'" << endl;
 
 				}
 
 				swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, params);
-				sleep(1);
+				//sleep(1);
 
 
-				while (numFinishedBreeding < (subParID)) {
+				while (numFinishedBreeding < (unsigned) subParID) {
 					cout << "checking for DONEBREED" << endl;
 					unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
 
@@ -7081,10 +7140,11 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	}
 
 
+	//cout << "Raquel: (keep parents loop) DONE" << endl;
 
 	float parentPairs;
 	//cout << "children.size(): " << children.size() << endl;
-	if (children.size() == options.swarmSize) {
+	if (children.size() == (unsigned) options.swarmSize) {
 		parentPairs = (float)parentPoolSize / 2;
 	}
 	else {
@@ -7095,7 +7155,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 
 	//cout<<"Swarm::breedGenerationGA-AAA8: parentPairs:"<<parentPairs<<endl;
 
-	boost::random::uniform_int_distribution<int> unif(1, 100);
+	boost::random::uniform_int_distribution<long int> unif(1, 100);
 	for (unsigned int i = 0; i < parentPairs; ++i) {
 
 		unsigned int p1;
@@ -7239,17 +7299,17 @@ cout << "sending to " << children[childCounter - 1] << endl;
 		subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
 		cout << "Sending to SubPar: " << subParID << endl;
 
-		for(int i = 0; i<c1Vec.size(); i++){
+		for(unsigned int i = 0; i<c1Vec.size(); i++){
 			cout << "'" << c1Vec[i] << "'" << endl;
 
 		}
 
 
 		swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, c1Vec);
-		sleep(1);
+		//sleep(1);
 
 
-		while (numFinishedBreeding < (subParID)) {
+		while (numFinishedBreeding < (unsigned) subParID) {
 			cout << "checking for DONEBREED" << endl;
 			unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
 
@@ -7277,13 +7337,13 @@ cout << "sending to " << children[childCounter - 1] << endl;
 		subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
 		cout << "Sending to SubPar: " << subParID << endl;
 
-		for(int i = 0; i<c2Vec.size(); i++){
+		for(unsigned int i = 0; i<c2Vec.size(); i++){
 			cout << "'" << c2Vec[i] << "'" << endl;
 
 		}
 
 		swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
-		sleep(1);
+		//sleep(1);
 
 
 		cout << "waiting for " << subParID << endl;
@@ -7293,7 +7353,7 @@ cout << "sending to " << children[childCounter - 1] << endl;
 		//cout << "RAQUEL: failed particles " << failedParticles_.size() << endl;
 		//subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
 
-			while (numFinishedBreeding < (subParID)) {
+			while (numFinishedBreeding < (unsigned) subParID) {
 				cout << "checking for DONEBREED" << endl;
 				unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
 
@@ -7318,13 +7378,13 @@ cout << "The loop completed for parentpairs:" << i+1<<"/"<<parentPairs<<"."<< en
 
 
 cout << "c1Vec:" << endl;
-for(int veci = 0; veci < c1Vec.size(); veci++){
+for(unsigned int veci = 0; veci < c1Vec.size(); veci++){
 	cout << c1Vec[veci] << endl;
 
 }
 
 cout << "c2Vec:" << endl;
-for(int veci = 0; veci < c2Vec.size(); veci++){
+for(unsigned int veci = 0; veci < c2Vec.size(); veci++){
 	cout << c2Vec[veci] << endl;
 
 }
@@ -7422,7 +7482,7 @@ std::vector<unsigned int> Swarm::update_finished_running_particles(){
 				maxSubPID = * maxIndex;
 		}
 
-		if (maxSubPID==-1){
+		if (maxSubPID== (unsigned) -1){
 			cout<<"finished subPartcile list does not include valid max id ...."<<endl;
 			return NewlyFinishedParticles;
 		}else{
@@ -7464,14 +7524,14 @@ void Swarm::update_cur_particle_params(unsigned int pID, unsigned int mid, bool 
 
 
 	std::vector<unsigned int> mids;
-	unsigned int i,j, pid, mapfrom, mapto, nF;
+	unsigned int i, mapfrom, mapto, nF;
 
 	if(options.verbosity >=4){cout<<"update_cur_particle_params started."<<endl;} //mypause();
 
-	if ((mid<-1) && (mid >= options.models.size()))
+	if ((mid < (unsigned) -1) && (mid >= options.models.size()))
 		outputError("updating current particle parameters, wrong model number" + toString(mid)+". Quitting....");
 
-	if (mid==-1){
+	if (mid == (unsigned) -1){
 		for (i=0; i< options.models.size(); i++)
 			mids.push_back(i);  //razi: do for all models if mid=-1
 	}else
@@ -8941,7 +9001,7 @@ void Swarm::finishFit() {
 
 			int errorCounter = 0;
 			while (runCommand(command) != 0 && errorCounter < 10) {
-				sleep(1);
+				//sleep(1);
 				++errorCounter;
 			}
 
@@ -8980,7 +9040,7 @@ void Swarm::finishFit() {
 
 		int errorCounter = 0;
 		while (runCommand(command) != 0 && errorCounter < 10) {
-			sleep(1);
+			//sleep(1);
 			++errorCounter;
 		}
 
@@ -9388,7 +9448,7 @@ void Swarm::checkExternalMessages() {
 
 					int errorCounter = 0;
 					while (!runCommand(command) && errorCounter < 10) {
-						sleep(1);
+						//sleep(1);
 						++errorCounter;
 					}
 
@@ -9650,7 +9710,6 @@ unsigned int Swarm::pickWeighted(double weightSum, multimap<double, unsigned int
 	if (upperBound <= 0) {
 		return 0;
 	}
-
 	boost::random::uniform_real_distribution<double> unif(lowerBound, upperBound);
 
 	double random = unif(generalRand);
@@ -9759,7 +9818,7 @@ void Swarm::initPSOswarm(bool resumeFit) {
 		numFinishedParticles += finishedParticles.size();
 
 		// Sleep for a second
-		usleep(1000000);
+		//usleep(1000000);
 	}
 
 	// Fill a vector with all pID's to send for processing
@@ -9967,7 +10026,7 @@ void Swarm::runSPSO() {
 				launchParticle(p++);
 			}
 
-			usleep(250000);
+			//usleep(250000);
 
 			vector<unsigned int> currFinishedParticles;
 			currFinishedParticles = checkMasterMessages();
@@ -10072,7 +10131,7 @@ void Swarm::runSDE() {
 
 		//cout << "RAQUEL: starting runGeneration" << endl;
 		runGeneration();
-		usleep(250000);
+		//usleep(250000);
 
 		saveSwarmState();
 		//cout << "RAQUEL: finished saveSwarmState" << endl;
@@ -10348,7 +10407,7 @@ void Swarm::runAGA() {
 
 	bool stopCriteria = false;
 	while (!stopCriteria){
-		usleep(250000);
+		//usleep(250000);
 
 		// Check for any messages from particles and store finished particles
 		finishedParticles = checkMasterMessages();
@@ -10413,7 +10472,7 @@ void Swarm::runAPSO() {
 	unsigned int clusterCheckCounter = 0;
 
 	while (!stopCriteria) {
-		usleep(250000);
+		//usleep(250000);
 		finishedParticles = checkMasterMessages();
 
 		if (finishedParticles.size()) {
@@ -11814,7 +11873,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 			if(++retryCounter >= 100) {
 				outputError("Error: Couldn't create " + options.jobOutputDir + toString(currentGeneration) + " to hold next generation's output.");
 			}
-			sleep(1);
+			//sleep(1);
 			cout << "Trying again to create dir" << endl;
 		}
 	}

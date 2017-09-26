@@ -74,9 +74,13 @@ double Particle::objFunc_divByMeasured(double sim, double exp, double dummyvar) 
 	cout << "sim: " << sim << endl;
 	cout << "exp: " << exp << endl;
 
-	return pow(((abs(sim) - exp) / sim), 2);
+	if(sim!=0){
+		return pow(((abs(sim) - exp) / sim), 2);
+	}else{
+		return pow(((abs(sim) - exp)), 2); //Raquel solving division by zero problem
 
-	// TODO: DIV BY 0??
+	}
+
 }
 
 // #4
@@ -152,7 +156,7 @@ void Particle::generateParams() {
 
 #ifdef VER2
 			//code for forcing the subparticles to have the same values
-			for (int mid = 0; mid < models.size(); mid++){
+			for (unsigned int mid = 0; mid < models.size(); mid++){
 				if (models.at(mid)){
 					setParam(paramPair, mid);
 
@@ -188,7 +192,7 @@ void Particle::generateParams() {
 
 #ifdef VER2
 			//code for forcing the subparticles to have the same values
-			for (int mid = 0; mid < models.size(); mid++){
+			for (unsigned int mid = 0; mid < models.size(); mid++){
 				if (models.at(mid)){
 					setParam(paramPair, mid);
 				}
@@ -1528,9 +1532,14 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 						sim = dataFiles_.at(mid).at(e->first).at(swarm_->options.smoothing+1)->dataCurrent->at(exp_col->first).at(timepoint->first);
 						cout << "done" << endl;
 					}
-
-					double sum = (this->*objFuncPtr)(sim, timepoint->second, divisor);
-					cout << "RAQUEL SUM: " << sum << "MID: " << mid << endl;
+					double sum = 0;
+					if(sim != timepoint->second){ //if simulation and experimental values are exactly equal, the difference between them will be zero, so we can skip the objective function
+						sum = (this->*objFuncPtr)(sim, timepoint->second, divisor);
+					}
+					if(swarm_->options.verbosity >= 3){
+						cout << "sum = " << sum << " sim =" << sim << " timepoint->second = " << timepoint->second << " divisor = "<< divisor << endl;
+						cout << "SUM: " << sum << "MID: " << mid << endl;
+					}
 					if (swarm_->options.bootstrap) {
 						//cout << "all sets: "<< swarm_->bootstrapMaps.size() << endl;
 						//cout << "files: " << swarm_->bootstrapMaps[swarm_->bootstrapCounter].size() << endl;
@@ -1549,6 +1558,7 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 		// Erase our data sets
 		dataFiles_.at(mid).clear();
 		// Store our fit calc
+		cout << " totalSum " << totalSum << endl;
 		if (!local) {
 			fitCalcs[mid][currentGeneration_] = pow(totalSum, 0.5);
 			cout << "RAQUEL LOCAL FIT for mid " << mid << ": " << fitCalcs[mid][currentGeneration_] << endl;
@@ -1711,7 +1721,7 @@ void subParticle::setModel(unsigned int mid){
 }
 
 
-void Particle::addSubParticle(subParticle* subparticle, int mid, bool overwrite){
+void Particle::addSubParticle(subParticle* subparticle, unsigned int mid, bool overwrite){
 
 	/* razi: moved to constructor
 	unsigned int gap;

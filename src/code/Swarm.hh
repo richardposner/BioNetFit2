@@ -122,7 +122,7 @@ public:
 	void update_fitCalcs();   //razi: later develop to calculate the particle fitting based on subparticle results
 	std::string order_params(std::string paramsString, unsigned int mid);
 
-	void setsConf(std::string sConf, unsigned int mid);
+	void setsConf(std::string sConf, int mid);
 	std::string getsConf(unsigned int mid) { return sConf_.at(mid); }
 
 	vector<pair<int,float>> resultChecking(); //Raquel: result checking function added
@@ -205,7 +205,7 @@ public:
 		std::vector<Model *> models; 			// the model files
 		int defaultModel;
 		std::map<int,string> constraints_; //Raquel: added constraint options support
-		float constraintWeight = 1; //Raquel: added constraint weight option support
+		float constraintWeight = 0; //Raquel: added constraint weight option support
 #else
 		Model * model; 			// the model file
 #endif
@@ -214,7 +214,7 @@ public:
 		unsigned int verbosity;		// terminal output verbosity
 		bool synchronicity;		// 1 for synchronous
 		unsigned int maxGenerations;// maximum number of generations
-		unsigned int swarmSize;		// how many particles in the swarm
+		int swarmSize;		// how many particles in the swarm //Raquel removing Wsigned warnings
 		float minFit;		// we stop fitting if we reach this value
 		unsigned int parallelCount;	// how many particles to run in parallel
 		unsigned int objFunc;		// which objective function to use
@@ -302,6 +302,7 @@ public:
 			ar & models;
 			ar & defaultModel;
 			ar & constraints_;
+			ar & constraintWeight;
 #else
 			ar & model;
 #endif

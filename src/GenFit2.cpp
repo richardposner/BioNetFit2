@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 	string action;
 	string configFile;
 	string type;
-	int pID, nModels,ret;
+	int pID, ret;//Raquel removed unused nModels,
 	bool verbose = false;
 	string execPath;
 
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
 					cout<<"Specify the number of models [an integer value]..."<<endl;
 					return 0;
 				}
-				nModels = stoi(it->second.at(0));
+				//nModels = stoi(it->second.at(0));
 		}
 
 
@@ -516,6 +516,7 @@ cout<<"5-GenFit:Particle:   create particle."<<endl;
 
 //cout<<"5-4-GenFit:Particle..."<<endl;  mypause();
 		subParticle * sp = new subParticle(p, mid, subParID); //razi, was wrong subParticle * sp = new subParticle(p, subParId);
+		if(verbose){cout << "Launched subPar: " << sp << endl;}
 //cout<<"5-5-GenFit:Particle..."<<endl;  mypause();
 
 
