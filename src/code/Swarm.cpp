@@ -1089,7 +1089,7 @@ bool Swarm::checkStopCriteria() {
 		}
 		 */
 	}//	else if ((options.fitType == "ga" || options.fitType == "de") && options.synchronicity) {
-	else if ((options.fitType == "ga" || options.fitType == "de") && options.synchronicity) {
+	else if ( (options.fitType == "ga" || options.fitType == "de") ) {
 		if (options.verbosity >= 3) {
 			cout << "Checking if we've reached max generation. Current is " << (currentGeneration - 1) << " and max is " << options.maxGenerations << endl;
 		}
@@ -2338,15 +2338,15 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 	unsigned int maxSubPar = fcalcsubParID(options.swarmSize, options.models.size()-1, options.models.size());
 	int tries = 0;
 
-	if(options.swarmSize<2){
+	if(options.swarmSize<4){
 
 		finishFit();
-		outputError("Error: If running an asynchronous run please set a swarm size of at least 2, otherwise run the synchronous method.");
+		outputError("Error: If running an asynchronous run please set a swarm size of at least 4, otherwise run the synchronous method.");
 
 
 	}
 
-	while ( (finishedParticles_.size() < (unsigned) (options.swarmSize/2) || finishedParticles_.size() < 2 ) && runningParticles_.size() < maxSubPar ) { //razi: loop over particles, each particle includes nModels subPArticles
+	while ( (finishedParticles_.size() <= (unsigned) (options.swarmSize/2) || finishedParticles_.size() <= 2 ) && runningParticles_.size() < maxSubPar ) { //razi: loop over particles, each particle includes nModels subPArticles
 
 		if (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
 			sp++;
@@ -2406,7 +2406,7 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 	}
 */
 
-	if ( options.verbosity >=3){ cout<< "running a swarm generation finished ....\n";}
+	if ( options.verbosity >=3){ cout<< "running a swarm generation finished .... Particles finished: " << finishedParticles_.size() << endl;}
 
 	if (failedParticles_.size() > (unsigned) (options.swarmSize - 3) ) {
 		finishFit();
@@ -4289,6 +4289,7 @@ void Swarm::runAGA() {
 
 	outputRunSummary(outputPath);
 
+	cout << "Generation: " << toString(currentGeneration - 1 ) << endl;
 
 
 	// Breed generation
@@ -4296,7 +4297,7 @@ void Swarm::runAGA() {
 
 
 	// Re-launch the particles in to the Swarm proper
-	for (int p = 1; p <= options.swarmSize; ++p) {
+	/*for (int p = 1; p <= options.swarmSize; ++p) {
 
 
 		//for(int mid = 0; mid < options.models.size(); mid++){
@@ -4307,6 +4308,8 @@ void Swarm::runAGA() {
 
 		launchParticle(p, false);
 	}
+
+*/
 
 	//int newFinishedPar = 0;
 
@@ -4384,26 +4387,37 @@ void Swarm::runAGA() {
 	*/
 	bool stopCriteria = false;
 	while (!stopCriteria){
-		cout << "RAQUEL: Started runGeneration();" << endl;
+		if (options.verbosity >= 4) {
+			cout << "RAQUEL: Started runGeneration();" << endl;
+		}
 		runAsyncGeneration();
-		cout << "RAQUEL: Finished runGeneration();" << endl;
+		if (options.verbosity >= 4) {
+			cout << "RAQUEL: Finished runGeneration();" << endl;
 
-		cout << "RAQUEL: Started checkStopCriteria();" << endl;
+			cout << "RAQUEL: Started checkStopCriteria();" << endl;
+		}
 		stopCriteria = checkStopCriteria();
-		cout << "RAQUEL: Stop criteria value is " << stopCriteria << endl;
+		if (options.verbosity >= 4) {
+			cout << "RAQUEL: Stop criteria value is " << stopCriteria << endl;
 
-		cout << "RAQUEL: Finished checkStopCriteria();" << endl;
-		cout << "RAQUEL: Started saveSwarmState();" << endl;
+			cout << "RAQUEL: Finished checkStopCriteria();" << endl;
+			cout << "RAQUEL: Started saveSwarmState();" << endl;
+		}
 		saveSwarmState();
-		cout << "RAQUEL: Finished saveSwarmState();" << endl;
-
+		if (options.verbosity >= 4) {
+			cout << "RAQUEL: Finished saveSwarmState();" << endl;
+		}
 
 
 		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
 		if (options.deleteOldFiles) {
-			cout << "RAQUEL: Started cleanupFiles();" << endl;
+			if (options.verbosity >= 4) {
+				cout << "RAQUEL: Started cleanupFiles();" << endl;
+			}
 			cleanupFiles(currentDirectory.c_str());
-			cout << "RAQUEL: Finished cleanupFiles();" << endl;
+			if (options.verbosity >= 4) {
+				cout << "RAQUEL: Finished cleanupFiles();" << endl;
+			}
 
 		}
 
@@ -4411,6 +4425,7 @@ void Swarm::runAGA() {
 
 		outputRunSummary(outputPath);
 
+		cout << "Generation: " << toString(currentGeneration - 1 ) << endl;
 
 		if (!stopCriteria) {
 
@@ -4418,7 +4433,12 @@ void Swarm::runAGA() {
 
 				cout << "RAQUEL: started breedGenerationGA();" << endl;
 			}
-			breedGenerationGA();
+			finishedParticles.clear();
+			for(auto i = finishedParticles_.begin(); i!=finishedParticles_.end(); ++i){
+				cout << "RAQUEL: processing particle number: " << *i << endl;
+				finishedParticles.push_back(*i);
+			}
+			breedGenerationGA(finishedParticles);
 			if(options.verbosity>=3){
 
 				cout << "RAQUEL: finished breedGenerationGA();" << endl;
@@ -7621,7 +7641,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 		particleCurrParamSets_[child->first] = child->second;
 	}
 
-	while (numFinishedBreeding < (unsigned) subParID) {
+	while (numFinishedBreeding < (unsigned) (childCounter-1)) {
 		if(options.verbosity>=3){
 
 			cout << "checking for DONEBREED" << endl;
