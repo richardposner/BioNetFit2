@@ -71,9 +71,10 @@ double Particle::objFunc_chiSquare(double sim, double exp, double stdev) {
 
 // #3
 double Particle::objFunc_divByMeasured(double sim, double exp, double dummyvar) {
-	cout << "sim: " << sim << endl;
-	cout << "exp: " << exp << endl;
-
+	if(swarm_->options.verbosity >=4){
+		cout << "sim: " << sim << endl;
+		cout << "exp: " << exp << endl;
+	}
 	if(sim!=0){
 		return pow(((abs(sim) - exp) / sim), 2);
 	}else{
@@ -298,17 +299,24 @@ void Particle::runNelderMead(map<double, vector<double>> simplex) {
 
 		// R Better than good, but worse than best
 		if (rCalc > best->first && rCalc < good->first) {
-			cout << "reflection was worse than best and better than good. erasing worst of " << worst->first << endl;
+			if (swarm_->options.verbosity >= 3) {
+				cout << "reflection was worse than best and better than good. erasing worst of " << worst->first << endl;
+			}
 			simplex.erase(worst);
-			cout << "sim size: " << simplex.size() << endl;
+			if (swarm_->options.verbosity >= 3) {
+				cout << "sim size: " << simplex.size() << endl;
+			}
 			simplex.insert(pair<double, vector<double>> (rCalc, R));
-			cout << "inserting rCalc of " << rCalc << endl;
-
+			if (swarm_->options.verbosity >= 3) {
+				cout << "inserting rCalc of " << rCalc << endl;
+			}
 			continue;
 		}
 		// R Better than best
 		else if (rCalc < best->first) {
-			cout << "reflection was better than best. expanding" << endl;
+			if (swarm_->options.verbosity >= 3) {
+				cout << "reflection was better than best. expanding" << endl;
+			}
 			// Expand
 
 			vector<double> E;
@@ -318,7 +326,9 @@ void Particle::runNelderMead(map<double, vector<double>> simplex) {
 					invalid = true;
 				}
 				E.push_back(e);
+				if (swarm_->options.verbosity >= 3) {
 				cout << "creating new pt with eq " << centroid[d] << " + " << expansion << " * (" << R[d] << " - " << centroid[d] << "): " << e << endl;
+				}
 			}
 
 			vector<double> deNormalizedExpansion = swarm_->deNormalizeParams(E);
@@ -588,12 +598,15 @@ void Particle::doParticle(unsigned int mid) {
 
 //cout << "Particle " << id_ << " waiting to begin" << endl;
 //	swarm_->swarmComm->recvMessage(0, id_, NEXT_GENERATION, true, swarm_->swarmComm->univMessageReceiver);
-cout << "subParticle " << id << " waiting to begin" << endl;
+	if (swarm_->options.verbosity >= 3) {
+		cout << "subParticle " << id << " waiting to begin" << endl;
+	}
 	swarm_->swarmComm->recvMessage(0, id, NEXT_GENERATION, true, swarm_->swarmComm->univMessageReceiver); //Master should send message with subParID
 	swarm_->swarmComm->univMessageReceiver.clear();
 #endif //STANDALONE_PARTICLE_TEST_ACTIVE
-	cout << "Particle " << id_ << " starting" << endl;
-
+	if (swarm_->options.verbosity >= 3) {
+		cout << "Particle " << id_ << " starting" << endl;
+	}
 	if (swarm_->options.verbosity >= 3) {
 		cout << "In doParticle(), entering main run loop" << endl;
 	}
@@ -605,9 +618,9 @@ cout << "subParticle " << id << " waiting to begin" << endl;
 			swarm_->swarmComm->recvMessage(0, id, NEXT_GENERATION, true, swarm_->swarmComm->univMessageReceiver);
 			swarm_->swarmComm->univMessageReceiver.clear();
 		}
-
-		cout << "DoParticle: Generation is " << currentGeneration_ << endl;
-
+		if (swarm_->options.verbosity >= 3) {
+			cout << "DoParticle: Generation is " << currentGeneration_ << endl;
+		}
 		if (doRunModel) {
 			for (unsigned int i = 1; i <= swarm_->options.smoothing; ++i) {
 				if (swarm_->options.verbosity >= 3) cout<<"doParticle-1x try to run model for i:"<<i<<endl;
@@ -616,14 +629,20 @@ cout << "subParticle " << id << " waiting to begin" << endl;
 						for (unsigned int j=0; j<=swarm_->getNumModels(); j++){   //razi:run all subparticles
 						if (getSubParticle(j)){
 							getSubParticle(j)->runModel(i, false);   //razi: check later due to false
-							cout<<"Particle::doParticle. Running subParticle:["<<calcsubParID(j) <<":"<< id_  <<"-"<<j <<"] for iteration:"<<i << " is completed...\n";
+							if (swarm_->options.verbosity >= 3) {
+								cout<<"Particle::doParticle. Running subParticle:["<<calcsubParID(j) <<":"<< id_  <<"-"<<j <<"] for iteration:"<<i << " is completed...\n";
+							}
 						}
 					}
 				}else{
 					if (getSubParticle(mid)){
-						cout<<"Particle::doParticle. Running subParticle:["<<subParID <<":"<< id_  <<"-"<<mid <<"] for iteration:"<<i << " is started...\n";
+						if (swarm_->options.verbosity >= 3) {
+							cout<<"Particle::doParticle. Running subParticle:["<<subParID <<":"<< id_  <<"-"<<mid <<"] for iteration:"<<i << " is started...\n";
+						}
 						getSubParticle(mid)->runModel(i, false);   //razi: check later due to false
-						cout<<"Particle::doParticle. Running subParticle:"<< mid <<" for iteration:"<<i << " is completed...\n";
+						if (swarm_->options.verbosity >= 3) {
+							cout<<"Particle::doParticle. Running subParticle:"<< mid <<" for iteration:"<<i << " is completed...\n";
+						}
 					}else outputError("SubParticle number error subParticle:["+ toString(subParID)+":"+ toString(id_) + "-:"+ toString(mid)+"] particleID:"+ toString(id_)+ " model id:" + toString(mid) + "  subParID:" + toString(subParID));
 				}
 				if (swarm_->options.verbosity >= 3) cout<<"doParticle-1 ran model for i:"<<i<<endl;
@@ -648,13 +667,18 @@ cout << "subParticle " << id << " waiting to begin" << endl;
 		}
 
 if (swarm_->options.verbosity >= 3) cout<<"doParticle-4 now lets check messages..."<<endl;
-
+		if (swarm_->options.verbosity >= 5) {
 			cout << "RAQUEL before if" << endl;
+		}
 		if (swarm_->options.fitType == "ga") {
-			cout << "RAQUEL Entering check messages GA" << endl;
+			if (swarm_->options.verbosity >= 3) {
+				cout << "RAQUEL Entering check messages GA" << endl;
+			}
 			//checkMessagesGenetic(); //Raquel: changed this function to fix the problem of not proceeding to the next generation
 			checkMessagesGenetic(mid);
-			cout << "RAQUEL done check messages" << endl;
+			if (swarm_->options.verbosity >= 3) {
+				cout << "RAQUEL done check messages" << endl;
+			}
 		}
 		else if (swarm_->options.fitType == "pso") {
 			cout << "RAQUEL Entering check messages PSO" << endl;
@@ -726,7 +750,9 @@ void Particle::setParam(pair<std::string, double> myParams, unsigned int mid){
 void subParticle::runModel(unsigned int iteration, bool localSearch) {
 
 	unsigned int pID = parParticle->id_;
-	cout << "RRR parParticle->id_: " << pID << endl;
+	if (parParticle->swarm_->options.verbosity >= 3) {
+		cout << "RRR parParticle->id_: " << pID << endl;
+	}
 	Swarm * swp = parParticle->swarm_;  if(!swp){cout<<"subParticle::runModel: Invalid subParticle with no parent..."; return;}
 	Model * mdl = parParticle->models.at(this->mid_);  if(!swp){cout<<"subParticle::runModel: Invalid subParticle with no model..."; return;}
 	unsigned int mid = this->mid_;
@@ -789,8 +815,9 @@ void subParticle::runModel(unsigned int iteration, bool localSearch) {
 			mdl->outputModelWithParams(parParticle->simParams_.at(mid), path, bnglFilename, suffix, false, false, false, false, false);
 		}
 	}
-	cout << "RAQUEL GENERATION: " << parParticle->currentGeneration_ << " path" << path << endl;
-
+	if (swp->options.verbosity>= 3) {
+		cout << "RAQUEL GENERATION: " << parParticle->currentGeneration_ << " path" << path << endl;
+	}
 	// Generate .gdat pipes if we're using pipes
 
 #ifdef PC_VER //pipe are defined only in linux operating systems
@@ -812,8 +839,10 @@ void subParticle::runModel(unsigned int iteration, bool localSearch) {
 			//pipePath = swp->getModelName(this->mid_,false)+"_"+toString(pID) + "_" + toString(iteration) + ".gdat";
 			//raquel commented below
 			pipePath = path + i->first+ toString(pID) + "_" + toString(iteration) + outputSuffix; //new format to be consistent with bngl file
-			cout << "Raquel: pipepath " << pipePath << endl;
-			cout << "subParticle::runModel pp is: " << pipePath << endl;
+			if (parParticle->swarm_->options.verbosity >= 3) {
+				cout << "Raquel: pipepath " << pipePath << endl;
+				cout << "subParticle::runModel pp is: " << pipePath << endl;
+			}
 			createParticlePipe(pipePath.c_str());
 		}
 	}
@@ -829,19 +858,24 @@ void subParticle::runModel(unsigned int iteration, bool localSearch) {
 #ifndef TEST_SIMULATOR
 		outputError("You are using the random simulator, but the macro is not activated. Recompile the code with TEST_SIMULATOR on !!!");
 #endif
-		cout<<"\nsubParticle::runModel: Random Simulation is chosen for test, generating random result file !!!\n\n"; //mypause();
-
+		if (parParticle->swarm_->options.verbosity >= 3) {
+			cout<<"\nsubParticle::runModel: Random Simulation is chosen for test, generating random result file !!!\n\n"; //mypause();
+		}
 //swp->printDetails();
 //if (mid==1) {return;}
 		string exp_file = swp->getExpPath(mid, 0);
 //if (mid==1) return; //razi for test uncomment
-cout<<"\nsubParticle::runModel: Tries to generate file from file :" << exp_file<<"\n."; //mypause();
+		if (parParticle->swarm_->options.verbosity >= 3) {
+			cout<<"\nsubParticle::runModel: Tries to generate file from file :" << exp_file<<"\n."; //mypause();
+		}
 		string gdat_path = path +  swp->getExp(mid_,0)+ "_" + toString(pID) + "_" + toString(iteration) + ".gdat";
-
-cout<<"\nsubParticle::runModel: Finished generating file: "<< gdat_path << "   from file :" << exp_file<<"\n.";// mypause();
-
+		if (parParticle->swarm_->options.verbosity >= 3) {
+			cout<<"\nsubParticle::runModel: Finished generating file: "<< gdat_path << "   from file :" << exp_file<<"\n.";// mypause();
+		}
 		ret = generate_gdat_file(exp_file, gdat_path, pID);
-		cout << "RAQUEL ret: " << ret << endl;
+		if (parParticle->swarm_->options.verbosity >= 3) {
+			cout << "RAQUEL ret: " << ret << endl;
+		}
 	}else
 	{
 //if (mid==1) return; //razi for test uncomment
@@ -872,7 +906,9 @@ cout<<"\nsubParticle::runModel: Finished generating file: "<< gdat_path << "   f
 	if (ret == 0 || ret==-1) { // TODO: Need to check for simulation status when using pipes. Going by return code doesn't work there because we're using the & operator
 
 		// really not sure how we can do this easily
-		cout<<"subParticle::runModel: simulation completed successfully. Lets collect data ...\n"; //mypause();
+		if (parParticle->swarm_->options.verbosity >= 3) {
+			cout<<"subParticle::runModel: simulation completed successfully. Lets collect data ...\n"; //mypause();
+		}
 		string outputSuffix;
 		// Save our simulation outputs to data objects
 		for (std::map<std::string,Model::action>::iterator action = mdl->actions.begin(); action != mdl->actions.end(); ++action) {
@@ -891,7 +927,11 @@ cout<<"\nsubParticle::runModel: Finished generating file: "<< gdat_path << "   f
 #ifdef VER2
 			if (swp->options.verbosity>=3) cout<<"subParticle::runModel: Adding the results as a data object.  action:"<< action->first<< " datafile:"<<dataPath<<"   model id:"<< mid << "  iteration:" << iteration << endl;
 			parParticle->dataFiles_.at(mid)[action->first].insert(pair<int, Data*>(iteration, new Data(dataPath, swp, false, mid)));
-			cout << "RAQUEL COUNT AT MID " << mid << " = " << parParticle->dataFiles_.at(mid).count(action->first) << endl;
+
+			if (parParticle->swarm_->options.verbosity >= 3) {
+				cout << "RAQUEL COUNT AT MID " << mid << " = " << parParticle->dataFiles_.at(mid).count(action->first) << endl;
+			}
+
 			if (swp->options.verbosity>=3) cout<<"subParticle::runModel: Lets check if done properly. File:"<< parParticle->dataFiles_.at(mid)[action->first][iteration]->getPath() << "exists.\n";
 #else
 			parParticle->dataFiles_[action->first].insert(pair<int, Data*>(iteration, new Data(dataPath, swp, false)));
@@ -902,12 +942,17 @@ cout<<"\nsubParticle::runModel: Finished generating file: "<< gdat_path << "   f
 	}
 	else {
 		// If our return code is not 0, tell the master that the simulation failed
-		cout << "RAQUEL ret " << ret << endl;
+		if (parParticle->swarm_->options.verbosity >= 3) {
+			cout << "RAQUEL ret " << ret << endl;
 
-		cout << "subParticle::runModel: I failed completing runmodel ..." << endl; //mypause();
+			cout << "subParticle::runModel: I failed completing runmodel ..." << endl; //mypause();
+		}
 		swp->swarmComm->sendToSwarm(int(subParID), 0, SIMULATION_FAIL, true, swp->swarmComm->univMessageSender);
 	}
-cout<<"subParticle::runModel: runmodel finished ...\n";
+	if (parParticle->swarm_->options.verbosity >= 3) {
+
+		cout<<"subParticle::runModel: runmodel finished ...\n";
+	}
 }
 
 
@@ -921,19 +966,24 @@ if ((mid<0)|| (mid >= swarm_->getNumModels()) || (!models.at(mid)))
 Model * mdl= models.at(mid);
 	// Holds iterator ranges when finding items in the message holder
 	pair <Pheromones::swarmMsgHolderIt, Pheromones::swarmMsgHolderIt> smhRange;
-	cout << "RAQUEL entering while from function that takes mid as input" << endl;
+	if (swarm_->options.verbosity >= 3) {
+		cout << "RAQUEL entering while from function that takes mid as input" << endl;
+	}
 	string path; //Raquel: declaring it outside the while loop
 
 	while (1) {
 		// Retrieve any messages
 		int numCheckedMessages = 0;
 		int numMessages = swarm_->swarmComm->recvMessage(-1, subParID, -1, true, swarm_->swarmComm->univMessageReceiver, true);
-cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
+		if (swarm_->options.verbosity >= 4) {
+			cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
 
-		cout << "RAQUEL entering univMessageReceiver.equal_range(SEND_FINAL_PARAMS_TO_PARTICLE)" << endl;
+			cout << "RAQUEL entering univMessageReceiver.equal_range(SEND_FINAL_PARAMS_TO_PARTICLE)" << endl;
+		}
 		smhRange = swarm_->swarmComm->univMessageReceiver.equal_range(SEND_FINAL_PARAMS_TO_PARTICLE);
-		cout << "RAQUEL passed univMessageReceiver.equal_range(SEND_FINAL_PARAMS_TO_PARTICLE)" << endl;
-
+		if (swarm_->options.verbosity >= 3) {
+			cout << "RAQUEL passed univMessageReceiver.equal_range(SEND_FINAL_PARAMS_TO_PARTICLE)" << endl;
+		}
 
 		if (smhRange.first != smhRange.second) {
 			//cout << id_ << " found final " << endl;
@@ -942,16 +992,22 @@ cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
 
 				int messageIndex = 0;
 				for (auto p = simParams_.at(mid).begin(); p != simParams_.at(mid).end(); ++p) {
-					cout << id_ << " updating parameter " << p->first << " to " << sm->second.message[messageIndex] << endl;
+					if (swarm_->options.verbosity >= 3) {
+						cout << id_ << " updating parameter " << p->first << " to " << sm->second.message[messageIndex] << endl;
+					}
 					p->second = stod(sm->second.message[messageIndex]);
-					cout << "updated param " << p->first << ": " << p->second << endl;
+					if (swarm_->options.verbosity >= 3) {
+						cout << "updated param " << p->first << ": " << p->second << endl;
+					}
 					++messageIndex;
 				}
 
 				path = swarm_->options.jobOutputDir + toString(currentGeneration_ + 1) + "/";
 
 				if (!checkIfFileExists(path)) {
-					cout << "trying to create path " << path << endl;
+					if (swarm_->options.verbosity >= 3) {
+						cout << "trying to create path " << path << endl;
+					}
 					runCommand("mkdir " + path);
 				}
 
@@ -960,7 +1016,9 @@ cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
 					string bnglFilename = swarm_->getModelName(mid, false)+"_" + toString(id_) + "_" + toString(i) + ".bngl";
 					string bnglFullPath = path + bnglFilename;
 					string suffix = toString(id_) + "_" + toString(i);
-					cout << "RAQUEL CREATING BNGL: " << bnglFullPath << endl;
+					if (swarm_->options.verbosity >= 3) {
+						cout << "RAQUEL CREATING BNGL: " << bnglFullPath << endl;
+					}
 					// And generate our models
 					if (swarm_->options.models.at(mid)->getHasGenerateNetwork()){
 						// If we're using ODE solver, output .net and .bngl
@@ -970,13 +1028,14 @@ cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
 						// If we're using network free simulation, output .bngl
 						mdl->outputModelWithParams(simParams_.at(mid), path, bnglFilename, suffix, false, false, false, false, false);
 					}
-
-					cout << "RAQUEL BNGL generated: " <<  bnglFullPath << " id_ " << toString(id_) << " i " << toString(i) << " subParID " << subParID << endl;
-
+					if (swarm_->options.verbosity >= 3) {
+						cout << "RAQUEL BNGL generated: " <<  bnglFullPath << " id_ " << toString(id_) << " i " << toString(i) << " subParID " << subParID << endl;
+					}
 				}
-
+				if (swarm_->options.verbosity >= 3) {
 				// Tell the master we have our new params and are ready for the next generation
-				cout << id_ << " telling master we're finished " << endl;
+					cout << id_ << " telling master we're finished " << endl;
+				}
 				swarm_->swarmComm->sendToSwarm(subParID, 0, DONE_BREEDING, false, swarm_->swarmComm->univMessageSender);
 
 				//double t = tmr.elapsed();
@@ -985,23 +1044,30 @@ cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
 			}
 		}
 
-
-		cout << "RAQUEL BEFORE IF numCheckedMessages >= numMessages" << endl;
+		if (swarm_->options.verbosity >= 3) {
+			cout << "RAQUEL BEFORE IF numCheckedMessages >= numMessages" << endl;
+		}
 
 		if (numCheckedMessages >= numMessages) {
 			swarm_->swarmComm->univMessageReceiver.clear();
-			cout << "RAQUEL INSIDE IF numCheckedMessages >= numMessages = " << numCheckedMessages << ":" << numMessages << endl;
+			if (swarm_->options.verbosity >= 3) {
+				cout << "RAQUEL INSIDE IF numCheckedMessages >= numMessages = " << numCheckedMessages << ":" << numMessages << endl;
+			}
 			continue;
 			//return 0; //Raquel: added
 		}
-
-cout << "RAQUEL PASSED IF numCheckedMessages >= numMessages" << endl;
-
+		if (swarm_->options.verbosity >= 3) {
+			cout << "RAQUEL PASSED IF numCheckedMessages >= numMessages" << endl;
+		}
 
 		if (swarm_->swarmComm->univMessageReceiver.find(FIT_FINISHED) != swarm_->swarmComm->univMessageReceiver.end()) {
-			cout << "RAQUEL entering ~pheromones" << endl;
+			if (swarm_->options.verbosity >= 3) {
+				cout << "RAQUEL entering ~pheromones" << endl;
+			}
 			swarm_->swarmComm->~Pheromones();
-			cout << "RAQUEL exiting ~pheromones" << endl;
+			if (swarm_->options.verbosity >= 3) {
+				cout << "RAQUEL exiting ~pheromones" << endl;
+			}
 			//return;
 			exit(0);
 		}
@@ -1015,21 +1081,25 @@ cout << "RAQUEL PASSED IF numCheckedMessages >= numMessages" << endl;
 			currentGeneration_ = 0;
 			simParams_.at(mid).clear();
 			generateParams();
-			cout << "RAQUEL INSIDE IF swarm_->swarmComm->univMessageReceiver.find(NEW_BOOTSTRAP)" << endl;
-
+			if (swarm_->options.verbosity >= 3) {
+				cout << "RAQUEL INSIDE IF swarm_->swarmComm->univMessageReceiver.find(NEW_BOOTSTRAP)" << endl;
+			}
 			swarm_->swarmComm->univMessageReceiver.clear();
 			return;
 		}
 
 		if (swarm_->swarmComm->univMessageReceiver.find(NEXT_GENERATION) != swarm_->swarmComm->univMessageReceiver.end()) {
-			cout << "RAQUEL INSIDE IF swarm_->swarmComm->univMessageReceiver.find(NEXT_GENERATION)" << endl;
+			if (swarm_->options.verbosity >= 3) {
+				cout << "RAQUEL INSIDE IF swarm_->swarmComm->univMessageReceiver.find(NEXT_GENERATION)" << endl;
+			}
 			return;
 		}
 
 		swarm_->swarmComm->univMessageReceiver.clear();
 	}
-
-	cout << "RAQUEL existing while that takes mid as input" << endl;
+	if (swarm_->options.verbosity >= 3) {
+		cout << "RAQUEL existing while that takes mid as input" << endl;
+	}
 }
 
 void Particle::checkMessagesPSO(unsigned int mid) {
@@ -1283,9 +1353,9 @@ string path;
 
 			swarm_->swarmComm->univMessageReceiver.clear();
 		}
-
-		cout << "RAQUEL existing while that takes mid as input" << endl;
-
+		if(swarm_->options.verbosity >=4){
+			cout << "RAQUEL exiting while that takes mid as input" << endl;
+		}
 
 
 }
@@ -1473,13 +1543,17 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 
 		// Loop through .exp files. Iterator points to string/dataset pair
 		for (auto e = swarm_->options.expFiles.begin(); e != swarm_->options.expFiles.end(); ++e){
-			cout << "DATA FILE FOR MID " << mid << " " << e->first << endl;
+			if(swarm_->options.verbosity >=4){
+				cout << "DATA FILE FOR MID " << mid << " " << e->first << endl;
+			}
 			//razi: we first need to check if the exp file belongs to this subParticle
 			if (dataFiles_.at(mid).count(e->first)!=1){
 				cout<<"The exp file "<< e->first<< " does not belong to model is:"<<mid<<". try other models."<<endl;
 				continue; //Raquel: was a break, making the fit for MID 1 always become zero
 			}
-			cout << "RAQUEL PASSED MID " << mid << endl;
+			if(swarm_->options.verbosity >=4){
+				cout << "RAQUEL PASSED MID " << mid << endl;
+			}
 			// Loop through .exp columns. Iterator points to column/map pair
 			//cout << "exp loop " << e->first << endl;
 			setSum = 0;
@@ -1493,7 +1567,9 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 					//cout << "trying to set mean" << endl;
 					divisor = e->second->colAverages.at(exp_col->first);
 					//cout << "mean set" << endl;
-					cout << "RAQUEL divisor(colmean): " << divisor << endl;
+					if(swarm_->options.verbosity >=4){
+						cout << "RAQUEL divisor(colmean): " << divisor << endl;
+					}
 				}
 
 				//cout << "col loop " << exp_col->first << endl;
@@ -1521,16 +1597,24 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 					double sim;
 					// TODO: Introduce fudge tolerance to account for precision loss in simulation control column
 					if (swarm_->options.smoothing == 1) {
-						cout << "trying smoothing" << endl;
+						if(swarm_->options.verbosity >=4){
+							cout << "trying smoothing" << endl;
+						}
 						sim = dataFiles_.at(mid).at(e->first).at(swarm_->options.smoothing)->dataCurrent->at(exp_col->first).at(timepoint->first);
 						//cout << dataCurrent->at(exp_col->first).at(timepoint->first) << endl;
-						cout << " [mid] " << mid << " [e->first] " << e->first << " [swarm_->options.smoothing] " << swarm_->options.smoothing << " exp_col->first " << exp_col->first << " timepoint->first " << timepoint->first << endl;
-						cout << "done " << endl;
+						if(swarm_->options.verbosity >=4){
+							cout << " [mid] " << mid << " [e->first] " << e->first << " [swarm_->options.smoothing] " << swarm_->options.smoothing << " exp_col->first " << exp_col->first << " timepoint->first " << timepoint->first << endl;
+							cout << "done " << endl;
+						}
 					}
 					else {
-						cout << "trying smoothing2 " << endl;
+						if(swarm_->options.verbosity >=4){
+							cout << "trying smoothing2 " << endl;
+						}
 						sim = dataFiles_.at(mid).at(e->first).at(swarm_->options.smoothing+1)->dataCurrent->at(exp_col->first).at(timepoint->first);
-						cout << "done" << endl;
+						if(swarm_->options.verbosity >=4){
+							cout << "done" << endl;
+						}
 					}
 					double sum = 0;
 					if(sim != timepoint->second){ //if simulation and experimental values are exactly equal, the difference between them will be zero, so we can skip the objective function
@@ -1558,15 +1642,20 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 		// Erase our data sets
 		dataFiles_.at(mid).clear();
 		// Store our fit calc
-		cout << " totalSum " << totalSum << endl;
+		if(swarm_->options.verbosity >=4){
+			cout << " totalSum " << totalSum << endl;
+		}
 		if (!local) {
 			fitCalcs[mid][currentGeneration_] = pow(totalSum, 0.5);
-			cout << "RAQUEL LOCAL FIT for mid " << mid << ": " << fitCalcs[mid][currentGeneration_] << endl;
+			if(swarm_->options.verbosity >=4){
+				cout << "RAQUEL LOCAL FIT for mid " << mid << ": " << fitCalcs[mid][currentGeneration_] << endl;
+			}
 		}
 		else {
 			fitCalcs[mid][-1] = pow(totalSum, 0.5);
-			cout << "RAQUEL GLOBALFIT FIT for mid " << mid << ": " << fitCalcs[mid][-1]<< endl;
-
+			if(swarm_->options.verbosity >=4){
+				cout << "RAQUEL GLOBALFIT FIT for mid " << mid << ": " << fitCalcs[mid][-1]<< endl;
+			}
 		}
 
 		if (swarm_->options.verbosity >= 3) {

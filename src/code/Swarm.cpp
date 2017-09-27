@@ -149,7 +149,9 @@ Swarm::Swarm() {
 void Swarm::initRNGS(int seed) {
 	if (seed) {
 		srand(seed);
-		cout << "seeding rng with: " << seed << endl;
+		if(options.verbosity >= 3){
+			cout << "seeding rng with: " << seed << endl;
+		}
 	}
 	else {
 		// TODO: Make sure everything is being seeded properly and in the proper place. Also let's do away with rand()
@@ -251,7 +253,10 @@ void Swarm::addExp(string path, int mid) {
 
 void Swarm::consolidate_model_params(){
 
-	cout<<"consolidating " << this->getNumModels()<<" models."<<endl;
+	if(options.verbosity>=1){
+		cout<<"consolidating " << this->getNumModels()<<" models."<<endl;
+	}
+
 	//Raquel: commented, unnecessary
 	/*if (options.models.size() <1){
 		if(options.verbosity >= 3) cout<<"No need to consolidate models. Less than two models exist"<<endl;
@@ -326,7 +331,9 @@ void Swarm::consolidate_model_params(){
 
 		for (i=0; i <options.models.size(); i++){
 			options.models.at(i)->freeParams_ = uniqueList;
-			cout << "model " << i << " free parameters " << options.models.at(i)->freeParams_.size() << endl;
+			if(options.verbosity >= 1){
+				cout << "model " << i << " free parameters " << options.models.at(i)->freeParams_.size() << endl;
+			}
 		}
 
 
@@ -445,7 +452,9 @@ void Swarm::setExpPath(std::string prefixPath, std::string path, int mid){
 			}
 			absPaths.clear();
 			expfile = abspath.string();
-cout<<"*** exp file found"<<expfile<< " set for model:"<<i<<endl;
+			if(options.verbosity>=3){
+				cout<<"*** exp file found"<<expfile<< " set for model:"<<i<<endl;
+			}
 			absPaths.push_back(expfile);
 			expPaths_.insert(make_pair(i, absPaths));
 			addExp(expfile, i);
@@ -465,7 +474,9 @@ cout<<"*** exp file found"<<expfile<< " set for model:"<<i<<endl;
 				}
 				expfile = abspath.string();
 				absPaths.push_back(expfile);
-cout<<"*** exp file found"<<expfile<<endl;
+				if(options.verbosity>=3){
+					cout<<"*** exp file found"<<expfile<<endl;
+				}
 				if (options.verbosity >= 3){ cout<<"Swarm::setExpPath try to add  File:"<< expfile <<endl;}
 				addExp(expfile, mid);
 				if (options.verbosity >=3) cout<<"Exp["<<i<<"]  :"<<expfile <<" is added to the list of exp files for model:"<<mid<<".\n";
@@ -660,8 +671,9 @@ void Swarm::initFit () {  //razi: modified version
 					modelPath = options.jobOutputDir + "/" + p.swarm_->getModelName(mid, false)+"_base.bngl";
 
 				string command = options.bngCommand + " --outdir " + options.jobOutputDir + " " + modelPath + " > " + options.jobOutputDir + "netgen_output 2>&1";
-				cout << "Generating initial .net file with command: " << command << endl;
-
+				if(options.verbosity>=1){
+					cout << "Generating initial .net file with command: " << command << endl;
+				}
 				if (options.useCluster) {
 					if(options.clusterSoftware == "slurm"){
 						command = generateSlurmCommand(command, false, 1);
@@ -951,7 +963,9 @@ void Swarm::doSwarm() {
 		if (options.synchronicity) {
 			if (options.fitType == "ga") {
 				runSGA();
-				cout << "RAQUEL finished GA" << endl;
+				if(options.verbosity>=3){
+					cout << "Finished GA" << endl;
+				}
 			}
 			else if (options.fitType == "pso") {
 				//cout << "RAQUEL BEFORE PSO" << endl;
@@ -984,9 +998,16 @@ void Swarm::doSwarm() {
 				runASA();
 			}
 		}
-		cout << "RAQUEL: starting finishFit function" << endl;
+		if(options.verbosity>=4){
+
+			cout << "RAQUEL: starting finishFit function" << endl;
+
+		}
 		finishFit();
-		cout << "RAQUEL: done finishFit function" << endl;
+		if(options.verbosity>=4){
+
+			cout << "RAQUEL: done finishFit function" << endl;
+		}
 
 	}
 
@@ -1037,7 +1058,8 @@ bool Swarm::checkStopCriteria() {
 
 		//cout << "RAQUEL: MAX GENERATION: " << options.maxGenerations << endl;
 		if (options.maxGenerations && currentGeneration > options.maxGenerations) {
-			cout << "RAQUEL: Stopped because currentGeneration > maxGenerations" << endl;
+
+			cout << "Stopped because currentGeneration > maxGenerations" << endl;
 			return true;
 		}
 		/*
@@ -1072,7 +1094,7 @@ bool Swarm::checkStopCriteria() {
 			cout << "Checking if we've reached max generation. Current is " << (currentGeneration - 1) << " and max is " << options.maxGenerations << endl;
 		}
 		if (options.maxGenerations && currentGeneration > options.maxGenerations) {
-			cout << "RAQUEL: Stopped because currentGeneration > maxGenerations" << endl;
+			cout << "Stopped because currentGeneration > maxGenerations" << endl;
 			return true;
 		}
 	}
@@ -2123,17 +2145,18 @@ void Swarm::launchSubParticle(unsigned int pID, unsigned int mid, bool nextGen) 
 
 	//calculate new particle number
 	unsigned int subParID = (pID - 1)* options.models.size()+ mid + 1;
-	cout << "RAQUEL launchSUB suParID: " << subParID << endl;
-
+	if (options.verbosity>= 3) {
+		cout << "RAQUEL launchSUB suParID: " << subParID << endl;
+	}
 #ifdef TEST_SIMULATOR
 //	if (subParID!=3){
 //		cout<<"For test all subParticles are avoided except 3. Uncomment later.\n";
 //		return;
 //	}
 #endif
-
-	cout << "currentGeneration: " << currentGeneration << " options.useCluster: " << options.useCluster << " nextGen: " << nextGen << " bootstrapCounter: " << bootstrapCounter << endl;
-
+	if (options.verbosity>= 1) {
+		cout << "currentGeneration: " << currentGeneration << " options.useCluster: " << options.useCluster << " nextGen: " << nextGen << " bootstrapCounter: " << bootstrapCounter << endl;
+	}
 	if (currentGeneration == 1 && !options.useCluster && !nextGen && bootstrapCounter == 0) {
 
 		// Construct command needed to run the particle
@@ -2156,8 +2179,9 @@ command = command + " >> pOUT 2>&1";
 			return;
 		}
 	}
-
-	cout << "Adding subparticle " << subParID << " to the list of running particles." << endl;
+	if (options.verbosity >= 3) {
+		cout << "Adding subparticle " << subParID << " to the list of running particles." << endl;
+	}
 	runningSubParticles_.insert(subParID); //razi: was //runningParticles_.insert(pID);
 	//cout << "RAQUEL sending message to supar" << subParID << "message=NEXT_GEN" << endl;
 	swarmComm->sendToSwarm(0, subParID, NEXT_GENERATION, false, swarmComm->univMessageSender);
@@ -2202,7 +2226,10 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 	unsigned int maxSubPar = fcalcsubParID(options.swarmSize, options.models.size()-1, options.models.size());
 	int tries = 0;
 
-	cout << "Maxsubpar = "  << maxSubPar << endl;
+	if(options.verbosity>=3){
+		cout << "Maxsubpar = "  << maxSubPar << endl;
+
+	}
 
 	while (finishedSubParticles_.size() < maxSubPar && runningSubParticles_.size() < maxSubPar) { //razi: loop over particles, each particle includes nModels subPArticles
 
@@ -2492,10 +2519,13 @@ void Swarm::finishFit() {
 
 		generateBestFitModel(outputDir);
 
-		cout << "RAQUEL: Killing all particles, sending FIT_FINISHED message" << endl;
+		if(options.verbosity>=3){
+			cout << "Killing all particles, sending FIT_FINISHED message" << endl;
+		}
 		killAllParticles(FIT_FINISHED);
-		cout << "RAQUEL: Done killing all particles." << endl;
-
+		if(options.verbosity>=3){
+			cout << "Done killing all particles." << endl;
+		}
 		cout << "Finished fitting in " << tmr_.elapsed() << " seconds. Results can be found in " << options.jobOutputDir << "Results" << endl;
 	}
 	//copyBestFitToResults(outputDir);
@@ -2631,20 +2661,32 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 			// Then remove it
 			if (runningSubParticlesIterator_ == runningSubParticles_.end()) {
 				string errMsg = "Error: Couldn't remove subParticle " + toString(subParID) + " from runningParticle list.";
-				cout << "Size of runningSubParticles_: " << runningSubParticles_.size() << endl;
-				cout << "Subparticles in running list are: " << endl;
-				for(auto myIt = runningSubParticles_.begin(); myIt != runningSubParticles_.end(); myIt++){
-					cout << "first: " << *myIt << endl;
 
+				if(options.verbosity >= 3) {
+
+					cout << "Size of runningSubParticles_: " << runningSubParticles_.size() << endl;
+					cout << "Subparticles in running list are: " << endl;
+
+					for(auto myIt = runningSubParticles_.begin(); myIt != runningSubParticles_.end(); myIt++){
+						cout << "first: " << *myIt << endl;
+
+					}
+					cout << "Done listing running particles. " << endl;
 				}
-				cout << "Done listing running particles. " << endl;
 				outputError(errMsg);
 			}
-			cout << "Master messages Added supar " << subParID << " to finnished list and removed it from running list" << endl;
+
+			if(options.verbosity >= 3) {
+
+				cout << "Master messages Added supar " << subParID << " to finnished list and removed it from running list" << endl;
+			}
 			runningSubParticles_.erase(runningSubParticlesIterator_);
 			finishedSubParticles_.insert(subParID); //razi: add to the list
 			++particleIterationCounter_[pID][mid];
-			cout << "Master messages running sub" << runningSubParticles_.size() << " finished size " << finishedSubParticles_.size() << endl;
+			if(options.verbosity >= 5) {
+
+				cout << "Master messages running sub" << runningSubParticles_.size() << " finished size " << finishedSubParticles_.size() << endl;
+			}
 			update_cur_particle_params(pID, mid, true); //razi: TODO  the same procedure should be done in other places, the slave sends theliust of free parameters for subparticle that should be reordered for particles
 
 			//finishedsubParticles.push_back(subParID);
@@ -2654,8 +2696,9 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 			NewlyFinishedParticles = update_finished_running_particles(); //update particle lists
 			NumNewlyFinishedParticles = NewlyFinishedParticles.size(); //update particle lists
 			flightCounter_=flightCounter_+ NumNewlyFinishedParticles;
-			cout << "Master NumNewlyFinishedParticles " <<  NumNewlyFinishedParticles << " Flightcounter " << flightCounter_ << endl;
-
+			if (options.verbosity == 3) {
+				cout << "Master NumNewlyFinishedParticles " <<  NumNewlyFinishedParticles << " Flightcounter " << flightCounter_ << endl;
+			}
 			unsigned int gen = currentGeneration;
 			string paramsString;
 			if (options.synchronicity == 1) {
@@ -2706,12 +2749,17 @@ for (auto ii=subparticleCurrParamSets_.begin(); ii!=subparticleCurrParamSets_.en
 				paramsVec.push_back(stod(*m));
 				if (options.fitType == "ga") {
 					subparticleCurrParamSets_[pID][mid][i] = stod(*m);   //razi: the list and order of free params can be different for  different models
-					cout << "pID " << pID << " mid " << mid << " i " << i << " *m " << *m << endl;
+					if (options.verbosity>= 3) {
+						cout << "pID " << pID << " mid " << mid << " i " << i << " *m " << *m << endl;
+					}
 					particleCurrParamSets_[pID][i] = stod(*m);
 				}
 				++i;
 			}
+			if(options.verbosity >= 5) {
+
 cout<<i <<" Params collected for one subparticle: "<<paramsString<<endl; //mypause();
+			}
 			update_cur_particle_params(pID, mid, true); //razi: TODO  the same procedure should be done in other places, the slave sends theliust of free parameters for subparticle that should be reordered for particles
 
 			if (options.verbosity>= 3) {cout << "params are stored" << endl;} //mypause();}
@@ -2721,8 +2769,10 @@ cout<<i <<" Params collected for one subparticle: "<<paramsString<<endl; //mypau
 
 
 			update_fitCalcs(); //razi: TODO: later develop and test this function
+			if(options.verbosity >= 3) {
 
 cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<endl; //mypause();
+			}
 			allGenFits.insert(pair<double, string>(fitCalc, order_params(paramsString, mid)));
 			swarmBestFits_.insert(pair<double, unsigned int>(fitCalc, pID));
 			subswarmBestFits_.insert(pair<double, unsigned int>(fitCalc, subParID));
@@ -2740,13 +2790,16 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 		}
 
 		// TODO: When sending NEXT_GENERATION, make sure failed particles have actually run again. If not, they need re-launched.
-		cout << "RAQUEL: before univMessageReceiver.equal_range(SIMULATION_FAIL)" << endl;
-		cout << "Number of runnning subparticles before" << runningSubParticles_.size() << endl;
+		if(options.verbosity >= 5) {
 
+			cout << "RAQUEL: before univMessageReceiver.equal_range(SIMULATION_FAIL)" << endl;
+			cout << "Number of runnning subparticles before" << runningSubParticles_.size() << endl;
+		}
 		smhRange = swarmComm->univMessageReceiver.equal_range(SIMULATION_FAIL);
+		if(options.verbosity >= 5) {
 
-		cout << "RAQUEL: after univMessageReceiver.equal_range(SIMULATION_FAIL);" << endl;
-
+			cout << "RAQUEL: after univMessageReceiver.equal_range(SIMULATION_FAIL);" << endl;
+		}
 		for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {
 
 			unsigned int subParID = sm->second.sender;
@@ -2755,14 +2808,20 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 
 			// Get an iterator to the particle in our list of running particles
 			runningSubParticlesIterator_ = runningSubParticles_.find(subParID);
-			cout << "Number of runnning subparticles before erasing" << runningSubParticles_.size() << endl;
+			if(options.verbosity >= 5) {
+
+				cout << "Number of runnning subparticles before erasing" << runningSubParticles_.size() << endl;
+			}
 			if (runningSubParticlesIterator_ == runningSubParticles_.end()) {
 				string errMsg = "Error: Couldn't remove particle " + toString(pID) +  "  SubParticle " + toString(subParID) + " from runningParticle list.";
 				outputError(errMsg);
 			}else{
 				runningSubParticles_.erase(runningSubParticlesIterator_);
-				cout << "RAQUEL Erased one subparticle fro running list " << endl;
-				cout << "New size: " << runningSubParticles_.size() << endl;
+				if(options.verbosity >= 5) {
+
+					cout << "RAQUEL Erased one subparticle fro running list " << endl;
+					cout << "New size: " << runningSubParticles_.size() << endl;
+				}
 			}
 			runningSubParticlesIterator_ = failedSubParticles_.find(subParID);
 			if (runningSubParticlesIterator_== failedSubParticles_.end())  //add to the list of failed subparticles
@@ -2779,10 +2838,15 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 			// Store particle ID in our list of failed particles
 
 		}
-		cout << "RAQUEL: After for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {" << endl;
-		int messageCount = 0;
-		cout << "RAQUEL: Before for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) { {" << endl;
+		if(options.verbosity >= 5) {
 
+			cout << "RAQUEL: After for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {" << endl;
+		}
+		int messageCount = 0;
+		if(options.verbosity >= 5) {
+
+			cout << "RAQUEL: Before for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) { {" << endl;
+		}
 		smhRange = swarmComm->univMessageReceiver.equal_range(GET_RUNNING_PARTICLES);
 		for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) {
 
@@ -2798,9 +2862,10 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 			//cout << "RAQUEL: Sent " << messageCount << " messages." << endl;
 		}
 
+		if(options.verbosity >= 5) {
 
-		cout << "RAQUEL: After for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) { {" << endl;
-
+			cout << "RAQUEL: After for (Pheromones::swarmMsgHolderIt sm = smhRange.first; sm != smhRange.second; ++sm) { {" << endl;
+		}
 
 		swarmComm->univMessageReceiver.clear();
 
@@ -3036,7 +3101,9 @@ string Swarm::getClusterCommand(string runCmd) {
 		return generateMPICommand(runCmd);
 	}
 	else if (options.clusterSoftware == "BNF2mpi") {
-			cout << "runCmd is: " << runCmd << endl;
+			if(options.verbosity >= 3){
+				cout << "runCmd is: " << runCmd << endl;
+			}
 			return generateBNF2MPICommand(runCmd);
 	}
 	else {
@@ -3076,8 +3143,9 @@ string Swarm::generateMPICommand(string cmd) {
 
 string Swarm::generateBNF2MPICommand(string cmd) {
 
-	cout << "Entering generateBNF2MPICommand()" << endl;
-
+	if(options.verbosity >=4){
+		cout << "Entering generateBNF2MPICommand()" << endl;
+	}
 	int maxSubPar = 0;
 	maxSubPar = fcalcsubParID(options.swarmSize, options.models.size()-1, options.models.size());
 
@@ -3088,7 +3156,6 @@ string Swarm::generateBNF2MPICommand(string cmd) {
 		newCmd += "-hostfile " + options.hostfile + " ";
 	}
 #ifdef VER2
-	cout<<"Swarm::generateMPICommand may need some modifications 654\n";
 	newCmd += "-tag-output -np 1 " + cmd + " -a load -c " + sConf_[0] + " : -oversubscribe ";
 #else
 	newCmd += "-tag-output -np 1 " + cmd + " load " + sConf_ + " : -nooversubscribe ";
@@ -3097,7 +3164,6 @@ string Swarm::generateBNF2MPICommand(string cmd) {
 		newCmd += "-hostfile " + options.hostfile + " ";
 	}
 #ifdef VER2
-	cout<<"Swarm::generateMPICommand may need some modifications 654\n";
 	newCmd += "-tag-output -np " + toString(maxSubPar) + " " + cmd + " -t particle -p 0 -a run -c " + sConf_[0];
 #else
 	newCmd += "-tag-output -np " + toString(options.swarmSize) + " " + cmd + " particle 0 run " + sConf_;
@@ -3106,7 +3172,9 @@ string Swarm::generateBNF2MPICommand(string cmd) {
 	if (options.saveClusterOutput) {
 		newCmd += " > " + options.outputDir + "/" + options.jobName + "_cluster_output/" + options.jobName + " 2>&1";
 	}
+	if(options.verbosity >=3){
 	cout << "MPI command built from generateBNF2MPICommand: " << endl << newCmd << endl;
+	}
 	return newCmd;
 }
 
@@ -3340,14 +3408,18 @@ string Swarm::generateSlurmBatchFile(string runCmd) {
 unsigned int Swarm::pickWeighted(double weightSum, multimap<double, unsigned int> &weights, unsigned int extraWeight) {
 	double lowerBound = 0;
 	double upperBound = weightSum;
-	cout << "lower limit = " << lowerBound << "; upper limit = " << upperBound << endl;
-
+	if(options.verbosity>=4){
+		cout << "lower limit = " << lowerBound << "; upper limit = " << upperBound << endl;
+	}
 	// TODO: Better error handling here?
 	if (upperBound <= 0) {
 		return 0;
 	}
-	cout << "lower limit = " << lowerBound << "; upper limit = " << upperBound << endl;
 
+	if(options.verbosity>=4){
+
+		cout << "lower limit = " << lowerBound << "; upper limit = " << upperBound << endl;
+	}
 	boost::random::uniform_real_distribution<double> unif(lowerBound, upperBound);
 
 	double random = unif(generalRand);
@@ -3385,15 +3457,23 @@ void Swarm::insertKeyByValue(multimap<double, unsigned int> &theMap, double key,
 string Swarm::mutateParamGA(FreeParam* fp, double paramValue) {
 	//Timer tmr;
 	//uniform_real_distribution<double> unif(0,1);
-	cout << "generating random dist" << endl;
+	if(options.verbosity>=3){
+		cout << "generating random dist" << endl;
+	}
 	boost::random::uniform_real_distribution<double> unif(0,1);
-	cout << "done" << endl;
+	if(options.verbosity>=3){
+		cout << "done" << endl;
+	}
 	// Generate a random number and see if it's less than our mutation rate.  If is, we mutate.
 	if (unif(generalRand) < fp->getMutationRate()) {
 		// Store our mutation factor
-		cout << "setting maxrange" << endl;
+		if(options.verbosity>=3){
+			cout << "setting maxrange" << endl;
+		}
 		float maxChange = abs(paramValue) * fp->getMutationFactor();
-		cout << "done" << endl;
+		if(options.verbosity>=3){
+			cout << "done" << endl;
+		}
 		// Generate a new distribution between 0 and double maxChange
 		//using param_t = uniform_real_distribution<>::param_type;
 		//param_t p{0.0, maxChange * 2};
@@ -3642,7 +3722,7 @@ void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vec
 
 void Swarm::runSGA() {
 	if (options.verbosity >= 3) {
-		cout << "Running a synchronous genetic fit" << endl;
+		cout << "Running synchronous genetic fit" << endl;
 	}
 
 	if (!checkIfFileExists(options.jobOutputDir + "1")) {
@@ -3674,19 +3754,23 @@ void Swarm::runSGA() {
 		}
 
 		string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
+		cout << "Generation: " << toString(currentGeneration - 1 ) << endl;
 		//cout << "RAQUEL: starting outputRunSummary from runSGA" << endl;
 
 		outputRunSummary(outputPath);
-		//cout << "RAQUEL: finished outputRunSummary from runSGA" << endl;
-		//cout << "RAQUEL: starting breedGenerationGA from runSGA" << endl;
-
+		if(options.verbosity>=3){
+			cout << "RAQUEL: finished outputRunSummary from runSGA" << endl;
+			//cout << "RAQUEL: starting breedGenerationGA from runSGA" << endl;
+		}
 		stopCriteria = checkStopCriteria();
 
 		if (!stopCriteria) {
 
 			breedGenerationGA();
-			cout << "RAQUEL: finished breedGenerationGA from runSGA" << endl;
+			if(options.verbosity>=3){
 
+				cout << "Finished breedGenerationGA from runSGA" << endl;
+			}
 		}
 	}
 	//cout << "RAQUEL: got out from WHILE STOP CRITERIA" << endl;
@@ -4329,12 +4413,16 @@ void Swarm::runAGA() {
 
 
 		if (!stopCriteria) {
-			cout << "RAQUEL: Started outputRunSummary();" << endl;
-			cout << "RAQUEL: Finished outputRunSummary();" << endl;
-			cout << "RAQUEL: started breedGenerationGA();" << endl;
-			breedGenerationGA();
 
-			cout << "RAQUEL: finished breedGenerationGA();" << endl;
+			if(options.verbosity>=3){
+
+				cout << "RAQUEL: started breedGenerationGA();" << endl;
+			}
+			breedGenerationGA();
+			if(options.verbosity>=3){
+
+				cout << "RAQUEL: finished breedGenerationGA();" << endl;
+			}
 		}
 	}
 
@@ -5687,7 +5775,9 @@ void Swarm::generateBestFitModel(string outputDir) {
 		options.models[mid]->outputModelWithParams(paramSet, outputDir, (options.jobName + ".bngl"), "", false, false, false, false, false);
 	}
 
-	cout << "RAQUEL: finished saving " << options.jobName << ".bngl" << endl;
+	if(options.verbosity>=3){
+		cout << "Finished saving " << options.jobName << ".bngl" << endl;
+	}
 }
 
 void Swarm::outputRunSummary(string outputPath) {
@@ -5707,14 +5797,17 @@ void Swarm::outputRunSummary(string outputPath) {
 	if (options.verbosity >=3) cout<<"Fitting finished: Writing Summary into File: " << outputPath<<endl;
 
 	ofstream outputFile;
-	cout << "RAQUEL opening file" << endl;
+	if (options.verbosity >=5){
+		cout << "RAQUEL opening file" << endl;
+	}
 	//outputFile.open(outputPath, ofstream::out);
 	//outputFile.open(outputPath);
 	//outputFile.open(outputPath, ios::out | ios::app);
 	//outputFile.open(outputPath.c_str());
 	outputFile.open(outputPath.c_str(), ios::out | ios::app);
-
-	cout << "entering if" << endl;
+	if (options.verbosity >=5){
+		cout << "entering if" << endl;
+	}
 	//int paramIndex = 0;
 
 
@@ -5731,12 +5824,15 @@ void Swarm::outputRunSummary(string outputPath) {
 
 		paramCounter = 0;
 		 for (unsigned int i=0; i< options.models.size(); i++ ){//loops through models
-			 cout<<" Model ["<<i<<"]: " << options.models.at(i)->getName()<<endl<<"              ";
+	 			if (options.verbosity >=1){
+
+	 				cout<<" Model ["<<i<<"]: " << options.models.at(i)->getName()<<endl<<"              ";
+	 			}
 			 counter = 0;
 		 	 for (auto it1 = options.models.at(i)->freeParams_.begin(); it1 != options.models.at(i)->freeParams_.end(); ++it1){//loop through parameters
-
+		 		if (options.verbosity >=3){
 		 		    cout<<" Free Parameter: " << it1->first << endl;
-
+		 		}
 		 		    if((find(paramList.begin(), paramList.end(), it1->first)) == paramList.end()){
 		 		    	paramList.insert(paramList.end(), it1->first);
 		 		    	paramCounter++;
@@ -5770,25 +5866,30 @@ void Swarm::outputRunSummary(string outputPath) {
 		 //outputFile << left << setw(16) << "Model" << left << setw(16) << "Particle" << left << setw(16) << "Fit";
  		 //cout << left << setw(16) << "Model" << left << setw(16) << "Particle" << left << setw(16) << "Fit";
 		 outputFile << left << setw(16) << "Particle";
- 		 cout << left << setw(16) << "Particle";
-
+		 if (options.verbosity >=1){
+			 cout << left << setw(16) << "Particle";
+		 }
  		 for(unsigned int i = 0; i < options.models.size(); i++){
-
+ 			if (options.verbosity >=1){
  			 cout << "Fit_M";
  			 cout << left << setw(11) << i;
-
+ 			}
  			 outputFile << "Fit_M";
  			 outputFile << left << setw(11) <<  i;
  		 }
 
 
 		 for(unsigned int i = 0; i < paramList.size(); i++){
-			 cout << left << setw(16) << paramList[i];
+			 if (options.verbosity >=1){
+				 cout << left << setw(16) << paramList[i];
+			 }
 			 outputFile << left << setw(16) << paramList[i];
 
 
 		 }
-		 cout << endl;
+		 if (options.verbosity >=1){
+			 cout << endl;
+		 }
 		 outputFile << endl;
 
 		// int foundModel;
@@ -5823,9 +5924,12 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 				 //str = ;
 				 //cout << "Model_";
 				 //cout << left << setw(10) << ri2->first;
+		 			if (options.verbosity >=1){
 
-				 cout << "Particle_";
-				 cout << left << setw(7) << ri1->first;
+		 				cout << "Particle_";
+
+		 				cout << left << setw(7) << ri1->first;
+		 			}
 
 				 outputFile << "Particle_";
 				 outputFile << left << setw(7) << ri1->first;
@@ -5842,7 +5946,10 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 					 fpid = fcalcParID(fits->second, options.models.size());
 
 					 if(fpid==pcounter){
-						 cout << left << setw(16) << fits->first;
+				 			if (options.verbosity >=1){
+
+				 				cout << left << setw(16) << fits->first;
+				 			}
 						 outputFile << left << setw(16) << fits->first;
 
 					 }
@@ -5857,7 +5964,10 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 					 for(auto ri3 = ri2->second.begin(); ri3 != ri2->second.end(); ++ri3){//loop through parameters
 
 						 if(paramList[i] == ri3->first){
-							 cout << left << setw(16) << ri3->second;
+					 			if (options.verbosity >=1){
+
+					 				cout << left << setw(16) << ri3->second;
+					 			}
 							 outputFile << left << setw(16) << ri3->second;
 
 							 foundParam = 1;
@@ -5865,13 +5975,18 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 					 }
 					 if(foundParam == 0){
-						 cout << left << setw(16) << "NA";
+				 			if (options.verbosity >=1){
+
+				 				cout << left << setw(16) << "NA";
+				 			}
 						 outputFile << left << setw(16) << "NA";
 
 					 }
 				 }
+		 			if (options.verbosity >=1){
 
-				 cout << endl;
+		 				cout << endl;
+		 			}
 				 outputFile << endl;
 
 				 break;
@@ -5881,8 +5996,10 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 
 		 if(options.constraintWeight!=0){
+	 			if (options.verbosity >=4){
 
-			 cout << "CONSTRAINT WEIGHT DIFFERENT OF ZERO: " << options.constraintWeight << endl;
+	 				cout << "CONSTRAINT WEIGHT DIFFERENT OF ZERO: " << options.constraintWeight << endl;
+	 			}
 		 //this variable will store the number of constraints fulfilled per subparticle
 		 vector<pair<int,float>> constraintsCount;
 		 int mid = 0;
@@ -6441,12 +6558,15 @@ void Swarm::killAllParticles(int tag) {
 		for(mid=0; mid < options.models.size(); mid++){//Raquel modified this
 			//sp = (p-1)*getNumModels()+ mid + 1; //Raquel replaced by code bellow
 			sp = fcalcsubParID(p, mid, options.models.size());
-			cout << "RAQUEL sending message to subPar " << sp << "message=" << tag << endl;
+
+			if(options.verbosity>=3){
+				cout << "RAQUEL sending message to subPar " << sp << "message=" << tag << endl;
+			}
 			swarmComm->sendToSwarm(0, sp, tag, false, swarmComm->univMessageSender);
 		}
 	}
 	swarmComm->univMessageSender.clear();
-	cout << "killed all particles" << endl;
+	//cout << "killed all particles" << endl;
 }
 
 
@@ -6947,8 +7067,10 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 	//function parse model, creates the file qith the contents of the model
 	//children
 	unsigned int numFinishedBreeding = 0;
+	if(options.verbosity>=3){
 
-	cout << "RAQUEL number of children received: " << children.size() << endl;
+		cout << "RAQUEL number of children received: " << children.size() << endl;
+	}
 	//later:
 	//where the parameters are comming from, full list of consolidate
 
@@ -6967,9 +7089,11 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 		}
 	}
 
-	cout << "RAQUEL swarmsize: " << options.swarmSize << endl;
-	cout << "RAQUEL children.size: " << children.size() << endl;
+	if(options.verbosity>=3){
 
+		cout << "RAQUEL swarmsize: " << options.swarmSize << endl;
+		cout << "RAQUEL children.size: " << children.size() << endl;
+	}
 	std::map<unsigned int, std::vector<double>> particleNewParamSets;
 
 	// Create the output directory for the next generation
@@ -6981,7 +7105,10 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 				outputError("Error: Couldn't create " + options.jobOutputDir + toString(currentGeneration) + " to hold next generation's output.");
 			}
 			//sleep(1);
-			cout << "Trying again to create dir" << endl;
+			if(options.verbosity>=3){
+
+				cout << "Trying again to create dir" << endl;
+			}
 		}
 	}
 	else if (options.verbosity >= 4) cout<<"Swarm::breedGenerationGA-AAA4, dir already exist\n.";
@@ -6997,8 +7124,11 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 		int last = (options.swarmSize*options.models.size()) - 1;
 
 		maxWeight = subParRankFinal[last].second;
-		cout << "WWWWWWWWWWWWWWWWWWWW subParRankFinal[last]     " << subParRankFinal[last].second << "    WWWWWWWWWWWWWWWWWWW     " << subParRankFinal[last].first << endl;
+		if(options.verbosity>=4){
 
+			cout << "WWWWWWWWWWWWWWWWWWWW subParRankFinal[last]     " << subParRankFinal[last].second << "    WWWWWWWWWWWWWWWWWWW     " << subParRankFinal[last].first << endl;
+
+		}
 
 	}else{
 		// Create an iterator to our fit list, use it to get our maximum fit value, then reset the iterator to the beginning of the list
@@ -7008,7 +7138,10 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 		advance(w, (options.swarmSize*options.models.size()) - 1);
 		maxWeight = w->first;
 		w = subswarmBestFits_.begin();
-		cout << "WWWWWWWWWWWWWWWWWWWW      " << w->first << "    WWWWWWWWWWWWWWWWWWW     " << w->second << endl;
+		if(options.verbosity>=4){
+
+			cout << "WWWWWWWWWWWWWWWWWWWW      " << w->first << "    WWWWWWWWWWWWWWWWWWW     " << w->second << endl;
+		}
 	}
 
 
@@ -7030,9 +7163,12 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 		for(auto w = subswarmBestFits_.begin(); w!=subswarmBestFits_.end();++w){
 		//for (unsigned int i = 0; i < options.swarmSize*options.models.size(); ++i) {
 			diff = maxWeight - w->first;
-			cout << "diff= " << diff << endl;
-			cout << "maxWeight = " << maxWeight << endl;
-			cout << "w->first= " << w->first << endl;
+			if(options.verbosity>=4){
+
+				cout << "diff= " << diff << endl;
+				cout << "maxWeight = " << maxWeight << endl;
+				cout << "w->first= " << w->first << endl;
+			}
 			weightSum += diff;
 			weightDiffs.insert(pair<double, unsigned int>(diff, w->second));
 			//++w;
@@ -7099,42 +7235,54 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 				}
 
 			}
+			if(options.verbosity>=3){
 
-			cout << "Sending unchanged params to " << children[childCounter - 1] << " counter: " << childCounter << endl;
+				cout << "Sending unchanged params to " << children[childCounter - 1] << " counter: " << childCounter << endl;
+			}
 			//swarmComm->sendToSwarm(0, childCounter, SEND_FINAL_PARAMS_TO_PARTICLE, false, params);
 			for (unsigned int mid = 0; mid < options.models.size(); ++mid){
 
 
 				subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
+				if(options.verbosity>=3){
 
-				cout << "Sending to SubPar: " << subParID << endl;
-				cout << "parameters to send: " << endl;
-				for(unsigned int i = 0; i<params.size(); i++){
-					cout << "'" << params[i] << "'" << endl;
+					cout << "Sending to SubPar: " << subParID << endl;
+					cout << "parameters to send: " << endl;
 
+					for(unsigned int i = 0; i<params.size(); i++){
+						cout << "'" << params[i] << "'" << endl;
+
+					}
 				}
-
 				swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, params);
 				//sleep(1);
 
 
-				while (numFinishedBreeding < (unsigned) subParID) {
-					cout << "checking for DONEBREED" << endl;
+/*				while (numFinishedBreeding < (unsigned) subParID) {
+					if(options.verbosity>=3){
+
+						cout << "checking for DONEBREED" << endl;
+					}
 					unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
 
 			//		int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
 
 					numFinishedBreeding += numMessages;
-					cout << numFinishedBreeding << endl;
-					cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
 
+					//cout << numFinishedBreeding << endl;
+					if(options.verbosity>=3){
+
+						cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
+					}
 				}
+*/
 			}
 			++parent;
 			++childCounter;
+			if(options.verbosity>=3){
 
-			cout << "Raquel: (keep parents loop) Sent " << childCounter << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
-
+				cout << "Raquel: (keep parents loop) Sent " << childCounter << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
+			}
 		}
 
 	}
@@ -7178,7 +7326,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 			retryCount++;
 			if (retryCount > options.maxRetryDifferentParents) {
 				if (options.verbosity >= 1) {
-					cout << "Tried too many time to select different parents for breeding. Selecting the first two." << endl;
+					cout << "Tried too many times to select different parents for breeding. Selecting the first two." << endl;
 				}
 
 				// Get reverse iterator to the weight map (best parents are at the end)
@@ -7186,23 +7334,33 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 
 				// The weight map is sorted, so the first element will be the best fit
 				p1 = w->second;
-cout << "1: " << w->second;
+				if(options.verbosity>=3){
 
+					cout << "1: " << w->second;
+				}
 				// Increment the map iterator until we find a fit value that isn't ours
 				while (p1 == p2 && w != weightDiffs.rend()) {
 					++w;
 					p2 = w->second;
-cout << "tried to set p2 as " << w->second;
+
+					if(options.verbosity>=3){
+
+						cout << "tried to set p2 as " << w->second;
+					}
 				}
 
 				break;
 			}
 			p2 = pickWeighted(weightSum, weightDiffs, options.extraWeight);
-cout << "retry2: " << p2 << endl;
+			if(options.verbosity>=3){
+
+				cout << "retry2: " << p2 << endl;
+			}
 		}
+		if(options.verbosity>=3){
 
-cout << "chose " << p1 << " and " << p2 << endl;
-
+			cout << "chose " << p1 << " and " << p2 << endl;
+		}
 		auto p1It = allGenFits.begin();
 		advance(p1It, p1);
 		vector<string> p1Vec;
@@ -7220,15 +7378,22 @@ cout << "chose " << p1 << " and " << p2 << endl;
 
 		for (auto p = this->getFreeParams_().begin(); p != this->getFreeParams_().end(); ++p) {//for (auto p = options.model->getFreeParams_().begin(); p != options.model->getFreeParams_().end(); ++p) {
 			string p1Param, p2Param;
-cout << "start working on free param["<<pi<<"]: " << p->first << endl;
+			if(options.verbosity>=3){
+
+				cout << "start working on free param["<<pi<<"]: " << p->first << endl;
+			}
 			p1Param = p1Vec[pi];
 			p2Param = p2Vec[pi];
+			if(options.verbosity>=3){
 
-cout << "p1: " << p1Param << endl;
-cout << "p2: " << p2Param << endl;
+				cout << "p1: " << p1Param << endl;
+				cout << "p2: " << p2Param << endl;
+			}
 			//Raquel: added
 			if(p1Param.find_first_not_of("-01234567890.") != string::npos && p2Param.find_first_not_of("-01234567890.") != string::npos){
-				cout << "no more parameters, done" << endl;
+				if(options.verbosity>=3){
+					cout << "no more parameters, done" << endl;
+				}
 				break;
 			}
 
@@ -7236,17 +7401,29 @@ cout << "p2: " << p2Param << endl;
 
 				// TODO: Make sure individual mutation rates work
 				if (hasMutate && p->second->isHasMutation()) {
-cout << "about to mutate" << endl;
+
+					if(options.verbosity>=3){
+						cout << "about to mutate" << endl;
+					}
 				//Raquel: fixed problem when one model has less parameters then de other, the stod function returned an error
 				if(p1Param.find_first_not_of("-01234567890.") != string::npos){
-					cout << "p1: " << p1Param << " is not a number, skiping..." << endl;
+					if(options.verbosity>=3){
+
+						cout << "p1: " << p1Param << " is not a number, skiping..." << endl;
+					}
 				}else{
 					//Raquel:  conversion from string to number worked
 					p1Param = mutateParamGA(p->second, stod(p1Param));
-					cout << p->second << " " << stod(p1Param) << endl;
+					if(options.verbosity>=3){
+
+						cout << p->second << " " << stod(p1Param) << endl;
+					}
 				}
 				if(p2Param.find_first_not_of("-01234567890.") != string::npos){
-					cout << "p2: " << p2Param << " is not a number, skiping..." << endl;
+					if(options.verbosity>=3){
+
+						cout << "p2: " << p2Param << " is not a number, skiping..." << endl;
+					}
 				}else{
 					//Raquel: conversion from string to number worked
 					p2Param = mutateParamGA(p->second, stod(p2Param));
@@ -7257,18 +7434,24 @@ cout << "about to mutate" << endl;
 				//p1Param = mutateParamGA(p->second, stod(p1Param));
 				//p2Param = mutateParamGA(p->second, stod(p2Param));
 
+					if(options.verbosity>=3){
 
-cout << "mutated" << endl;
+						cout << "mutated" << endl;
+					}
 
 				}
+				if(options.verbosity>=3){
 
 					cout << "swapping p1: " << p1Param << " with p2: " << p2Param << endl;
+				}
 					if(p1Param.find_first_not_of("-01234567890.") == string::npos && p2Param.find_first_not_of("01234567890.") == string::npos ){
 
 						c1Vec.push_back(p2Param);
 						particleNewParamSets[children[childCounter - 1]].push_back(stod(p2Param));
+						if(options.verbosity>=3){
 
-						cout << "c1 final: " << p2Param << endl;
+							cout << "c1 final: " << p2Param << endl;
+						}
 						c2Vec.push_back(p1Param);
 						particleNewParamSets[children[childCounter]].push_back(stod(p1Param));
 					}else{cout << "Error p2param or p1Param are not numbers" << endl;}
@@ -7278,117 +7461,151 @@ cout << "mutated" << endl;
 
 				c1Vec.push_back(p1Vec[pi]);
 				particleNewParamSets[children[childCounter - 1]].push_back(stod(p1Vec[pi]));
-cout << "c1 final: " << p1Vec[pi] << endl;
+				if(options.verbosity>=3){
+
+					cout << "c1 final: " << p1Vec[pi] << endl;
+				}
 				}else{cout << "Error p2param or p1Param are not numbers" << endl;}
 				if(p2Param.find_first_not_of("-01234567890.") == string::npos){
 
 				c2Vec.push_back(p2Vec[pi]);
 				particleNewParamSets[children[childCounter]].push_back(stod(p2Vec[pi]));
 				}else{cout << "Error p2param or p1Param are not numbers" << endl;}
-cout << "c1 final: " << p1Vec[pi] << "pushed back."<<endl;
+				if(options.verbosity>=3){
+
+					cout << "c1 final: " << p1Vec[pi] << "pushed back."<<endl;
+				}
 			}
 			++pi;
-cout << "free param id:" << pi << "."<<endl;
+			if(options.verbosity>=3){
+
+				cout << "free param id:" << pi << "."<<endl;
+			}
 		}
+		if(options.verbosity>=3){
 
-cout << "sending to " << children[childCounter - 1] << endl;
-
+			cout << "sending to " << children[childCounter - 1] << endl;
+		}
 	for (unsigned int mid = 0; mid < options.models.size(); ++mid){
 
 
 		subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
-		cout << "Sending to SubPar: " << subParID << endl;
+		if(options.verbosity>=3){
 
-		for(unsigned int i = 0; i<c1Vec.size(); i++){
-			cout << "'" << c1Vec[i] << "'" << endl;
+			cout << "Sending to SubPar: " << subParID << endl;
 
+			for(unsigned int i = 0; i<c1Vec.size(); i++){
+				cout << "'" << c1Vec[i] << "'" << endl;
+
+			}
 		}
-
 
 		swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, c1Vec);
 		//sleep(1);
 
 
-		while (numFinishedBreeding < (unsigned) subParID) {
-			cout << "checking for DONEBREED" << endl;
+/*		while (numFinishedBreeding < (unsigned) subParID) {
+			if(options.verbosity>=3){
+
+				cout << "checking for DONEBREED" << endl;
+			}
 			unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
 
 	//		int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
 
 			numFinishedBreeding += numMessages;
-			cout << numFinishedBreeding << endl;
-			cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
+			//cout << numFinishedBreeding << endl;
+			if(options.verbosity>=3){
+
+				cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
+			}
 
 		}
-
+*/
 	}
 
 //		swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c1Vec);
 		++childCounter;
-		cout << "Raquel: (mutate loop1)  Sent " << childCounter << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
+		if(options.verbosity>=3){
 
+			cout << "Raquel: (mutate loop1)  Sent " << childCounter << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
+		}
 		// Make sure we don't send to too many parents (only relevant in last breeding with odd number of parents)
 		if ( !( (fmod(parentPairs * 2, 2)) == 1 && parentPairs - i == 0.5 ) ) {
-cout << "sending to " << children[childCounter - 1] << endl;
+			if(options.verbosity>=3){
 
+				cout << "sending to " << children[childCounter - 1] << endl;
+			}
 	for (unsigned int mid = 0; mid < options.models.size(); ++mid){
 
 
 		subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
-		cout << "Sending to SubPar: " << subParID << endl;
+		if(options.verbosity>=3){
 
-		for(unsigned int i = 0; i<c2Vec.size(); i++){
-			cout << "'" << c2Vec[i] << "'" << endl;
+			cout << "Sending to SubPar: " << subParID << endl;
 
+			for(unsigned int i = 0; i<c2Vec.size(); i++){
+				cout << "'" << c2Vec[i] << "'" << endl;
+
+			}
 		}
-
 		swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
 		//sleep(1);
 
+		if(options.verbosity>=3){
 
-		cout << "waiting for " << subParID << endl;
-
+			cout << "waiting for " << subParID << endl;
+		}
 		//cout << "RAQUEL: children size " << children.size() << endl;
 		//cout << "RAQUEL: swarm size" << options.swarmSize << endl;
 		//cout << "RAQUEL: failed particles " << failedParticles_.size() << endl;
 		//subParID = 1+mid+(children[childCounter - 1]-1)*nModels;
 
-			while (numFinishedBreeding < (unsigned) subParID) {
-				cout << "checking for DONEBREED" << endl;
+/*			while (numFinishedBreeding < (unsigned) subParID) {
+				if(options.verbosity>=3){
+
+					cout << "checking for DONEBREED" << endl;
+				}
 				unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
 
 		//		int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
 
 				numFinishedBreeding += numMessages;
-				cout << numFinishedBreeding << endl;
-				cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
+				//cout << numFinishedBreeding << endl;
+				if(options.verbosity>=3){
 
+					cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
+				}
 			}
-
+*/
 	}
 	//		swarmComm->sendToSwarm(0, children[childCounter - 1], SEND_FINAL_PARAMS_TO_PARTICLE, false, c2Vec);
 			++childCounter;
-			cout << "Raquel: (mutate loop2) Sent " << childCounter-1 << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
+			if(options.verbosity>=3){
 
+				cout << "Raquel: (mutate loop2) Sent " << childCounter-1 << " children to Swarm with SEND_FINAL_PARAMS_TO_PARTICLE" << endl;
+			}
 
 
 		}
 
-cout << "The loop completed for parentpairs:" << i+1<<"/"<<parentPairs<<"."<< endl;
+		if(options.verbosity>=3){
+
+			cout << "The loop completed for parentpairs:" << i+1<<"/"<<parentPairs<<"."<< endl;
 
 
-cout << "c1Vec:" << endl;
-for(unsigned int veci = 0; veci < c1Vec.size(); veci++){
-	cout << c1Vec[veci] << endl;
+			cout << "c1Vec:" << endl;
+			for(unsigned int veci = 0; veci < c1Vec.size(); veci++){
+				cout << c1Vec[veci] << endl;
 
-}
+			}
 
-cout << "c2Vec:" << endl;
-for(unsigned int veci = 0; veci < c2Vec.size(); veci++){
-	cout << c2Vec[veci] << endl;
+			cout << "c2Vec:" << endl;
+			for(unsigned int veci = 0; veci < c2Vec.size(); veci++){
+				cout << c2Vec[veci] << endl;
 
-}
-
+			}
+		}
 	}//	for (unsigned int i = 0; i < parentPairs; ++i) {
 
 
@@ -7404,10 +7621,27 @@ for(unsigned int veci = 0; veci < c2Vec.size(); veci++){
 		particleCurrParamSets_[child->first] = child->second;
 	}
 
+	while (numFinishedBreeding < (unsigned) subParID) {
+		if(options.verbosity>=3){
 
+			cout << "checking for DONEBREED" << endl;
+		}
+		unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
 
-cout << "done?" << endl;
+//		int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
 
+		numFinishedBreeding += numMessages;
+		//cout << numFinishedBreeding << endl;
+		if(options.verbosity>=3){
+
+			cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
+		}
+	}
+
+	if(options.verbosity>=3){
+
+		cout << "done?" << endl;
+	}
 
 //cout<<"Swarm::breedGenerationGA-AAA10\n.";
 }
@@ -7477,7 +7711,9 @@ std::vector<unsigned int> Swarm::update_finished_running_particles(){
 
 		maxSubPID=0;
 		for (std::set<unsigned int>::iterator maxIndex = finishedSubParticles_.begin(); maxIndex!=finishedSubParticles_.end(); ++maxIndex){
-			cout<<*maxIndex<<", ";
+			if (options.verbosity >= 3) {
+				cout<<*maxIndex<<", ";
+			}
 			if ((*maxIndex) > maxSubPID)
 				maxSubPID = * maxIndex;
 		}
@@ -7487,8 +7723,9 @@ std::vector<unsigned int> Swarm::update_finished_running_particles(){
 			return NewlyFinishedParticles;
 		}else{
 			maxPID = fcalcParID(maxSubPID, nModels);
-			cout<<"Updating finished particles. Max subParticle: " <<  maxSubPID<<"  Max Particle:" << maxPID <<endl;
-
+			if (options.verbosity >= 3) {
+				cout<<"Updating finished particles. Max subParticle: " <<  maxSubPID<<"  Max Particle:" << maxPID <<endl;
+			}
 
 			bool allfinished;
 			for (i = 1; i <= maxPID; i++){
@@ -7499,22 +7736,27 @@ std::vector<unsigned int> Swarm::update_finished_running_particles(){
 						allfinished = false;
 				}
 				if (allfinished){
-					cout<< "Particle: " << i<<" is completed. Adding to the list"<<endl;
+					if (options.verbosity >= 3) {
+						cout<< "Particle: " << i<<" is completed. Adding to the list"<<endl;
+					}
 					if (finishedParticles_.find(i) == finishedParticles_.end()){
 						finishedParticles_.insert(i);
 						NewlyFinishedParticles.push_back(i);
 					}
 					else{
-						cout<< "Particle: " << i<<" already included in the list of finished particles."<<endl;
+						if (options.verbosity >= 3) {
+							cout<< "Particle: " << i<<" already included in the list of finished particles."<<endl;
+						}
 					}
 				}
 
 			}
 		}
 	}
-	cout << "updated number of finished susb" << finishedSubParticles_.size();
-	cout << "updated number of new finished subs" << NewlyFinishedParticles.size();
-
+	if (options.verbosity >= 3) {
+		cout << "updated number of finished susb" << finishedSubParticles_.size();
+		cout << "updated number of new finished subs" << NewlyFinishedParticles.size();
+	}
 
 	return NewlyFinishedParticles;
 }
@@ -7565,15 +7807,17 @@ void Swarm::update_cur_particle_params(unsigned int pID, unsigned int mid, bool 
 void Swarm::update_fitCalcs(){
 
 	//Raquel
-
-	cout<<"later develop: calculate the particle fitting based on subparticle results"<<endl; //mypause();
-
+	if(options.verbosity >=5){
+		cout<<"later develop: calculate the particle fitting based on subparticle results"<<endl; //mypause();
+	}
 
 
 }
 
 string Swarm::order_params(string paramsString, unsigned int mid){
-	cout<<"Not developed yet. Reorder the string containing the Free parameter values based on the order of free parameters in model:"<<mid<<endl<<endl;
+	if(options.verbosity >=5){
+		cout<<"Not developed yet. Reorder the string containing the Free parameter values based on the order of free parameters in model:"<<mid<<endl<<endl;
+	}
 	return paramsString;
 }
 
@@ -9494,7 +9738,6 @@ string Swarm::generateMPICommand(string cmd) {
 		newCmd += "-hostfile " + options.hostfile + " ";
 	}
 #ifdef VER2
-	cout<<"Swarm::generateMPICommand may need some modifications 654\n";
 	newCmd += "-tag-output -np 1 " + cmd + " load " + sConf_[0] + " : -nooversubscribe ";
 #else
 	newCmd += "-tag-output -np 1 " + cmd + " load " + sConf_ + " : -nooversubscribe ";
@@ -9503,7 +9746,6 @@ string Swarm::generateMPICommand(string cmd) {
 		newCmd += "-hostfile " + options.hostfile + " ";
 	}
 #ifdef VER2
-	cout<<"Swarm::generateMPICommand may need some modifications 654\n";
 	newCmd += "-tag-output -np " + toString(options.swarmSize) + " " + cmd + " particle 0 run " + sConf_[0];
 #else
 	newCmd += "-tag-output -np " + toString(options.swarmSize) + " " + cmd + " particle 0 run " + sConf_;

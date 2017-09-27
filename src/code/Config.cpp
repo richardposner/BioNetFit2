@@ -22,7 +22,7 @@ Config::Config(string configFile) {
 	swarm_ = 0;
 	verbose=false; //razi added
 	configPath_ = convertToAbsPath(configFile);
-	cout << "*** configFile: " << configPath_ << endl;
+	//cout << "*** configFile: " << configPath_ << endl;
 }
 
 
@@ -112,7 +112,9 @@ Swarm * Config::createSwarmFromConfig () {
 
 	// Add our model file to the swarm
 	if(pairs.find("model") != pairs.end()) {
-		cout << "Processing models include:" << pairs.find("model")->second<< endl;
+		if(swarm_->options.verbosity >= 3 ){
+			cout << "Processing models include:" << pairs.find("model")->second<< endl;
+		}
 #ifdef VER2
 		
 

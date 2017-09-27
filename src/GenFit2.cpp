@@ -30,29 +30,23 @@ int main(int argc, char *argv[]) {
 	string expFile; //razi : These files are not required for ordinary runs. Included as a reference for artificial simulation i order to generate gdat files from exp file by adding noise !!!!
 	//string bnglFile;
 
-
-
-
-
-	cout<<"This program is under test and modification by A. Razi: Ver:2.0!!!"<<endl;
-
 	if (argc < 2){
 		cout <<"Please provide enough information, type BioNetFit -h for help. I am quitting .... \n";
 		return 0;
 	}
-    cout << "1" << endl;
+    //cout << "1" << endl;
 	map <string, vector <string>> cmdLine;
 	map <string, vector <string>>::iterator it;
 
-	cout << "2" << endl;
+	//cout << "2" << endl;
 
 	if (readCommandLine(argc, const_cast<const char **> (argv), cmdLine)==0){
 		cout<<"Invalid command line format, quitting ..."<<endl;
 		return 0;
 	}
-
-	cout << "Parsed command line" << endl;
-
+	if(verbose){
+		cout << "Parsed command line" << endl;
+	}
 /*
 	for(it=cmdLine.begin(); it!=cmdLine.end(); it++){
 		cout<<"Found Switch: "<< it->first<<endl;
@@ -158,15 +152,17 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	cout << "Finished command line argument parsing" << endl;
-
+	if(verbose){
+		cout << "Finished command line argument parsing" << endl;
+	}
 
 	if ((type != "particle") && (pID!=0)){
 		cout<<"particle id entered, but type is not set to particle, I am quitting ..."<<endl;	return 0;
 	}
 
-	cout << "Finished testing for errors" << endl;
-
+	if(verbose){
+		cout << "Finished testing for errors" << endl;
+	}
 
 	if (verbose){
 		cout <<endl<< "************************************************************************************************"<<endl;
@@ -195,8 +191,9 @@ int main(int argc, char *argv[]) {
  		cout << "************************************************************************************************"<<endl;
 	}
 
-	cout << "going through config files " << endl;
-
+	if(verbose){
+		cout << "going through config files " << endl;
+	}
 	//if(configFiles.size()!=1){
 	//	cout<<"Error: More than one config file is not supported ...."<<endl;
 	//	return 0;
@@ -252,7 +249,9 @@ int main(int argc, char *argv[]) {
 			s->currentGeneration = 1;
 
 			//if(verbose) cout<<"Execution path to be set to: "<< mainpath()<<endl;
-			cout << "argv[0]: " << argv[0] << ", absolute: " << execPath << endl;
+			if(verbose){
+				cout << "argv[0]: " << argv[0] << ", absolute: " << execPath << endl;
+			}
 			s->setExePath(execPath); //mainpath()+"/src/BioNetFit2"
 
 			s->isMaster = true;
@@ -429,9 +428,9 @@ int main(int argc, char *argv[]) {
 	// We are a particle
 	else if (type == "particle"){
 
-
-cout<<"1-GenFit:Particle:   started.... Reading sconfig file:"<<configFile <<endl;
-
+		if (verbose) {
+			cout<<"1-GenFit:Particle:   started.... Reading sconfig file:"<<configFile <<endl;
+		}
 		// Try to open the serialized swarm
 		while(1) {
 			// Create and input archive
@@ -448,9 +447,9 @@ cout<<"1-GenFit:Particle:   started.... Reading sconfig file:"<<configFile <<end
 				break;
 			}
 		}
-
-cout<<"2-GenFit:Particle:   File opened ...\n"<<endl;
-
+		if (verbose) {
+			cout<<"2-GenFit:Particle:   File opened ...\n"<<endl;
+		}
 		//in Particle mode, the model is provided as serialized config file
 
 		if (!expFile.empty()){
@@ -459,7 +458,7 @@ cout<<"2-GenFit:Particle:   File opened ...\n"<<endl;
 				cout << "Exp File: "<<expFile<<" does not exist, I am quitting"<<endl; return 0;
 			}
 			if (verbose) {cout<<"Particle: Exp file is: " <<expFile <<". Enter a number \n";} //mypause();
-		}else{cout<<"No Exp file is provided\n";}
+		}else{if(verbose){cout<<"No Exp file is provided\n";}}
 
 
 		//razi: extract particle Id from subparticle id and number of models M,
@@ -469,45 +468,54 @@ cout<<"2-GenFit:Particle:   File opened ...\n"<<endl;
 		if (s->options.clusterSoftware == "BNF2mpi"){
 			subParID = s->swarmComm->getRank();
 		}
-		cout << "RRR subParID " << subParID << endl;
+		if(s->options.verbosity >= 3){
+			cout << "RRR subParID " << subParID << endl;
+		}
 		mid = fcalcMID(subParID, s->getNumModels());
 		pID = fcalcParID(subParID,s->getNumModels());
 
 		s->setDefaultModelIndex(mid);
 		if (s->options.verbosity >= 3) {cout<<"Slave:  Working on Particle:"<< pID<<"   subParticle:" << subParID<< "   Model id:"<< mid << "  Model file:"<< s->getModelName(mid,false)<<endl;}
-
-cout<<"setting Exp file:"<< expFile <<" for model id:"<<mid <<endl;
+		if (s->options.verbosity >= 3) {
+			cout<<"setting Exp file:"<< expFile <<" for model id:"<<mid <<endl;
+		}
 		s->setExpPath("", expFile,mid); //the problem is here--> s->addExp() --> new Data(path, this, true) --> Data::parseData --> the exp file in not in the action list
-
-		s->printDetails();
-
+		if(verbose || s->options.verbosity >= 1){
+			s->printDetails();
+		}
 		s->isMaster = false;
 
 		//support cygwin
 		s->setExePath(execPath);
 		//cout<<"3-GenFit:Particle:   Exe path is set to : "<<(mainpath()+"/bin/BioNetFit")<<endl;
 		//was s->setExePath(convertToAbsPath(argv[0]));
-
-cout<<"4-GenFit:Particle:   init command"<<endl;
+		if (verbose) {
+			cout<<"4-GenFit:Particle:   init command"<<endl;
+		}
 		//s->initComm();
 		//subParID = s->swarmComm->getRank();
-cout << "RRR supar" << subParID << endl;
+		if (s->options.verbosity >= 3) {
+			cout << "RRR supar" << subParID << endl;
+		}
 		if (pID == 0) {
 			pID = s->swarmComm->getRank();
 		}
-		cout << " pID = s->swarmComm->getRank(); result: " << pID << endl;
-
+		if (s->options.verbosity >= 3) {
+			cout << " pID = s->swarmComm->getRank(); result: " << pID << endl;
+		}
 		s->initRNGS(s->options.seed + pID);
-
-cout<<"5-GenFit:Particle:   create particle."<<endl;
-
+		if (verbose) {
+			cout<<"5-GenFit:Particle:   create particle."<<endl;
+		}
 
 
 
 //cout<<"5-1-GenFit:Particle..."<<endl;  mypause();
 		Particle *p = s->createParticle(pID);
 //cout<<"5-2-GenFit:Particle..."<<endl;  mypause();
-		cout<<"Particle mode: The model is:"<< s->options.models.at(mid)->getName()<<endl;
+		if (s->options.verbosity >= 3) {
+			cout<<"Particle mode: The model is:"<< s->options.models.at(mid)->getName()<<endl;
+		}
 //cout<<"5-3-GenFit:Particle..."<<endl;  mypause();
 
 
@@ -516,27 +524,36 @@ cout<<"5-GenFit:Particle:   create particle."<<endl;
 
 //cout<<"5-4-GenFit:Particle..."<<endl;  mypause();
 		subParticle * sp = new subParticle(p, mid, subParID); //razi, was wrong subParticle * sp = new subParticle(p, subParId);
+
 		if(verbose){cout << "Launched subPar: " << sp << endl;}
 //cout<<"5-5-GenFit:Particle..."<<endl;  mypause();
 
 
 
 		if (s->currentGeneration == 1) {
-cout<<"6-GenFit:Particle:   generate params."<<endl; mypause();
+			if (s->options.verbosity >= 1) {
+				cout<<"6-GenFit:Particle:   generate params."<<endl;
+			}
 			p->generateParams();
-cout<<"6-2GenFit:Particle:   generate params."<<endl; mypause();
+			if (s->options.verbosity >= 1) {
+				cout<<"6-2GenFit:Particle:   generate params."<<endl;
+			}
 		}
 
 		if (s->options.useCluster) {
 			setenv("OMPI_MCA_mpi_warn_on_fork","0",1);
 		}
-
-cout<<"7-GenFit:Particle:   doParticle started."<<endl; mypause();
+		if (s->options.verbosity >= 1) {
+			cout<<"7-GenFit:Particle:   doParticle started."<<endl;
+		}
 		p->doParticle(mid);
-cout<<"8-GenFit:Particle:   doParticle finished."<<endl; mypause();
+		if (s->options.verbosity >= 1) {
+			cout<<"8-GenFit:Particle:   doParticle finished."<<endl;
+		}
 	}
-
-cout<<"GenFit: Fitting Finished Kill Pheromones."<<endl;
+	if (s->options.verbosity >= 1) {
+		cout<<"GenFit: Fitting Finished Kill Pheromones."<<endl;
+	}
 	s->swarmComm->~Pheromones();
 	//if (verbose) s->printDetails();
 	return 0;

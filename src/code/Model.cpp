@@ -164,9 +164,9 @@ void Model::parseModel() {
 }
 
 void Model::outputModelWithParams(map<string, double> params, string path, string filename, string suffix, bool stopAtNetGen=false, bool onlyActions=false, bool netAndBngl=false, bool usePipe=false, bool isNetFile=false) {
-
-	cout << "RAQUEL outputmodel path " << path << " filename: " << filename << endl;
-
+	if (swarm_->options.verbosity >= 3) {
+		cout << "RAQUEL outputmodel path " << path << " filename: " << filename << endl;
+	}
 	//Raquel added this check step to make sure that the simulation path really exists
 	if (!checkIfFileExists(path)) {
 		runCommand("mkdir " + path);
@@ -191,10 +191,14 @@ void Model::outputModelWithParams(map<string, double> params, string path, strin
 
 	if (!usePipe) {
 		unlink(fullPath.c_str());
-		cout << "RAQUEL outputmodel inside !usepipe " << filename  << endl;
+		if (swarm_->options.verbosity >= 3) {
+			cout << "RAQUEL outputmodel inside !usepipe " << filename  << endl;
+		}
 		ofstream outFile;
 		outFile.open(fullPath);
-		cout << "RAQUEL outputmodel fullPath is: " << fullPath << endl;
+		if (swarm_->options.verbosity >= 3) {
+			cout << "RAQUEL outputmodel fullPath is: " << fullPath << endl;
+		}
 		boost::smatch matches;
 
 		if (outFile.is_open()) {
@@ -202,7 +206,9 @@ void Model::outputModelWithParams(map<string, double> params, string path, strin
 				bool inParameterBlock = true;
 				int numParamsToReplace = params.size();
 				int numReplacedParams = 0;
-				cout << "Raquel param size is: " << params.size() << endl;
+				if (swarm_->options.verbosity >= 3) {
+					cout << "Raquel param size is: " << params.size() << endl;
+				}
 				for (auto line = netContents_.begin(); line != netContents_.end(); ++line) {
 					if (*line == "end parameters" || numReplacedParams == numParamsToReplace) {
 						inParameterBlock = false;
