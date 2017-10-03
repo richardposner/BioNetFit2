@@ -794,19 +794,19 @@ void Config::checkConsistency() {
 	}
 
 	if (swarm_->options.fitType == "de") {
-		if (swarm_->options.mutateType == 1 && (swarm_->options.swarmSize / swarm_->options.numIslands) <= 2 ) {
+		if (swarm_->options.mutateType == 1 && (swarm_->options.swarmSize / swarm_->options.numIslands) < 2 ) {
 			swarm_->outputError("Error: mutate_type=1 requires at least 2 members per island. Quitting.");
 		}
 
-		if (swarm_->options.mutateType == 2 && (swarm_->options.swarmSize / swarm_->options.numIslands) <= 4 ) {
+		if (swarm_->options.mutateType == 2 && (swarm_->options.swarmSize / swarm_->options.numIslands) < 4 ) {
 			swarm_->outputError("Error: mutate_type=2 requires at least 4 members per island. Quitting.");
 		}
 
-		if (swarm_->options.mutateType == 3 && (swarm_->options.swarmSize / swarm_->options.numIslands) <= 3 ) {
+		if (swarm_->options.mutateType == 3 && (swarm_->options.swarmSize / swarm_->options.numIslands) < 3 ) {
 			swarm_->outputError("Error: mutate_type=3 requires at least 3 members per island. Quitting.");
 		}
 
-		if (swarm_->options.mutateType == 4 && (swarm_->options.swarmSize / swarm_->options.numIslands) <= 5 ) {
+		if (swarm_->options.mutateType == 4 && (swarm_->options.swarmSize / swarm_->options.numIslands) < 5 ) {
 			swarm_->outputError("Error: mutate_type=4 requires at least 5 members per island. Quitting.");
 		}
 

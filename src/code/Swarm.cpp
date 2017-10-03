@@ -1156,8 +1156,9 @@ void Swarm::updateParticleWeights() {
 	for (int p = 1; p <= options.swarmSize; ++p) {
 		particleWeights_[p] = calcParticleWeight(p);
 	}
-
-	cout << "done here" << endl;
+	if (options.verbosity >= 3) {
+		cout << "done here" << endl;
+	}
 }
 
 double Swarm::calcWeightedAveragePosition() {
@@ -1466,7 +1467,9 @@ vector<vector<unsigned int>> Swarm::generateTopology(unsigned int populationSize
 	return allParticles;
 
 	double t = tmr.elapsed();
-	cout << "Particle creation took " << t << " seconds" << endl;
+	if (options.verbosity >= 3) {
+		cout << "Particle creation took " << t << " seconds" << endl;
+	}
 }
 
 void Swarm::processParticlesPSO(vector<unsigned int> particles, bool newFlight) {
@@ -1521,11 +1524,13 @@ void Swarm::processParticlesPSO(vector<unsigned int> particles, bool newFlight) 
 
 		}
 		else if (options.psoType == "bbpso") {
-			cout << "RAQUEL before calcParticlePosBBPSO" << endl;
-
+			if (options.verbosity >= 3) {
+				cout << "RAQUEL before calcParticlePosBBPSO" << endl;
+			}
 			particleCurrParamSets_[*particle] = calcParticlePosBBPSO(*particle);
-			cout << "RAQUEL after calcParticlePosBBPSO" << endl;
-
+			if (options.verbosity >= 3) {
+				cout << "RAQUEL after calcParticlePosBBPSO" << endl;
+			}
 		}
 		else if (options.psoType == "bbpsoexp") {
 			particleCurrParamSets_[*particle] = calcParticlePosBBPSO(*particle, true);
@@ -1571,16 +1576,19 @@ void Swarm::processParticlesPSO(vector<unsigned int> particles, bool newFlight) 
 
 		int sp = 0;
 		//Raquel: had to change the line above to send the message to subparticles
-
-		cout << "RAQUEL total models " << options.models.size() << endl;
+		if (options.verbosity >= 3) {
+			cout << "RAQUEL total models " << options.models.size() << endl;
+		}
 		for(unsigned int i = 0; i < options.models.size(); i++){
 
 			sp = fcalcsubParID(*particle, i, options.models.size());
-
-			cout << "RAQUEL: sending message to subPar: " << sp << " model " << i << " particle " << *particle << endl;
+			if (options.verbosity >= 3) {
+				cout << "RAQUEL: sending message to subPar: " << sp << " model " << i << " particle " << *particle << endl;
+			}
 			swarmComm->sendToSwarm(0, sp, SEND_FINAL_PARAMS_TO_PARTICLE, false, nextPositionsStr);
-			cout << "RAQUEL: sent message to subPar: " << sp << endl;
-
+			if (options.verbosity >= 3) {
+				cout << "RAQUEL: sent message to subPar: " << sp << endl;
+			}
 
 			subparticleCurrParamSets_[*particle][i] = nextPositionsDouble;
 
@@ -1610,22 +1618,28 @@ vector<double> Swarm::calcParticlePosPSO(unsigned int particle) {
 	// This vector holds the new positions to be sent to the particle
 	vector<double> nextPositions(particleCurrParamSets_.at(particle).size());
 	vector<double> nextVelocities(particleCurrParamSets_.at(particle).size());
-
-	cout << "RAQUEL getting best neighbor inside calcParticlePosPSO" << endl;
+	if (options.verbosity >= 4) {
+		cout << "RAQUEL getting best neighbor inside calcParticlePosPSO" << endl;
+	}
 	// Get the best positions for particle's neighborhood
 	vector<double> neighborhoodBestPositions = getNeighborhoodBestPositions(particle);
-	cout << "RAQUEL done best neighbor inside calcParticlePosPSO" << endl;
+	if (options.verbosity >= 4) {
+		cout << "RAQUEL done best neighbor inside calcParticlePosPSO" << endl;
+	}
 
 	int i = 0;
 
 	//cout << "inertia: " << options.inertia << endl;
 	//cout << "cognitive: " << options.cognitive << endl;
 	//cout << "social: " << options.social << endl << endl;
-	cout << "RAQUEL entering for loop particleCurrParamSets_ " << endl;
-
+	if (options.verbosity >= 4) {
+		cout << "RAQUEL entering for loop particleCurrParamSets_ " << endl;
+	}
 	// For each parameter in the current parameter set
 	for (auto param = particleCurrParamSets_.at(particle).begin(); param != particleCurrParamSets_.at(particle).end(); ++param) {
-		cout << "before " << *param << endl;
+		if (options.verbosity >= 3) {
+			cout << "before " << *param << endl;
+		}
 		// Set up formula variables
 		double currVelocity = options.inertia * particleParamVelocities_.at(particle)[i];
 		//cout << "cv: " << currVelocity << endl;
@@ -1636,7 +1650,9 @@ vector<double> Swarm::calcParticlePosPSO(unsigned int particle) {
 		double personalBestPos = particleBestParamSets_.at(particle)[i];
 		//cout << "pb: " << personalBestPos << endl;
 		double currPos = particleCurrParamSets_.at(particle)[i];
-		cout << "cp: " << currPos << endl;
+		if (options.verbosity >= 3) {
+			cout << "cp: " << currPos << endl;
+		}
 		//cout << "nbp: " << neighborhoodBestPositions[i] << endl;
 		// Set velocity
 
@@ -1644,8 +1660,9 @@ vector<double> Swarm::calcParticlePosPSO(unsigned int particle) {
 		// Also, according to Eberhart and Shi, constriction factor + velocity clamping
 		// results in fastest convergence
 		double nextVelocity = (options.inertia * currVelocity) + options.cognitive * r1 * (personalBestPos - currPos) + options.social * r2 * (neighborhoodBestPositions[i] - currPos);
-		cout << "nv: " << nextVelocity << endl;
-
+		if (options.verbosity >= 3) {
+			cout << "nv: " << nextVelocity << endl;
+		}
 		// Set velocity
 		particleParamVelocities_.at(particle)[i] = nextVelocity;
 		// Set position
@@ -1658,13 +1675,15 @@ vector<double> Swarm::calcParticlePosPSO(unsigned int particle) {
 			particleParamVelocities_.at(particle)[i] = 0;
 		}
 		 */
-
-		cout << "after " << nextPositions[i] << endl << endl;
+		if (options.verbosity >= 3) {
+			cout << "after " << nextPositions[i] << endl << endl;
+		}
 		++i;
 	}
 
-	cout << "RAQUEL done for loop particleCurrParamSets_ " << endl;
-
+	if (options.verbosity >= 3) {
+		cout << "RAQUEL done for loop particleCurrParamSets_ " << endl;
+	}
 
 	return nextPositions;
 }
@@ -1684,14 +1703,19 @@ vector<double> Swarm::calcParticlePosBBPSO(unsigned int particle, bool exp) {
 		cout << "nbp: " << *p << endl;
 	}
 	 */
-cout << "RAQUEL before nextPositions" << endl;
+
+	if (options.verbosity >= 4) {
+		cout << "RAQUEL before nextPositions" << endl;
+	}
 	// This vector holds the new positions to be sent to the particle
 	vector<double> nextPositions(particleCurrParamSets_.size());
-cout << "RAQUEL after nextPositions" << endl;
-
+	if (options.verbosity >= 4) {
+		cout << "RAQUEL after nextPositions" << endl;
+	}
 	bool usePersonalBest = false;
-
-	cout << "RAQUEL: entering for" << endl;
+	if (options.verbosity >= 3) {
+		cout << "RAQUEL: entering for" << endl;
+	}
 	// For each parameter in the current parameter set
 	int i = 0;
 	for (auto param = particleBestParamSets_.at(particle).begin(); param != particleBestParamSets_.at(particle).end(); ++param) {
@@ -1709,23 +1733,31 @@ cout << "RAQUEL after nextPositions" << endl;
 		}
 		else {
 			// Calculate our mean and std
-			cout << "personalbest: " << personalBestPos << " neighborbest: " << neighborhoodBestPositions[i] << endl;
+			if (options.verbosity >= 3) {
+				cout << "personalbest: " << personalBestPos << " neighborbest: " << neighborhoodBestPositions[i] << endl;
+			}
 			double mean = (abs(personalBestPos) + abs(neighborhoodBestPositions[i])) / 2;
-			cout << "mean: " << mean << endl;
+			if (options.verbosity >= 3) {
+				cout << "mean: " << mean << endl;
+			}
 			double std = abs(abs(personalBestPos) - abs(neighborhoodBestPositions[i]));
-			cout << "std: " << std << endl;
-
+			if (options.verbosity >= 3) {
+				cout << "std: " << std << endl;
+			}
 			// Create the gaussian distribution
 			boost::random::normal_distribution<double> dist(mean, std);
 
 			// Pick our next position randomly from distribution
 			nextPositions[i] = dist(generalRand);
-			cout << "picked: " << nextPositions[i] << endl;
+			if (options.verbosity >= 3) {
+				cout << "picked: " << nextPositions[i] << endl;
+			}
 		}
 		++i;
 	}
-	cout << "RAQUEL: exiting for" << endl;
-
+	if (options.verbosity >= 4) {
+		cout << "RAQUEL: exiting for" << endl;
+	}
 
 	return nextPositions;
 }
@@ -1769,12 +1801,16 @@ vector<double> Swarm::calcParticlePosQPSO(unsigned int particle, vector<double> 
 void Swarm::updateInertia() {
 	// Eq 3 from Moraes et al
 	options.inertia = options.inertiaInit + (options.inertiaFinal - options.inertiaInit) * (inertiaUpdateCounter_ / (float)(options.nmax + inertiaUpdateCounter_));
-	cout << "Setting inertia to " << options.inertia << endl;
+	if (options.verbosity >= 3) {
+		cout << "Setting inertia to " << options.inertia << endl;
+	}
 }
 
 void Swarm::updateContractionExpansionCoefficient() {
 	beta_ = options.betaMax - (((float)flightCounter_ / options.maxNumSimulations) * (options.betaMax - options.betaMin));
-	cout << "updating beta_ to " << beta_ << endl;
+	if (options.verbosity >= 3) {
+		cout << "updating beta_ to " << beta_ << endl;
+	}
 }
 
 vector<double> Swarm::getNeighborhoodBestPositions(unsigned int particle) {
@@ -1807,9 +1843,9 @@ vector<double> Swarm::getNeighborhoodBestPositions(unsigned int particle) {
 
 		}
 
-
-		cout << "############### currBestFit = " << subParRankFinal[subPar].second << " subpar" << subParRankFinal[subPar].first << endl;
-
+		if (options.verbosity >= 3) {
+			cout << "############### currBestFit = " << subParRankFinal[subPar].second << " subpar" << subParRankFinal[subPar].first << endl;
+		}
 	}else{
 
 		// Set the current best fit to our own best fit
@@ -1913,7 +1949,9 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 	if (particleIterationCounter_[pID][0] == 1) {   //razi: later check consistency, models parameters
 		//cout << "Storing " << params.size() << " params for particle " << pID << endl;
 		for (auto param = params.begin(); param != params.end(); ++param) {
-			cout << *param << endl;
+			if (options.verbosity >= 3) {
+				cout << *param << endl;
+			}
 			particleCurrParamSets_[pID][i] = *param;
 
 			//Raquel added: now parameters for subparticles are processed as well
@@ -2028,7 +2066,9 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 	if (particleIterationCounter_[pID][0] == 1) {   //razi: later check consistency, models parameters
 		//cout << "Storing " << params.size() << " params for particle " << pID << endl;
 		for (auto param = params.begin(); param != params.end(); ++param) {
-			cout << *param << endl;
+			if (options.verbosity >= 3) {
+				cout << *param << endl;
+			}
 			particleCurrParamSets_[pID][i] = *param;
 
 			//Raquel added: now parameters for subparticles are processed as well
@@ -2051,8 +2091,9 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 		particleBestFits_[pID] = fit;
 
 		map<double, unsigned int>::iterator toDelIt = particleBestFitsByFit_.end();
-		cout << "looping fits" << endl;
-
+		if (options.verbosity >= 4) {
+			cout << "looping fits" << endl;
+		}
 		for (auto it = particleBestFitsByFit_.begin(); it != particleBestFitsByFit_.end(); ++it) {
 			//cout << "loop: " << it->second << endl;
 			if (it->second == pID) {
@@ -2061,13 +2102,16 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 				//it = particleBestFitsByFit_.erase(it);
 			}
 		}
-		cout << "seting new fit value" << endl;
+		if (options.verbosity >= 3) {
+			cout << "setting new fit value" << endl;
+		}
 		if (toDelIt != particleBestFitsByFit_.end()) {
 			particleBestFitsByFit_.erase(toDelIt);
 
 		}
-
-		cout << "done" << endl;
+		if (options.verbosity >= 3) {
+			cout << "done" << endl;
+		}
 		particleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));
 
 		//unsigned int i = 0;
@@ -2077,12 +2121,15 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 		//	++i;
 		//}
 
-
-		cout << "updating params" << endl;
+		if (options.verbosity >= 3) {
+			cout << "updating params" << endl;
+		}
 		for(unsigned int mid = 0; mid < options.models.size(); mid++){
 			update_cur_particle_params(pID, mid, true);
 		}
-		cout << "done" << endl;
+		if (options.verbosity >= 3) {
+			cout << "done" << endl;
+		}
 
 	}
 
@@ -2097,8 +2144,9 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 		subparticleBestFits_[subParID] = fit; //Raquel added support to subparticles
 
 		map<double, unsigned int>::iterator toDelIt2 = subparticleBestFitsByFit_.end();
-		cout << "looping fits" << endl;
-
+		if (options.verbosity >= 3) {
+			cout << "looping fits" << endl;
+		}
 		for (auto it = subparticleBestFitsByFit_.begin(); it != subparticleBestFitsByFit_.end(); ++it) {
 			//cout << "loop: " << it->second << endl;
 			if (it->second == subParID) {
@@ -2107,14 +2155,17 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 				//it = particleBestFitsByFit_.erase(it);
 			}
 		}
-		cout << "seting new fit value" << endl;
+		if (options.verbosity >= 3) {
+			cout << "seting new fit value" << endl;
+		}
 		if (toDelIt2 != subparticleBestFitsByFit_.end()) {
 			subparticleBestFitsByFit_.erase(toDelIt2);
 
 		}
 
-
-		cout << "done" << endl;
+		if (options.verbosity >= 3) {
+			cout << "done" << endl;
+		}
 		subparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, subParID));//Raquel added support to subparticles
 		currentsubparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, subParID));//Raquel added support to subparticles
 
@@ -2125,12 +2176,15 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 		//	++i;
 		//}
 
-
-		cout << "updating params" << endl;
+		if (options.verbosity >= 3) {
+			cout << "updating params" << endl;
+		}
 		for(unsigned int mid = 0; mid < options.models.size(); mid++){
 			update_cur_particle_params(pID, mid, true);
 		}
-		cout << "done" << endl;
+		if (options.verbosity >= 3) {
+			cout << "done" << endl;
+		}
 
 	}
 }
@@ -2384,7 +2438,7 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 		}
 
 	}
-	finishedParticles_.clear();
+	//finishedParticles_.clear();
 	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
 
 
@@ -3543,6 +3597,7 @@ void Swarm::initPSOswarm(bool resumeFit) {
 	runGeneration();
 
 
+
 	// Fill a vector with all pID's to send for processing
 	vector<unsigned int> allParticles;
 	for (int p = 1; p <= options.swarmSize; ++p) {
@@ -3560,6 +3615,8 @@ void Swarm::initPSOswarm(bool resumeFit) {
 		// Initialize our particle weights and weighted average position
 		updateEnhancedStop();
 	}
+
+
 }
 
 void Swarm::outputError(string errorMessage) {
@@ -3598,7 +3655,7 @@ void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int>>
 		for (auto fitIt = subParRankFinal.begin(); fitIt != subParRankFinal.end(); ++fitIt) {
 			parID = fcalcParID(fitIt->first, options.models.size());
 
-			if (particleToIsland_.at(parID) == island) {
+			if (particleToIsland_[parID] == island) {
 				particlesToSend.push_back(parID);
 				if (particlesToSend.size() == options.numToMigrate) {
 					break;
@@ -3609,7 +3666,7 @@ void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int>>
 	}else{
 
 		for (auto fitIt = particleBestFitsByFit_.begin(); fitIt != particleBestFitsByFit_.end(); ++fitIt) {
-			if (particleToIsland_.at(fitIt->second) == island) {
+			if (particleToIsland_[fitIt->second] == island) {
 				particlesToSend.push_back(fitIt->second);
 				if (particlesToSend.size() == options.numToMigrate) {
 					break;
@@ -3626,16 +3683,20 @@ void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int>>
 	vector<double> migrationSet;
 	//for (auto particle = particlesToSend.begin(); particle != particlesToSend.end(); ++particle) {
 	for (unsigned int i = 0; i < options.numToMigrate; ++i) {
-		//cout << "sending set " << i + 1 << " from particle " << particlesToSend[i] << endl;
+		if (options.verbosity >= 3) {
+			cout << "sending set " << i + 1 << " from particle " << particlesToSend[i] << endl;
+		}
 		// Fill migrationSet with this particles current parameters
-		for (auto param = particleCurrParamSets_.at(particlesToSend[i]).begin(); param != particleCurrParamSets_.at(particlesToSend[i]).end(); ++param) {
+		for (auto param = particleCurrParamSets_[particlesToSend[i]].begin(); param != particleCurrParamSets_[particlesToSend[i]].end(); ++param) {
 			migrationSet.push_back(*param);
 		}
 		// Add that migration set to the list of the receiving island's
 		// migration sets
 		migrationSets[islandTopology[island][receivingIslandIndex]].push_back(migrationSet);
 		migrationSet.clear();
-		//cout << island << " sending migration set to island " << islandTopology[island][receivingIslandIndex] << endl;
+		if (options.verbosity >= 3) {
+			cout << island << " sending migration set to island " << islandTopology[island][receivingIslandIndex] << endl;
+		}
 	}
 }
 
@@ -3656,7 +3717,9 @@ void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vec
 		if(options.constraints_.size()>0){
 			//Raquel: this will receive the particles with the worst fit to migrate
 			for (vector<pair<int,float>>::reverse_iterator fitIt = subParRankFinal.rbegin(); fitIt != subParRankFinal.rend(); ++fitIt) {
-				cout << fitIt->first << endl;
+				if (options.verbosity >= 3) {
+					cout << fitIt->first << endl;
+				}
 				parID = fcalcParID(fitIt->first, options.models.size());
 
 				if (particleToIsland_[parID] == island) {
@@ -3667,8 +3730,9 @@ void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vec
 		}else{
 
 			for (map<double, unsigned int>::reverse_iterator fitIt = particleBestFitsByFit_.rbegin(); fitIt != particleBestFitsByFit_.rend(); ++fitIt) {
-				cout << fitIt->second << endl;
-
+				if (options.verbosity >= 3) {
+					cout << fitIt->second << endl;
+				}
 				if (particleToIsland_[fitIt->second] == island) {
 					particlesToRecv.push_back(fitIt->second);
 				}
@@ -3682,19 +3746,23 @@ void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vec
 
 		// Iterates through the list of receiving particles
 		auto recvIt = particlesToRecv.begin();
-		cout << 999 << endl;
+		//cout << 999 << endl;
 		// For each migration set destined for this island
 		unsigned int replacementCounter = 0;
 		int subParID = 0;
 
 		for (auto migrationSet = migrationSets[island].begin(); migrationSet != migrationSets[island].end();) {
-			cout << "Replacing " << migrationSet->size() << " params for particle " << *recvIt << " with fit value of " << particleBestFits_.at(*recvIt) << endl;
+			if (options.verbosity >= 3) {
+				cout << "Replacing " << migrationSet->size() << " params for particle " << *recvIt << " with fit value of " << particleBestFits_.at(*recvIt) << endl;
+			}
 			vector<string> paramStr;
 			unsigned int i = 0;
 			// For each parameter in the migration set
 			for (auto param = migrationSet->begin(); param != migrationSet->end(); ++param) {
 				// Insert parameter to the currentParamSets tracker
-				cout << "param: " << *param << endl;
+				if (options.verbosity >= 3) {
+					cout << "param: " << *param << endl;
+				}
 				particleCurrParamSets_.at(*recvIt)[i] = *param;
 				paramStr.push_back(toString(*param));
 				++i;
@@ -3808,8 +3876,8 @@ void Swarm::runSPSO() {
 
 	while (!stopCriteria) {
 
-		if (options.verbosity >= 1) {
-			cout << "Launching flock " << currentGeneration << endl;
+		if (options.verbosity >= 0) {
+			cout << "Generation (flock): " << currentGeneration << endl;
 		}
 
 
@@ -3904,7 +3972,9 @@ void Swarm::runSPSO() {
 
 				// Check for stop criteria
 				stopCriteria = checkStopCriteria();
-				cout << "Stop Criteria value: " << stopCriteria << endl;
+				if (options.verbosity >= 3) {
+					cout << "Stop Criteria value: " << stopCriteria << endl;
+				}
 				string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
 
 				outputRunSummary(outputPath);
@@ -3967,10 +4037,13 @@ void Swarm::runSDE() {
 			for (unsigned int p = 0; p < particlesPerIsland; ++p) {
 				particleToIsland_[currParticle] = i;
 				islandToParticle_[i][p] = currParticle;
-				cout << i << " " << p << " " << islandToParticle_[i][p] << endl;
-
-				cout << "Particle to island " << particleToIsland_[currParticle] << endl;
-				cout << "currPar " << currParticle << endl;
+				if (options.verbosity >= 4) {
+					cout << i << " " << p << " " << islandToParticle_[i][p] << endl;
+				}
+				if(options.verbosity >= 3){
+					cout << "Particle to island " << particleToIsland_[currParticle] << endl;
+					cout << "currPar " << currParticle << endl;
+				}
 				++currParticle;
 			}
 		}
@@ -4013,19 +4086,6 @@ void Swarm::runSDE() {
 
 
 		//numFinishedParticles = options.swarmSize;
-
-		//cout << "RAQUEL: starting runGeneration" << endl;
-		runGeneration();
-		//usleep(250000);
-
-		saveSwarmState();
-		//cout << "RAQUEL: finished saveSwarmState" << endl;
-
-		string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
-
-		outputRunSummary(outputPath);
-
-
 		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
 		if (options.deleteOldFiles) {
 			//cout << "RAQUEL: starting cleanupFiles" << endl;
@@ -4036,29 +4096,34 @@ void Swarm::runSDE() {
 		}
 
 
+		//cout << "RAQUEL: starting runGeneration" << endl;
+		runGeneration();
+		//usleep(250000);
 
+		// Create the output directory for the next generation
+		if (!checkIfFileExists(options.jobOutputDir + toString(currentGeneration))) {
+			string createDirCmd = "mkdir " + options.jobOutputDir + toString(currentGeneration);
+			int retryCounter = 0;
+			while (runCommand(createDirCmd) != 0 && !checkIfFileExists(options.jobOutputDir + toString(currentGeneration))) {
+				if(++retryCounter >= 100) {
+					outputError("Error: Couldn't create " + options.jobOutputDir + toString(currentGeneration) + " to hold next generation's output.");
+				}
+				//sleep(1);
+				if(options.verbosity>=3){
 
-
-/* Raquel replaced this block by the code above
-		// Generation loop
-		unsigned int p = 1;
-		while (numFinishedParticles < options.swarmSize) {
-			// Launch next particle
-			if (runningParticles_.size() < options.parallelCount && p <= options.swarmSize) {
-				launchParticle(p++, trialLoop);
-			}
-
-			unordered_map<unsigned int, vector<double>> finished = checkMasterMessagesDE();
-
-			if (finished.size()) {
-				finishedParticles.insert(finished.begin(), finished.end());
-				numFinishedParticles += finished.size();
+					cout << "Trying again to create dir" << endl;
+				}
 			}
 		}
 
+		saveSwarmState();
+		//cout << "RAQUEL: finished saveSwarmState" << endl;
 
-*/
+		string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
 
+		cout << "Generation: " << toString(currentGeneration - 1 ) << endl;
+
+		outputRunSummary(outputPath);
 
 		unordered_map<unsigned int, vector<double>> finished;
 
@@ -4072,10 +4137,10 @@ void Swarm::runSDE() {
 
 		}
 
-
-		cout << "RAQUEL FINISHED SIZE " << finished.size() << endl;
-		cout << "vector size " << islandFinishedParticles.size() << endl;
-
+		if(options.verbosity >= 4){
+			cout << "RAQUEL FINISHED SIZE " << finished.size() << endl;
+			cout << "vector size " << islandFinishedParticles.size() << endl;
+		}
 		if (finished.size()) {
 			finishedParticles.insert(finished.begin(), finished.end());
 			//numFinishedParticles = finished.size();
@@ -4089,90 +4154,15 @@ void Swarm::runSDE() {
 			// Increment the counter that tracks the number of particles finished
 			// for a given island
 			counter++;
-			cout << "counter" << counter << endl;
-			cout << "Particle first " << particle->first  << endl;
-			cout << "Particle to island " << particleToIsland_[particle->first] << endl;
-			cout << "Particle to isalnd size " << particleToIsland_.size() << endl;
-
+			if(options.verbosity >= 4){
+				cout << "counter" << counter << endl;
+				cout << "Particle first " << particle->first  << endl;
+				cout << "Particle to island " << particleToIsland_[particle->first] << endl;
+				cout << "Particle to isalnd size " << particleToIsland_.size() << endl;
+			}
 			islandFinishedParticles[particleToIsland_[particle->first]] += 1;
 		}
 
-
-		//Raquel, the code bellow was in part transfered to the function processParamDE()
-		//Check if this there is something that still needs to be transfered
-/*
-		// For each finished particle
-		for (auto particle = finishedParticles.begin(); particle != finishedParticles.end(); ++particle) {
-			// Increment the counter that tracks the number of particles finished
-			// for a given island
-			islandFinishedParticles[particleToIsland_.at(particle->first)] += 1;
-
-			if (options.verbosity >= 3) {
-				cout << "Particle " << particle->first << " in island " << particleToIsland_.at(particle->first) << " finished. total finished is " << numFinishedParticles << endl;
-			}
-
-			// If we're in a trial loop..
-			if (trialLoop && particle->second.size()) {
-				// Create the beginning of our param string for use in summary and result outputs
-				string paramsString = "gen" + toString(currentGeneration) + "perm" + toString(particle->first) + " ";
-
-				// Increment the flight counter only at the end of a trial
-				++flightCounter_;
-
-				bool replaceParams = false;
-
-				// If the trail sim fit is better than our current best fit, we need
-				// to replace the old fit value with the new one
-				if (particle->second[0] < particleBestFits_.at(particle->first)) {
-					particleBestFits_[particle->first] = particle->second[0];
-					insertKeyByValue(particleBestFitsByFit_, particle->second[0], particle->first);
-
-					replaceParams = true;
-				}
-
-				// Loop through parameters sent to us by the particle
-				unsigned int i = 0;
-				for (auto param = particle->second.begin() + 1; param != particle->second.end(); ++param) {
-
-					// If we need to replace old params with new ones (because fit calc
-					// was better in the trial)...
-					if (replaceParams) {
-						// Store the parameter in the global param set and
-						// concatenate the param string for output
-						particleCurrParamSets_[particle->first][i] = *param;
-						paramsString += toString(*param) + " ";
-						//cout << "added " << paramsString << endl;
-					}
-					// Otherwise, do nothing except use the current/old param
-					// set in the output
-					else {
-						paramsString += toString(particleCurrParamSets_[particle->first][i]) + " ";
-						//cout << "added: " << paramsString << endl;
-					}
-					++i;
-				}
-
-				// Insert fit values and parameters into our global trackers
-				allGenFits.insert(pair<double, string>(particleBestFits_[particle->first], paramsString));
-				swarmBestFits_.insert(pair<double, unsigned int>(particle->second[0], particle->first));
-			}
-			// If we're not in a trial loop...
-			else if (particle->second.size()){
-				// Replace old best fit value with the new one
-				particleBestFits_[particle->first] = particle->second[0];
-				insertKeyByValue(particleBestFitsByFit_, particle->second[0], particle->first);
-
-				// Loop through the params sent to us by the particle
-				unsigned int i = 0;
-				for (auto param = particle->second.begin() + 1; param != particle->second.end(); ++param) {
-					// Replace current params with the new ones and add to
-					// our output string
-					particleCurrParamSets_[particle->first][i] = *param;
-					++i;
-				}
-			}
-		}
-*/
 		finishedParticles.clear();
 		//numFinishedParticles = 0;
 
@@ -4181,7 +4171,9 @@ void Swarm::runSDE() {
 		for (unsigned int island = 1; island <= options.numIslands; ++island) {
 			// If the number finished in this island is equal to the total size of the island
 			if (islandFinishedParticles.at(island) == (options.swarmSize / options.numIslands)) {
-				cout << "Island " << island << " finished" << endl;
+				if(options.verbosity >= 3){
+					cout << "Island " << island << " finished" << endl;
+				}
 				// Loop through the particles in the island
 				for (auto particle = islandToParticle_.at(island).begin(); particle != islandToParticle_.at(island).end(); ++particle) {
 
@@ -4223,20 +4215,12 @@ void Swarm::runSDE() {
 			}
 		}
 
-		//Raquel removed the trialloop thing because it was replaced by the processParamDE function
-		// Switch from trial/main loops
-		//if (trialLoop == false) {
-		//	trialLoop = true;
-
-		//	cout << "Switching to trial loop" << endl;
-		//}
-		//else {
-
 
 			// Check for stop criteria
 			stopCriteria = checkStopCriteria();
-			cout << "Stop Criteria value: " << stopCriteria << endl;
-
+			if(options.verbosity >= 3){
+				cout << "Stop Criteria value: " << stopCriteria << endl;
+			}
 			if (!stopCriteria) {
 				// Send/receive migration sets
 				if (currentGeneration % options.migrationFrequency == 0) {
@@ -4435,7 +4419,7 @@ void Swarm::runAGA() {
 			}
 			finishedParticles.clear();
 			for(auto i = finishedParticles_.begin(); i!=finishedParticles_.end(); ++i){
-				cout << "RAQUEL: processing particle number: " << *i << endl;
+				//cout << "RAQUEL: processing particle number: " << *i << endl;
 				finishedParticles.push_back(*i);
 			}
 			breedGenerationGA(finishedParticles);
@@ -4466,296 +4450,87 @@ void Swarm::runAPSO() {
 		initPSOswarm();
 	}
 
-	saveSwarmState();
 
-	//if (options.verbosity >= 3) {
-	//	cout << "Re-launching swarm" << endl;
-	//}
-
-	/*
-	// Re-launch the particles in to the Swarm proper
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
-		launchParticle(p);
+	if (options.verbosity >= 0) {
+		cout << "Generation (flock): " << toString(currentGeneration - 1 ) << endl;
 	}
+		vector<unsigned int> particlestoProcess;
 
-	if (options.verbosity >= 3) {
-		cout << "Entering main swarm loop" << endl;
-	}
 
-	vector<unsigned int> finishedParticles;
-	bool stopCriteria = false;
-	unsigned int clusterCheckCounter = 0;
-
-	while (!stopCriteria) {
-		usleep(250000);
-		finishedParticles = checkMasterMessages();
-
-		if (finishedParticles.size()) {
-			// Process finished particles
-			processParticlesPSO(finishedParticles, true);
-
-			// Check for stop criteria
-			stopCriteria = checkStopCriteria();
-
-			// Save swarm state
-			saveSwarmState();
-		}
-
-		// Only check cluster queue every minute
-		++clusterCheckCounter;
-		if (clusterCheckCounter >= 240) {
-			//checkClusterQueue();
-			clusterCheckCounter = 0;
-		}
-
-		if (!stopCriteria) {
-			// Re-launch the particles in to the Swarm
-			for (auto particle = finishedParticles.begin(); particle != finishedParticles.end(); ++particle) {
-				launchParticle(*particle);
-			}
-		}
-	}
-
-	*/
-	vector<unsigned int> particlestoProcess;
 	bool stopCriteria = false;
 	while (!stopCriteria){
-		cout << "RAQUEL: Started runGeneration();" << endl;
+		if (options.verbosity >= 3) {
+			cout << "RAQUEL: Started runasyncGeneration();" << endl;
+		}
 		runAsyncGeneration();
-		cout << "RAQUEL: Finished runGeneration();" << endl;
+		if (options.verbosity >= 3) {
+			cout << "RAQUEL: Finished runasyncGeneration();" << endl;
 
-		cout << "RAQUEL: Started checkStopCriteria();" << endl;
+			cout << "RAQUEL: Started checkStopCriteria();" << endl;
+		}
+
+		if (options.verbosity >= 0) {
+			cout << "Generation (flock): " << toString(currentGeneration - 1 ) << endl;
+		}
+
 		stopCriteria = checkStopCriteria();
-		cout << "RAQUEL: Stop criteria value is " << stopCriteria << endl;
+		if (options.verbosity >= 3) {
+			cout << "RAQUEL: Stop criteria value is " << stopCriteria << endl;
 
-		cout << "RAQUEL: Finished checkStopCriteria();" << endl;
-		cout << "RAQUEL: Started saveSwarmState();" << endl;
+			cout << "RAQUEL: Finished checkStopCriteria();" << endl;
+			cout << "RAQUEL: Started saveSwarmState();" << endl;
+		}
 		saveSwarmState();
-		cout << "RAQUEL: Finished saveSwarmState();" << endl;
+		if (options.verbosity >= 3) {
 
+			cout << "RAQUEL: Finished saveSwarmState();" << endl;
+		}
 
 		string currentDirectory = options.jobOutputDir + toString(currentGeneration);
 		if (options.deleteOldFiles) {
-			cout << "RAQUEL: Started cleanupFiles();" << endl;
+			if (options.verbosity >= 3) {
+				cout << "RAQUEL: Started cleanupFiles();" << endl;
+			}
 			cleanupFiles(currentDirectory.c_str());
-			cout << "RAQUEL: Finished cleanupFiles();" << endl;
-
+			if (options.verbosity >= 3) {
+				cout << "RAQUEL: Finished cleanupFiles();" << endl;
+			}
 		}
 
 		string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
-		//cout << "RAQUEL: Started outputRunSummary();" << endl;
+		if (options.verbosity >= 3) {
+			cout << "RAQUEL: Started outputRunSummary();" << endl;
+		}
 		outputRunSummary(outputPath);
-		//cout << "RAQUEL: Finished outputRunSummary();" << endl;
-
+		if (options.verbosity >= 3) {
+			cout << "RAQUEL: Finished outputRunSummary();" << endl;
+		}
 
 		if (!stopCriteria) {
-			cout << "RAQUEL: started processParticlesPSO();" << endl;
+			if (options.verbosity >= 3) {
+				cout << "RAQUEL: started processParticlesPSO();" << endl;
+			}
+			particlestoProcess.clear();
+
 			for(auto i = finishedParticles_.begin(); i!=finishedParticles_.end(); ++i){
-				cout << "RAQUEL: processing particle number: " << *i << endl;
+				if (options.verbosity >= 3) {
+					cout << "RAQUEL: processing particle number: " << *i << endl;
+				}
 				particlestoProcess.push_back(*i);
 			}
 			processParticlesPSO(particlestoProcess, true);
 
-
-			cout << "RAQUEL: finished processParticlesPSO();" << endl;
+			if (options.verbosity >= 3) {
+				cout << "RAQUEL: finished processParticlesPSO();" << endl;
+			}
 		}
 	}
 }
 
 void Swarm::runADE() {
-/*	if (options.verbosity >= 3) {
-		cout << "Running an asynchronous DE fit" << endl;
-	}
-
-	// Create an output directory for each island
-	if (!checkIfFileExists(options.jobOutputDir + toString(1))) {
-		string createDirCmd = "mkdir " + options.jobOutputDir + toString(1);
-		runCommand(createDirCmd);
-	}
 
 	if (options.verbosity >= 3) {
-		cout << "Generating island topology" << endl;
-	}
-
-	vector<vector<unsigned int>> islandTopology;
-	vector<bool> islandIsTrial = vector<bool>(options.numIslands + 1, false);
-
-	if (!resumingSavedSwarm) {
-		// Generate all particles that will be present in the swarm
-		islandTopology = generateTopology(options.numIslands);
-		// Map all particles and islands
-		unsigned int particlesPerIsland = options.swarmSize / options.numIslands;
-		unsigned int currParticle = 1;
-		for (unsigned int i = 1; i <= options.numIslands; ++i) {
-			for (unsigned int p = 0; p < particlesPerIsland; ++p) {
-				particleToIsland_[currParticle] = i;
-				islandToParticle_[i][p] = currParticle;
-				cout << i << " " << p << " " << islandToParticle_[i][p] << endl;
-
-				cout << "Particle to island " << particleToIsland_[currParticle] << endl;
-				cout << "currPar " << currParticle << endl;
-				++currParticle;
-			}
-		}
-	}
-
-	saveSwarmState();
-
-	if (options.verbosity >= 3) {
-		cout << "Launching first generation" << endl;
-	}
-
-	unordered_map<unsigned int, vector<double>> finishedParticles;
-	bool stopCriteria = false;
-	vector<unsigned int> islandFinishedParticles(options.numIslands + 1, 0);
-	vector<unsigned int> islandGenerationCounter(options.numIslands + 1, 1);
-	map<unsigned int, vector<vector<double>>> migrationSets;
-
-	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
-		launchParticle(p);
-	}
-
-	while(!stopCriteria) {
-
-		finishedParticles = checkMasterMessagesDE();
-
-		if (finishedParticles.size()) {
-			// Increment the counter that tracks the number of particles finished
-			// for a given island
-			for (auto particle = finishedParticles.begin(); particle != finishedParticles.end(); ++particle) {
-				islandFinishedParticles[particleToIsland_.at(particle->first)] += 1;
-				cout << particle->first << " in island " << particleToIsland_.at(particle->first) << " finished." << endl;
-
-				// Let's process params and update any fit values
-				string paramsString;
-				paramsString = "gen" + toString(currentGeneration) + "perm" + toString(particle->first) + " ";
-				if (islandIsTrial[particleToIsland_[particle->first]]) {
-
-					if (flightCounter_ && flightCounter_ % options.outputEvery == 0) {
-						string outputPath = options.jobOutputDir + toString(flightCounter_) + "_summary.txt";
-						outputRunSummary(outputPath);
-					}
-
-					++flightCounter_;
-
-					paramsString = toString(flightCounter_) + " ";
-
-					bool replaceParams = false;
-
-					if (particle->second[0] < particleBestFits_.at(particle->first) || particleBestFits_.at(particle->first) == 0) {
-						particleBestFits_[particle->first] = particle->second[0];
-						insertKeyByValue(particleBestFitsByFit_, particle->second[0], particle->first);
-
-						replaceParams = true;
-					}
-
-					unsigned int i = 0;
-					for (auto param = particle->second.begin() + 1; param != particle->second.end(); ++param) {
-						if (replaceParams) {
-							//cout << "stored " << stod(*m) << " for particle " << pID << " as " << particleCurrParamSets_[pID][i] << endl;
-							particleCurrParamSets_[particle->first][i] = *param;
-							paramsString += toString(*param) + " ";
-						}
-						else {
-							paramsString += toString(particleCurrParamSets_[particle->first][i]) + " ";
-						}
-						++i;
-					}
-
-					allGenFits.insert(pair<double, string>(particleBestFits_[particle->first], paramsString));
-					swarmBestFits_.insert(pair<double, unsigned int>(particle->second[0], particle->first));
-				}
-				else {
-					particleBestFits_[particle->first] = particle->second[0];
-					insertKeyByValue(particleBestFitsByFit_, particle->second[0], particle->first);
-
-					unsigned int i = 0;
-					for (auto param = particle->second.begin() + 1; param != particle->second.end(); ++param) {
-						particleCurrParamSets_[particle->first][i] = *param;
-						++i;
-					}
-				}
-			}
-
-			// Check each island to see if it has completed its generation
-			for (unsigned int island = 1; island <= options.numIslands; ++island) {
-				// If the number finished in this island is equal to the total size of the island
-				if (islandFinishedParticles.at(island) == (options.swarmSize / options.numIslands)) {
-					cout << "Island " << island << " finished" << endl;
-
-					for (auto particle = islandToParticle_.at(island).begin(); particle != islandToParticle_.at(island).end(); ++particle) {
-						vector<double> newParamSet;
-
-						if (islandIsTrial[island] == false) {
-							// Create a mutation set for the particle
-							newParamSet = mutateParticleDE(*particle);
-
-							// Run crossover for the particle
-							newParamSet = crossoverParticleDE(*particle, newParamSet);
-						}
-						else { // Finishing the trial set
-							newParamSet = particleCurrParamSets_.at(*particle);
-						}
-
-						// Convert our param set to string for sending
-						vector<string> paramVecStr;
-						//for (auto param : particleCurrParamSets_.at(*particle)) {
-						for (auto param = newParamSet.begin(); param != newParamSet.end(); ++param) {
-							paramVecStr.push_back(toString(*param));
-						}
-
-						// Send new param sets to particles for next generation
-						swarmComm->sendToSwarm(0, *particle, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
-						launchParticle(*particle);
-
-						// Empty our finished particle counter for the next loop
-						islandFinishedParticles[island] = 0;
-					}
-
-					if (islandIsTrial[island]) {
-						stopCriteria = checkStopCriteria();
-
-						if (!stopCriteria) {
-							islandIsTrial[island] = false;
-
-							if (islandGenerationCounter[island] % options.migrationFrequency == 0) {
-								sendMigrationSetDE(island, islandTopology, migrationSets);
-							}
-
-							recvMigrationSetDE(island, migrationSets);
-							++islandGenerationCounter[island];
-						}
-					}
-					else {
-						islandIsTrial[island] = true;
-					}
-				}
-			}
-		}
-	}
-
-	*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	if (options.verbosity >= 3) {
-		cout << "Running a synchronous DE fit" << endl;
+		cout << "Running asynchronous DE fit" << endl;
 	}
 
 	// Create an output directory for each island
@@ -4778,10 +4553,12 @@ void Swarm::runADE() {
 			for (unsigned int p = 0; p < particlesPerIsland; ++p) {
 				particleToIsland_[currParticle] = i;
 				islandToParticle_[i][p] = currParticle;
-				cout << i << " " << p << " " << islandToParticle_[i][p] << endl;
+				if (options.verbosity >= 3) {
+					cout << i << " " << p << " " << islandToParticle_[i][p] << endl;
 
-				cout << "Particle to island " << particleToIsland_[currParticle] << endl;
-				cout << "currPar " << currParticle << endl;
+					cout << "Particle to island " << particleToIsland_[currParticle] << endl;
+					cout << "currPar " << currParticle << endl;
+				}
 				++currParticle;
 			}
 		}
@@ -4834,7 +4611,21 @@ void Swarm::runADE() {
 			runAsyncGeneration();
 
 		}
+		// Create the output directory for the next generation
+		if (!checkIfFileExists(options.jobOutputDir + toString(currentGeneration))) {
+			string createDirCmd = "mkdir " + options.jobOutputDir + toString(currentGeneration);
+			int retryCounter = 0;
+			while (runCommand(createDirCmd) != 0 && !checkIfFileExists(options.jobOutputDir + toString(currentGeneration))) {
+				if(++retryCounter >= 100) {
+					outputError("Error: Couldn't create " + options.jobOutputDir + toString(currentGeneration) + " to hold next generation's output.");
+				}
+				//sleep(1);
+				if(options.verbosity>=3){
 
+					cout << "Trying again to create dir" << endl;
+				}
+			}
+		}
 		//usleep(250000);
 
 		saveSwarmState();
@@ -4852,31 +4643,12 @@ void Swarm::runADE() {
 
 		string outputPath = options.jobOutputDir + toString(currentGeneration - 1 ) + "_summary.txt";
 
-		outputRunSummary(outputPath);
 
-
-
-
-/* Raquel replaced this block by the code above
-		// Generation loop
-		unsigned int p = 1;
-		while (numFinishedParticles < options.swarmSize) {
-			// Launch next particle
-			if (runningParticles_.size() < options.parallelCount && p <= options.swarmSize) {
-				launchParticle(p++, trialLoop);
-			}
-
-			unordered_map<unsigned int, vector<double>> finished = checkMasterMessagesDE();
-
-			if (finished.size()) {
-				finishedParticles.insert(finished.begin(), finished.end());
-				numFinishedParticles += finished.size();
-			}
+		if (options.verbosity >= 0) {
+			cout << "Generation: " << toString(currentGeneration - 1 ) << endl;
 		}
 
-
-*/
-
+		outputRunSummary(outputPath);
 
 		unordered_map<unsigned int, vector<double>> finished;
 
@@ -4890,9 +4662,10 @@ void Swarm::runADE() {
 
 		}
 
-
-		cout << "RAQUEL FINISHED SIZE " << finished.size() << endl;
-		cout << "vector size " << islandFinishedParticles.size() << endl;
+		if (options.verbosity >= 4) {
+			cout << "RAQUEL FINISHED SIZE " << finished.size() << endl;
+			cout << "vector size " << islandFinishedParticles.size() << endl;
+		}
 
 		if (finished.size()) {
 			finishedParticles.insert(finished.begin(), finished.end());
@@ -4907,90 +4680,15 @@ void Swarm::runADE() {
 			// Increment the counter that tracks the number of particles finished
 			// for a given island
 			counter++;
-			cout << "counter" << counter << endl;
-			cout << "Particle first " << particle->first  << endl;
-			cout << "Particle to island " << particleToIsland_[particle->first] << endl;
-			cout << "Particle to isalnd size " << particleToIsland_.size() << endl;
-
+			if (options.verbosity >= 4) {
+				cout << "counter" << counter << endl;
+				cout << "Particle first " << particle->first  << endl;
+				cout << "Particle to island " << particleToIsland_[particle->first] << endl;
+				cout << "Particle to isalnd size " << particleToIsland_.size() << endl;
+			}
 			islandFinishedParticles[particleToIsland_[particle->first]] += 1;
 		}
 
-
-		//Raquel, the code bellow was in part transfered to the function processParamDE()
-		//Check if this there is something that still needs to be transfered
-/*
-		// For each finished particle
-		for (auto particle = finishedParticles.begin(); particle != finishedParticles.end(); ++particle) {
-			// Increment the counter that tracks the number of particles finished
-			// for a given island
-			islandFinishedParticles[particleToIsland_.at(particle->first)] += 1;
-
-			if (options.verbosity >= 3) {
-				cout << "Particle " << particle->first << " in island " << particleToIsland_.at(particle->first) << " finished. total finished is " << numFinishedParticles << endl;
-			}
-
-			// If we're in a trial loop..
-			if (trialLoop && particle->second.size()) {
-				// Create the beginning of our param string for use in summary and result outputs
-				string paramsString = "gen" + toString(currentGeneration) + "perm" + toString(particle->first) + " ";
-
-				// Increment the flight counter only at the end of a trial
-				++flightCounter_;
-
-				bool replaceParams = false;
-
-				// If the trail sim fit is better than our current best fit, we need
-				// to replace the old fit value with the new one
-				if (particle->second[0] < particleBestFits_.at(particle->first)) {
-					particleBestFits_[particle->first] = particle->second[0];
-					insertKeyByValue(particleBestFitsByFit_, particle->second[0], particle->first);
-
-					replaceParams = true;
-				}
-
-				// Loop through parameters sent to us by the particle
-				unsigned int i = 0;
-				for (auto param = particle->second.begin() + 1; param != particle->second.end(); ++param) {
-
-					// If we need to replace old params with new ones (because fit calc
-					// was better in the trial)...
-					if (replaceParams) {
-						// Store the parameter in the global param set and
-						// concatenate the param string for output
-						particleCurrParamSets_[particle->first][i] = *param;
-						paramsString += toString(*param) + " ";
-						//cout << "added " << paramsString << endl;
-					}
-					// Otherwise, do nothing except use the current/old param
-					// set in the output
-					else {
-						paramsString += toString(particleCurrParamSets_[particle->first][i]) + " ";
-						//cout << "added: " << paramsString << endl;
-					}
-					++i;
-				}
-
-				// Insert fit values and parameters into our global trackers
-				allGenFits.insert(pair<double, string>(particleBestFits_[particle->first], paramsString));
-				swarmBestFits_.insert(pair<double, unsigned int>(particle->second[0], particle->first));
-			}
-			// If we're not in a trial loop...
-			else if (particle->second.size()){
-				// Replace old best fit value with the new one
-				particleBestFits_[particle->first] = particle->second[0];
-				insertKeyByValue(particleBestFitsByFit_, particle->second[0], particle->first);
-
-				// Loop through the params sent to us by the particle
-				unsigned int i = 0;
-				for (auto param = particle->second.begin() + 1; param != particle->second.end(); ++param) {
-					// Replace current params with the new ones and add to
-					// our output string
-					particleCurrParamSets_[particle->first][i] = *param;
-					++i;
-				}
-			}
-		}
-*/
 		finishedParticles.clear();
 		//numFinishedParticles = 0;
 
@@ -5000,7 +4698,9 @@ void Swarm::runADE() {
 		for (unsigned int island = 1; island <= options.numIslands; ++island) {
 			// If the number finished in this island is equal to the total size of the island
 			if (islandFinishedParticles.at(island) == (options.swarmSize / options.numIslands)) {
-				cout << "Island " << island << " finished" << endl;
+				if (options.verbosity >= 3) {
+					cout << "Island " << island << " finished" << endl;
+				}
 				// Loop through the particles in the island
 				for (auto particle = islandToParticle_.at(island).begin(); particle != islandToParticle_.at(island).end(); ++particle) {
 
@@ -5042,19 +4742,12 @@ void Swarm::runADE() {
 			}
 		}
 
-		//Raquel removed the trialloop thing because it was replaced by the processParamDE function
-		// Switch from trial/main loops
-		//if (trialLoop == false) {
-		//	trialLoop = true;
-
-		//	cout << "Switching to trial loop" << endl;
-		//}
-		//else {
-
 
 			// Check for stop criteria
 			stopCriteria = checkStopCriteria();
-			cout << "Stop Criteria value: " << stopCriteria << endl;
+			if (options.verbosity >= 3) {
+				cout << "Stop Criteria value: " << stopCriteria << endl;
+			}
 			//Raquel printing the output summary even if we didn't reach the stop criteria
 
 
@@ -5839,7 +5532,7 @@ void Swarm::outputRunSummary(string outputPath) {
 		outputFile.setf(ios::scientific);
 
 
-	if(options.fitType == "ga" || options.fitType == "pso") {
+	if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de") {
 
 
 		paramCounter = 0;
@@ -6617,8 +6310,9 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 	}
 
 	boost::random::uniform_int_distribution<int> unif(0, particlesPerIsland - 1);
-	cout << "done setting uniform_int_distribution" << endl;
-
+	if(options.verbosity>=3){
+		cout << "done setting uniform_int_distribution" << endl;
+	}
 	//Raquel: adding support to use constraints when selecting the best particles in DE
 	if (options.mutateType == 1) {
 		int bestParticle = 0;
@@ -6645,12 +6339,17 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 		}else{
 
 			for (auto fitVal = particleBestFitsByFit_.begin(); fitVal != particleBestFitsByFit_.end(); ++fitVal) {
-				//cout << "Raquel setting particle to island value" << endl;
-				if (fitVal->first > 0 && particleToIsland_.at(fitVal->second) == currIsland) {
-					//cout << "Raquel setting particle to island value done" << endl;
-
+				if(options.verbosity>=4){
+					cout << "Raquel setting particle to island value" << endl;
+				}
+				if (fitVal->first > 0 && particleToIsland_[fitVal->second] == currIsland) {
+					if(options.verbosity>=4){
+						cout << "Raquel setting particle to island value done" << endl;
+					}
 					bestParticle = fitVal->second;
-					//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
+					if(options.verbosity>=4){
+						cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
+					}
 					break;
 				}
 
@@ -6691,13 +6390,15 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 					//use the combined rank between fit values and constraint values to select the best particle
 					//mutate type 2 will take the worst particle for the current island and mutate it
 					for (auto fitVal = subParRankFinal.begin(); fitVal != subParRankFinal.end(); ++fitVal) {
-						cout << "Raquel setting particle to island value" << endl;
-
+						if(options.verbosity>=4){
+							cout << "Raquel setting particle to island value" << endl;
+						}
 						parID = fcalcParID(fitVal->first, options.models.size());
 
 						if (fitVal->second > 0 && particleToIsland_.at(parID) == currIsland) {
-							cout << "Raquel setting particle to island value done" << endl;
-
+							if(options.verbosity>=4){
+								cout << "Raquel setting particle to island value done" << endl;
+							}
 							bestParticle = fitVal->second;
 							//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
 							//break;
@@ -6760,13 +6461,15 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 					//use the combined rank between fit values and constraint values to select the best particle
 					//mutate type 3 will take the worst particle for the current island and mutate it
 					for (auto fitVal = subParRankFinal.begin(); fitVal != subParRankFinal.end(); ++fitVal) {
-						cout << "Raquel setting particle to island value" << endl;
-
+						if(options.verbosity>=4){
+							cout << "Raquel setting particle to island value" << endl;
+						}
 						parID = fcalcParID(fitVal->first, options.models.size());
 
 						if (fitVal->second > 0 && particleToIsland_[parID] == currIsland) {
-							cout << "Raquel setting particle to island value done" << endl;
-
+							if(options.verbosity>=4){
+								cout << "Raquel setting particle to island value done" << endl;
+							}
 							bestParticle = fitVal->second;
 							//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
 							//break;
@@ -6826,13 +6529,15 @@ vector<double> Swarm::mutateParticleDE(unsigned int particle, float mutateFactor
 					//use the combined rank between fit values and constraint values to select the best particle
 					//mutate type 4 will take the worst particle for the current island and mutate it
 					for (auto fitVal = subParRankFinal.begin(); fitVal != subParRankFinal.end(); ++fitVal) {
-						cout << "Raquel setting particle to island value" << endl;
-
+						if(options.verbosity>=4){
+							cout << "Raquel setting particle to island value" << endl;
+						}
 						parID = fcalcParID(fitVal->first, options.models.size());
 
 						if (fitVal->second > 0 && particleToIsland_[parID] == currIsland) {
-							cout << "Raquel setting particle to island value done" << endl;
-
+							if(options.verbosity>=4){
+								cout << "Raquel setting particle to island value done" << endl;
+							}
 							bestParticle = fitVal->second;
 							//cout << "setting particle " << fitVal->second << " as best with fit of " << fitVal -> first << endl;
 							//break;
@@ -8818,10 +8523,13 @@ void Swarm::processParticlesPSO(vector<unsigned int> particles, bool newFlight) 
 			particleCurrParamSets_[*particle] = calcParticlePosPSO(*particle);
 		}
 		else if (options.psoType == "bbpso") {
-			cout "RAQUEL before calcParticlePosBBPSO" << endl;
+			if (options.verbosity >= 3) {
+				cout "RAQUEL before calcParticlePosBBPSO" << endl;
+			}
 			particleCurrParamSets_[*particle] = calcParticlePosBBPSO(*particle);
-			cout "RAQUEL before calcParticlePosBBPSO" << endl;
-
+			if (options.verbosity >= 3) {
+				cout "RAQUEL before calcParticlePosBBPSO" << endl;
+			}
 		}
 		else if (options.psoType == "bbpsoexp") {
 			particleCurrParamSets_[*particle] = calcParticlePosBBPSO(*particle, true);
@@ -8958,6 +8666,7 @@ vector<double> Swarm::calcParticlePosBBPSO(unsigned int particle, bool exp) {
 		}
 		else {
 			// Calculate our mean and std
+
 			cout << "personalbest: " << personalBestPos << " neighborbest: " << neighborhoodBestPositions[i] << endl;
 			double mean = (abs(personalBestPos) + abs(neighborhoodBestPositions[i])) / 2;
 			cout << "mean: " << mean << endl;
@@ -10132,6 +9841,7 @@ void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int>>
 	// Fill a vector with particles from this island, starting with best fits and ending with worst
 	vector<unsigned int> particlesToSend;
 	for (auto fitIt = particleBestFitsByFit_.begin(); fitIt != particleBestFitsByFit_.end(); ++fitIt) {
+		cout << "particle to island index" << fitIt->second << " island " << island << endl;
 		if (particleToIsland_[fitIt->second] == island) {
 			particlesToSend.push_back(fitIt->second);
 			if (particlesToSend.size() == options.numToMigrate) {
@@ -10147,16 +9857,16 @@ void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int>>
 	vector<double> migrationSet;
 	//for (auto particle = particlesToSend.begin(); particle != particlesToSend.end(); ++particle) {
 	for (unsigned int i = 0; i < options.numToMigrate; ++i) {
-		//cout << "sending set " << i + 1 << " from particle " << particlesToSend[i] << endl;
+		cout << "sending set " << i + 1 << " from particle " << particlesToSend[i] << endl;
 		// Fill migrationSet with this particles current parameters
-		for (auto param = particleCurrParamSets_.at(particlesToSend[i]).begin(); param != particleCurrParamSets_.at(particlesToSend[i]).end(); ++param) {
+		for (auto param = particleCurrParamSets_[particlesToSend[i]].begin(); param != particleCurrParamSets_[particlesToSend[i]].end(); ++param) {
 			migrationSet.push_back(*param);
 		}
 		// Add that migration set to the list of the receiving island's
 		// migration sets
 		migrationSets[islandTopology[island][receivingIslandIndex]].push_back(migrationSet);
 		migrationSet.clear();
-		//cout << island << " sending migration set to island " << islandTopology[island][receivingIslandIndex] << endl;
+		cout << island << " sending migration set to island " << islandTopology[island][receivingIslandIndex] << endl;
 	}
 }
 
