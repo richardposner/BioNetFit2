@@ -165,7 +165,7 @@ void Model::parseModel() {
 
 void Model::outputModelWithParams(map<string, double> params, string path, string filename, string suffix, bool stopAtNetGen=false, bool onlyActions=false, bool netAndBngl=false, bool usePipe=false, bool isNetFile=false) {
 	if (swarm_->options.verbosity >= 3) {
-		cout << "RAQUEL outputmodel path " << path << " filename: " << filename << endl;
+//		cout << "RAQUEL outputmodel path " << path << " filename: " << filename << endl;
 	}
 	//Raquel added this check step to make sure that the simulation path really exists
 	if (!checkIfFileExists(path)) {
@@ -256,6 +256,7 @@ void Model::outputModelWithParams(map<string, double> params, string path, strin
 						else {
 							continue;
 						}
+						actionLine = actionLine + "\n";
 						outFile << actionLine;
 					}
 					else {
@@ -292,6 +293,11 @@ void Model::outputModelWithParams(map<string, double> params, string path, strin
 								newLine = boost::regex_replace(*line, boost::regex("\\}\\)"), suffixLine);
 								newLine = newLine + "\n";
 							}
+						}
+						//Raquel fixed problem that made resetConcentrations and simulate commands not be separated into different lines
+						char ch = newLine.back();
+						if(ch!='\n'){
+							newLine = newLine + "\n";
 						}
 
 						outFile << newLine;
