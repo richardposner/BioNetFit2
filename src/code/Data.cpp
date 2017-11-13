@@ -23,8 +23,9 @@ Data::Data(std::string path, Swarm * swarm, bool isExp) {
 	isExp_ = isExp;
 
 //cout<<"Data::Data   AAA-1"<<endl; mypause();
-
+cout << "received dataPath: " << path << endl;
 	dataPath = convertToAbsPath(path);
+cout << "converted dataPath: " << dataPath << endl;
 //cout<<"Data::Data   AAA-2"<<endl; mypause();
 	Data::parseData();
 //cout<<"Data::Data   AAA-3"<<endl; mypause();

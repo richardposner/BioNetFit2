@@ -56,6 +56,11 @@ string convertToAbsPath(string relPath) {
                 fullPath = canonical(relPath);
         }
         catch(...){}
+        string tmp = fullPath.string();
+        if(tmp.empty()){
+
+        	return relPath;
+        }
 
         return fullPath.string();
 }

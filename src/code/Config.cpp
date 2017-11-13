@@ -541,9 +541,21 @@ Swarm * Config::createSwarmFromConfig () {
 								constraintIndex++;
 								 cout << "setting " << paramComponents[0] << endl;
 					}else{
+						cout << "Problem with : " << pair->first << pair->second << " component size = " << paramComponents.size() << endl;
+						for(unsigned int r=0; r<paramComponents.size(); r++){
+
+							cout << paramComponents[r] << endl;
+
+						}
 						swarm_->outputError("Error: Problem parsing your free parameter generation option in your .conf file. Each parameter generation option requires three components: the parameter name, minimum, and maximum. Each constraint requires five components: logical operation, model 1, model2, time/iteration 1, time/iteration 2.");
 					}
 				}else{
+					cout << "Problem with : " << pair->first << pair->second  << " component size = " << paramComponents.size() << endl;
+					for(unsigned int r=0; r<paramComponents.size(); r++){
+
+						cout << paramComponents[r] << endl;
+
+					}
 					swarm_->outputError("Error: Problem parsing your free parameter generation option in your .conf file. Each parameter generation option requires three components: the parameter name, minimum, and maximum. Each constraint requires five components: logical operation, model 1, model2, time/iteration 1, time/iteration 2.");
 				}
 				//Raquel: end, added constraint section to the config file

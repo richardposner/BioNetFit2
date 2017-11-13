@@ -125,6 +125,7 @@ public:
 	unsigned int currentGeneration_;
 	unsigned int island_;
 
+	bool ignore_ = false;
 
 	template<typename Archive>
 	void serialize(Archive& ar, const unsigned version) {

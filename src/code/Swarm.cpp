@@ -2287,7 +2287,7 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 
 	while (finishedSubParticles_.size() < maxSubPar && runningSubParticles_.size() < maxSubPar) { //razi: loop over particles, each particle includes nModels subPArticles
 
-		if (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
+		while (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
 			sp++;
 			p = fcalcParID(sp, nModels);
 			mid = fcalcMID(sp, nModels);
@@ -2402,7 +2402,7 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 
 	while ( (finishedParticles_.size() <= (unsigned) (options.swarmSize/2) || finishedParticles_.size() <= 2 ) && runningParticles_.size() < maxSubPar ) { //razi: loop over particles, each particle includes nModels subPArticles
 
-		if (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
+		while (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
 			sp++;
 			p = fcalcParID(sp, nModels);
 			mid = fcalcMID(sp, nModels);
@@ -9656,7 +9656,7 @@ string Swarm::generateSlurmBatchFile(string runCmd) {
 
 #ifdef VER2
 		cout<<"Swarm::generateSlurmBatchFile Might need some modifications ....582\n";
-		sbatch << "mpirun -mca mca_component_show_load_errors 10 -v --tag-output -np 1 " << runCmd << " load " << sConf_[0] << " : -np " << options.swarmSize << " " << runCmd << " particle 0 run " << sConf_[0] << endl;
+		sbatch << "mpirun -mca mca_component_show_load_errors 10 -v --tag-outpuft -np 1 " << runCmd << " load " << sConf_[0] << " : -np " << options.swarmSize << " " << runCmd << " particle 0 run " << sConf_[0] << endl;
 #else
 		sbatch << "mpirun -mca mca_component_show_load_errors 10 -v --tag-output -np 1 " << runCmd << " load " << sConf_ << " : -np " << options.swarmSize << " " << runCmd << " particle 0 run " << sConf_ << endl;
 		//sbatch << "mpirun -prepend-rank -np 1 " << runCmd << " load " << sConf_ << " : -np " << options.swarmSize << " " << runCmd << " particle 0 run " << sConf_ << endl;

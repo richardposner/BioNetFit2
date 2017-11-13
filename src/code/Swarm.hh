@@ -81,6 +81,7 @@ float evaluateResults(string inputFile1, string inputFile2, map<int,string> cons
 class Swarm {
 public:
 	Swarm();
+	std::vector<unsigned int> checkMasterMessages();
 
 	void setExePath(std::string path) { exePath_ = path; }
 	void setConfigPath(std::string path) { configPath_ = path; }
@@ -400,7 +401,7 @@ private:
 	void outputBootstrapSummary();
 	void killAllParticles(int tag);
 	std::unordered_map<unsigned int, std::vector<double>> checkMasterMessagesDE();
-	std::vector<unsigned int> checkMasterMessages();
+	//std::vector<unsigned int> checkMasterMessages();
 	void checkExternalMessages();
 	void resetVariables();
 	void generateBestFitModel(std::string outputDirectory);
