@@ -82,6 +82,8 @@ class Swarm {
 public:
 	Swarm();
 	std::vector<unsigned int> checkMasterMessages();
+	void fixRunningParticle(int subParID);
+	void addRunningParticle(int subParID);
 
 	void setExePath(std::string path) { exePath_ = path; }
 	void setConfigPath(std::string path) { configPath_ = path; }
@@ -91,6 +93,7 @@ public:
 	void setExpPath(std::string prefixPath, std::string path, int mid);  //call addExp
 	void setModels(std::string prefixPath, std::string path, bool overwrite);
 	void setModel(std::string path, int mid, bool overwrite);
+
 
 	std::string getModelName(unsigned int modelId, bool FullPath); //std::string getModelPath(unsigned int modelId) {return modelPaths_.at(modelId);} //std::string getModel(unsigned int modelId);
 
@@ -127,6 +130,7 @@ public:
 	std::string getsConf(unsigned int mid) { return sConf_.at(mid); }
 
 	vector<pair<int,float>> resultChecking(); //Raquel: result checking function added
+	void processLateParticles(int subParID, bool breed, int currGen);
 
 #else
 	void addExp(std::string path);
@@ -155,6 +159,7 @@ public:
 	void runADE();
 	void runSSA();
 	void runASA();
+
 
 	void verbose_on(){verbose=true; options.verbosity=4;}  //razi added
 	void verbose_off(){verbose=false;} //razi added
@@ -377,6 +382,8 @@ public:
 	};
 	SwarmOpts options;
 
+
+
 private:
 	friend class boost::serialization::access;
 
@@ -389,6 +396,7 @@ private:
 #endif
 	void runGeneration();
 	void runAsyncGeneration();
+
 	void breedGenerationGA(std::vector<unsigned int> children = std::vector<unsigned int>());
 	void runNelderMead(unsigned int receiver, unsigned int cpu);
 	std::map<double, unsigned int> getNearestNeighbors(unsigned int it, unsigned int N);
@@ -540,6 +548,7 @@ private:
 	double beta_;
 	double cauchyMutator_;
 
+
 	template<typename Archive>
 	void serialize(Archive& ar, const unsigned version) {
 		//std::cout << " serializing swarm" << std::endl;
@@ -591,5 +600,7 @@ private:
 
 	Timer tmr_;
 };
+
+
 
 #endif /* SWARM_HH_ */

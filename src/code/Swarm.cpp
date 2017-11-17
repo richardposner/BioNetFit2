@@ -2270,7 +2270,11 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 	// razi: handle running particles that include subparticles, dont exceed parallel count
 	//we need to track number of completed particles which is not simply equal to (nModels * number of subParticles)
 	//a particle is considered completed of all its subparticles are finished. XXXX
+	if(options.verbosity>=3){
 
+		cout << "@@@@@@@@@@@@@@@@@ size before cleaning " << currentsubswarmBestFits_.size() << " @@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+
+	}
 
 	sp=0;
 	currentsubparticleBestFitsByFit_.clear();
@@ -2285,7 +2289,7 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 
 	}
 
-	while (finishedSubParticles_.size() < maxSubPar && runningSubParticles_.size() < maxSubPar) { //razi: loop over particles, each particle includes nModels subPArticles
+	while (finishedSubParticles_.size() < maxSubPar ) { //&& runningSubParticles_.size() < maxSubPar) { //razi: loop over particles, each particle includes nModels subPArticles
 
 		while (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
 			sp++;
@@ -2400,7 +2404,7 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 
 	}
 
-	while ( (finishedParticles_.size() <= (unsigned) (options.swarmSize/2) || finishedParticles_.size() <= 2 ) && runningParticles_.size() < maxSubPar ) { //razi: loop over particles, each particle includes nModels subPArticles
+	while ( (finishedParticles_.size() <= (unsigned) (options.swarmSize/2) || finishedParticles_.size() <= 2 ) ) { //razi: loop over particles, each particle includes nModels subPArticles
 
 		while (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
 			sp++;
@@ -2417,6 +2421,11 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 		//usleep(250000);
 		//cout << "RAQUEL Entering checkMasterMessages" << endl;
 		newFinishedParticles = checkMasterMessages();
+		if(options.verbosity>=3){
+
+			cout << "@@@@@@@@@@@@@@ SIZE AFTER CHECKING MESSAGES " <<  currentsubswarmBestFits_.size() << " @@@@@@@@@@@@@@@@@@@@@@@" <<endl;
+
+		}
 		flightCounter_ += newFinishedParticles.size();
 		//cout << "RAQUEL Done checkMasterMessages newFinishedParticles.size() " << newFinishedParticles.size() << endl;
 		//cout << "Flight counter = " << flightCounter_ << endl;
@@ -2436,10 +2445,12 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 
 			tries = 0;
 		}
+		if(options.verbosity >= 3){
+			cout << "FINISHED SUBPARTICLES: " << finishedSubParticles_.size() << endl;
+			cout << "FINISHED PARTICLES: " << finishedParticles_.size() << endl;
+		}
 
 	}
-	//finishedParticles_.clear();
-	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
 
 
 
@@ -2467,6 +2478,97 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 		outputError("Error: You had too many failed runs. Check simulation output (.BNG_OUT files) or adjust walltime.");
 	}
 	currentGeneration += 1;
+
+
+
+		//finishedParticles_.clear();
+		finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
+
+
+
+
+}
+
+
+
+void Swarm::processLateParticles(int subParID, bool breed, int currGen) {
+
+		int found = 0;
+			//for(auto i = 1; i<=options.swarmSize; i++){
+			//	found = 0;
+				//for(auto k = 0; k<options.models.size(); k++){
+				//	for(auto j = finishedSubParticles_.begin(); j != finishedSubParticles_.end(); ++j){
+						//subParID = fcalcsubParID(i, k, options.models.size());
+					//	if(subParID == *j){
+							//found = 1;
+
+//						}
+
+	//				}
+
+		if(currGen==0){
+			currGen = currentGeneration;
+
+		}
+	//
+					//if(found==0){
+		int pID = fcalcParID(subParID, options.models.size());
+		int mid = fcalcMID(subParID, options.models.size());
+
+
+						map<string, double> paramSet;
+
+							vector<string> paramVals;
+							vector<string> paramVecStr;
+
+							auto best = allGenFits.begin();
+							split(best->second, paramVals);
+
+							auto fp = this->getFreeParams_().begin();
+							for (unsigned int i = 1; i < paramVals.size(); i++) {
+								paramSet.insert(pair<string, double> (fp->first, stod(paramVals[i])));
+								++fp;
+
+								paramVecStr.push_back(paramVals[i]);
+							}
+
+							subparticleCurrParamSets_[pID][mid];
+							if(breed){
+								swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
+							}
+							cout << "@@@@@@@@@@@@@@@@@@@@@@@@ LATE SUBPARTICLE " << subParID << " @@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+							for (unsigned int r = 1; r <= options.smoothing; ++r) {
+								string outputDir = options.jobOutputDir + toString(currGen) + "/";
+								string bnglFilename = getModelName(mid, false)+"_" + toString(pID) + "_" + toString(r) + ".bngl";
+								string suffix = toString(pID) + "_" + toString(r) ;
+								options.models[mid]->outputModelWithParams(paramSet, outputDir, bnglFilename, suffix, false, true, true, false, false);
+
+
+							}
+						/*if(breed){
+							int numFinishedBreeding = 0;
+							while (numFinishedBreeding == 0) {
+									if(options.verbosity>=3){
+
+										cout << "checking for DONEBREED FOR LATE PARTICLE " << subParID << endl;
+									}
+									unsigned int numMessages = swarmComm->recvMessage(-1, 0, DONE_BREEDING, true, swarmComm->univMessageReceiver, true);
+
+							//		int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
+
+									numFinishedBreeding += numMessages;
+									//cout << numFinishedBreeding << endl;
+									if(options.verbosity>=3){
+
+										cout << "RAQUEL numFinishedBreeding " << numFinishedBreeding << endl;
+									}
+							}
+						}*/
+					//}
+				//}
+
+			//}
+
 }
 
 
@@ -2678,6 +2780,8 @@ void Swarm::getClusterInformation() {
 	}
 }
 
+
+
 vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, particles replaced with subparticles
 	unsigned int pID, mid, NumNewlyFinishedParticles=0;
 	std::vector<unsigned int> NewlyFinishedParticles;
@@ -2705,6 +2809,8 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 
 			pID = fcalcParID(subParID, options.models.size());
 			mid= fcalcMID(subParID, options.models.size());
+
+			fixRunningParticle(subParID);
 
 
 			if (options.verbosity >= 3) {
@@ -2755,7 +2861,7 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 			}
 			unsigned int gen = currentGeneration;
 			string paramsString;
-			if (options.synchronicity == 1) {
+			if (options.synchronicity == 1 || options.synchronicity == 0) { //Raquel testing
 				if (options.fitType == "ga") {
 					paramsString = "gen" + toString(gen) + "perm" + toString(subParID) + " ";
 				}
@@ -2764,7 +2870,7 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 				}
 
 			}
-			else if (options.synchronicity == 0) {
+			/*else if (options.synchronicity == 0) {
 				// Increment our flight counter
 
 				// TODO: This run summary contains 1 less particle than it should.
@@ -2776,7 +2882,7 @@ vector<unsigned int> Swarm::checkMasterMessages() {  //razi:  modified version, 
 
 				paramsString = toString(flightCounter_) + " ";
 			}
-
+	*/
 			// Store the parameters given to us by the particle
 
 
@@ -2831,7 +2937,11 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 			swarmBestFits_.insert(pair<double, unsigned int>(fitCalc, pID));
 			subswarmBestFits_.insert(pair<double, unsigned int>(fitCalc, subParID));
 			currentsubswarmBestFits_.insert(pair<double, unsigned int>(fitCalc, subParID));
+			if(options.verbosity>=3){
 
+				cout << "@@@@@@@@@@@@@@@@@ currentsubswarmBestFits_ size A " << currentsubswarmBestFits_.size() << " @@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+
+			}
 //cout << "add to swarmBestFits_ fitCalc: " << fitCalc <<endl;mypause();
 
 			if (options.fitType == "pso") {
@@ -2860,12 +2970,16 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 			pID = fcalcParID(subParID, options.models.size());
 			mid= fcalcMID(subParID, options.models.size());
 
+			fixRunningParticle(subParID);
+
 			// Get an iterator to the particle in our list of running particles
 			runningSubParticlesIterator_ = runningSubParticles_.find(subParID);
 			if(options.verbosity >= 5) {
 
 				cout << "Number of runnning subparticles before erasing" << runningSubParticles_.size() << endl;
 			}
+
+
 			if (runningSubParticlesIterator_ == runningSubParticles_.end()) {
 				string errMsg = "Error: Couldn't remove particle " + toString(pID) +  "  SubParticle " + toString(subParID) + " from runningParticle list.";
 				outputError(errMsg);
@@ -2936,6 +3050,27 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 	return NewlyFinishedParticles;
 
 }
+
+
+void Swarm::addRunningParticle(int subParID) {
+	int pID = fcalcParID(subParID, options.models.size());
+	runningSubParticles_.insert(subParID);
+
+	vector<unsigned int> newPar = update_finished_running_particles();
+	//runningParticles_.insert(pID);
+
+}
+
+void Swarm::fixRunningParticle(int subParID){
+
+
+	runningSubParticlesIterator_ = runningSubParticles_.find(subParID);
+	if (runningSubParticlesIterator_ == runningSubParticles_.end()) {
+		addRunningParticle(subParID);
+	}
+
+}
+
 
 unordered_map<unsigned int, vector<double>> Swarm::checkMasterMessagesDE() {
 
@@ -4380,13 +4515,7 @@ void Swarm::runAGA() {
 
 			cout << "RAQUEL: Started checkStopCriteria();" << endl;
 		}
-		stopCriteria = checkStopCriteria();
-		if (options.verbosity >= 4) {
-			cout << "RAQUEL: Stop criteria value is " << stopCriteria << endl;
 
-			cout << "RAQUEL: Finished checkStopCriteria();" << endl;
-			cout << "RAQUEL: Started saveSwarmState();" << endl;
-		}
 		saveSwarmState();
 		if (options.verbosity >= 4) {
 			cout << "RAQUEL: Finished saveSwarmState();" << endl;
@@ -4411,6 +4540,14 @@ void Swarm::runAGA() {
 
 		cout << "Generation: " << toString(currentGeneration - 1 ) << endl;
 
+		stopCriteria = checkStopCriteria();
+		if (options.verbosity >= 4) {
+			cout << "RAQUEL: Stop criteria value is " << stopCriteria << endl;
+
+			cout << "RAQUEL: Finished checkStopCriteria();" << endl;
+			cout << "RAQUEL: Started saveSwarmState();" << endl;
+		}
+
 		if (!stopCriteria) {
 
 			if(options.verbosity>=3){
@@ -4428,6 +4565,9 @@ void Swarm::runAGA() {
 				cout << "RAQUEL: finished breedGenerationGA();" << endl;
 			}
 		}
+
+		currentsubswarmBestFits_.clear();
+
 	}
 
 }
@@ -5624,6 +5764,9 @@ multimap<double, unsigned int> subparticleFitIDMap;
 if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de") {
 
 	 subparticleFitIDMap = currentsubswarmBestFits_;
+	 if(options.verbosity >= 3){
+		 cout << "@@@@@@@@@@@@@@@@@@@@@ FIT SIZE @@@@@@@@@@@@@@@@@" << currentsubswarmBestFits_.size() << endl;
+	 }
 
 }
 
@@ -9129,7 +9272,7 @@ void Swarm::getClusterInformation() {
 		}
 	}
 }
-
+/*
 vector<unsigned int> Swarm::checkMasterMessages() {
 	vector<unsigned int> finishedParticles;
 
@@ -9261,6 +9404,7 @@ vector<unsigned int> Swarm::checkMasterMessages() {
 
 	return finishedParticles;
 }
+*/
 
 unordered_map<unsigned int, vector<double>> Swarm::checkMasterMessagesDE() {
 

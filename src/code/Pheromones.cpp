@@ -537,8 +537,29 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 				    if (swarm_->options.verbosity>=3) {
 
 				    	std::cout << "putting it back in the queue..." << std::endl;
+				    	std::cout << "@@@@@@@@@@@@@@@@@@@@@@@ Expected: " << tag << "; Received: " << smessage.tag << "@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
 				    }
-					sendToSwarm(senderID, receiverID, stoi(smessage.tag), false, smessage.message);
+					sendToSwarm(smessage.sender, receiverID, stoi(smessage.tag), false, smessage.message);
+
+					if(tag == DONE_BREEDING && stoi(smessage.tag) == SIMULATION_END ){
+
+						std::cout << "SENDER REINSERTED = " << smessage.sender << endl;
+
+						swarm_->fixRunningParticle(smessage.sender);
+
+						std::vector<unsigned int> NewlyFinishedParticles = swarm_->checkMasterMessages();
+
+						for(auto i = NewlyFinishedParticles.begin(); i!=NewlyFinishedParticles.end(); ++i){
+							if (swarm_->options.verbosity>=3) {
+						    	std::cout << "@@@@@@@@@@@@@@@@@@@@@@@ PROCESSING LATE PAR: " << *i << std::endl;
+						    }
+							swarm_->processLateParticles(*i, true, 0);
+
+						}
+
+
+
+					}
 				}
 
 				break;

@@ -49,6 +49,9 @@ string GetCurrentPath(void) {
         return full_path.stem().string();
 }
 */
+
+
+
 string convertToAbsPath(string relPath) {
         path fullPath;
 

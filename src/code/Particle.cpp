@@ -785,7 +785,6 @@ void subParticle::runModel(unsigned int iteration, bool localSearch) {
 	string suffix = toString(pID) + "_" + toString(iteration);
 
 	string pipePath;
-
 	// Only need to generate files if we're in the first generation. In subsequent generations
 	// the model generation is handled by breeding parents
 	if (parParticle->currentGeneration_ == 1 && !localSearch) {
@@ -824,6 +823,15 @@ void subParticle::runModel(unsigned int iteration, bool localSearch) {
 			// If we're using network free simulation, output .bngl
 			mdl->outputModelWithParams(parParticle->simParams_.at(mid), path, bnglFilename, suffix, false, false, false, false, false);
 		}
+	}
+
+	ifstream bngfile(bnglFullPath);
+
+	if(!bngfile){
+		swp->processLateParticles(subParID, false, parParticle->currentGeneration_);
+		swp->fixRunningParticle(subParID);
+
+
 	}
 	if (swp->options.verbosity>= 3) {
 		cout << "RAQUEL GENERATION: " << parParticle->currentGeneration_ << " path" << path << endl;
@@ -913,7 +921,7 @@ void subParticle::runModel(unsigned int iteration, bool localSearch) {
 
 	// Check for simulation command success
 	//Raquel: changed this temporarily
-	if (ret == 0 || ret==-1) { // TODO: Need to check for simulation status when using pipes. Going by return code doesn't work there because we're using the & operator
+	if (ret == 0 || ret==-1 ) { // TODO: Need to check for simulation status when using pipes. Going by return code doesn't work there because we're using the & operator
 
 		// really not sure how we can do this easily
 		if (parParticle->swarm_->options.verbosity >= 3) {
