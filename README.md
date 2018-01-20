@@ -59,3 +59,29 @@ For example:
 
       constraint_weight=0.5
 
+
+
+# Other differences compared to BioNetFit1
+
+If using NFsim, whenever you simulate observables that come from the function section of the BNGL file, don't forget to add the "()" suffix to the experimental data file. For example, if you have the following function section:
+
+      begin functions
+
+           pre1_dose()=alpha1_pre*Clusters/f # .scan file output (Fig. 2B)
+           pre2_time()=alpha2_pre*Clusters/f # .gdat file output (Fig. 3B)
+           pre3_dose()=alpha3_pre*pEGFR/f # .scan file output (Fig. 2D)
+           pre4_time()=alpha4_pre*pEGFR/f # .gdat file output (Fig. 3D)
+           ...
+
+      end functions
+
+
+Your experimental data file (*.exp) should contain the function suffix "()" in the obervables that resulted from functions:
+
+      #	time	pre2_time()	pre4_time()	pre2_time()_SD	pre4_time()_SD
+      	0	1.6131558314	0.0015707048	0.2004231309	0.0597428571
+      	30	0.9593315136	0.8850918303	0.2615617574	0.0667714286
+      	60	0.8707928038	1.11127324	0.163062846	0.0632571429
+      	120	NaN	1.2208298593	NaN	0.0702857143
+      ...
+
