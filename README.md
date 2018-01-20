@@ -85,3 +85,10 @@ Your experimental data file (*.exp) should contain the function suffix "()" in t
       	120	NaN	1.2208298593	NaN	0.0702857143
       ...
 
+
+Now BioNetFit2 supports multiple models or datasets per run (models comparing wild-type versus mutants, for example). To make things clear, you must specify one experimental file per model in the conf file. For example:
+
+      model = parabolaA.bngl, parabolaB.bngl
+      exp_file = parabolaA.exp, parabolaB.exp
+
+where parabolaA.exp is the experimental file for parabolaA.bngl, and parabolaB.exp is the experimental file for the model parabolaB.bngl
