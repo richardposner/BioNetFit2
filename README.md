@@ -63,7 +63,7 @@ For example:
 
 # Other differences compared to BioNetFit1
 
-If using NFsim, whenever you simulate observables that come from the function section of the BNGL file, don't forget to add the "()" suffix to the experimental data file. For example, if you have the following function section:
+If using NFsim, whenever you simulate observables that come from the function section of the BNGL file, don't forget to add the "()" suffix to observable labels in the experimental data file. For example, if you have the following function section:
 
       begin functions
 
