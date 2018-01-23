@@ -63,7 +63,7 @@ For example:
 
 # Other differences compared to BioNetFit1
 
-If using NFsim, whenever you simulate observables that come from the function section of the BNGL file, don't forget to add the "()" suffix to observable labels in the experimental data file. For example, if you have the following function section:
+- If using NFsim, whenever you simulate observables that come from the function section of the BNGL file, don't forget to add the "()" suffix to observable labels in the experimental data file. For example, if you have the following function section:
 
       begin functions
 
@@ -76,7 +76,7 @@ If using NFsim, whenever you simulate observables that come from the function se
       end functions
 
 
-Your experimental data file (*.exp) should contain the function suffix "()" in the obervables that resulted from functions:
+- Your experimental data file (*.exp) should contain the function suffix "()" in the obervables that resulted from functions:
 
       #	time	pre2_time()	pre4_time()	pre2_time()_SD	pre4_time()_SD
       	0	1.6131558314	0.0015707048	0.2004231309	0.0597428571
@@ -86,9 +86,23 @@ Your experimental data file (*.exp) should contain the function suffix "()" in t
       ...
 
 
-Now BioNetFit2 supports multiple models or datasets per run (models comparing wild-type versus mutants, for example). To make things clear, you must specify one experimental file per model in the conf file. For example:
+- Now BioNetFit2 supports multiple models or datasets per run (models comparing wild-type versus mutants, for example). To make things clear, you must specify one experimental file per model in the conf file. For example:
 
       model = parabolaA.bngl, parabolaB.bngl
       exp_file = parabolaA.exp, parabolaB.exp
 
 where parabolaA.exp is the experimental file for parabolaA.bngl, and parabolaB.exp is the experimental file for the model parabolaB.bngl
+
+- Precision: BNF2 allows 5 decimal characters per value in the experimental file (.exp) or time/parameter_scan data points, the obervable values can have more precision), for example: 
+
+        #time/X_value    Y_observable
+        1.00372E-04	6.0310121E-02
+        3.14492E-04	2.4841445E-01
+        9.85384E-04	3.2585751E-01
+        3.18698E-03	3.8716871E-01
+        9.98564E-03	5.0867287E-01
+        3.12876E-02	4.8708839E-01
+        1.01192E-01	5.2860091E-01
+
+If you use too many decimal characters the mapping of the simulated data versus experimental data may not match because of precision limitations. 
+Make sure that the simulated parameter_scan points or time points have the same number of decimal characters as the experimental data file as well, otherwise the program may return an "map at out_of_range" error.
