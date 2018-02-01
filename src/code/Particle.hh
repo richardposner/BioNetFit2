@@ -51,7 +51,6 @@ public:
 	unsigned int calcModelID(unsigned int subParID);
 
 
-
 #else //VER2
 	std::map<std::string, double> simParams_;
 	void setParam(std::pair<std::string, double> myParams);

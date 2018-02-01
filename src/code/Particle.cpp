@@ -13,6 +13,7 @@
 
 #include "Particle.hh"
 #include "Setting.hh"
+#include "Swarm.hh"
 
 using namespace std;
 using namespace std::chrono;
@@ -828,8 +829,10 @@ void subParticle::runModel(unsigned int iteration, bool localSearch) {
 	ifstream bngfile(bnglFullPath);
 
 	if(!bngfile){
-		swp->processLateParticles(subParID, false, parParticle->currentGeneration_);
+		swp->processLateParticles(parParticle->simParams_.at(mid), subParID, false, parParticle->currentGeneration_);
 		swp->fixRunningParticle(subParID);
+		//cout << "from particle: " << swp->particleCurrParamSets_.size() << endl;
+		//cout << parParticle->simParams_.at(mid).size() << endl;
 
 
 	}
@@ -1482,26 +1485,40 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 
 		totalSum = 0;
 		divisor = 0;
-
+		int notfoundCount = 0;
 		// Loop through .exp files. Iterator points to string/dataset pair
 		for (auto e = swarm_->options.expFiles.begin(); e != swarm_->options.expFiles.end(); ++e){
 			if(swarm_->options.verbosity >=4){
 				cout << "DATA FILE FOR MID " << mid << " " << e->first << endl;
 			}
+
+
+			if ( dataFiles_.at(mid).find(e->first) == dataFiles_.at(mid).end() ) {
+			  // not found
+				if(swarm_->options.verbosity >=4){
+					cout << "EXPERIMENTAL KEY NOT FOUND IN SIM GDAT FILE: " << e->first << " SKIPING..." << endl;
+				}
+				continue;
+			}
+
 			//razi: we first need to check if the exp file belongs to this subParticle
 			if (dataFiles_.at(mid).count(e->first)!=1){
 				cout<<"The exp file "<< e->first<< " does not belong to model is:"<<mid<<". try other models."<<endl;
 				continue; //Raquel: was a break, making the fit for MID 1 always become zero
 			}
+
+
 			if(swarm_->options.verbosity >=4){
 				cout << "RAQUEL PASSED MID " << mid << endl;
 			}
 			// Loop through .exp columns. Iterator points to column/map pair
 			//cout << "exp loop " << e->first << endl;
 			setSum = 0;
-			//cout << "first: " << e->second->dataCurrent->begin()->first << endl;
-			//cout << "second " <<  e->second->dataCurrent->begin()->second.begin()->first << endl;
-			//cout << " third " << e->second->dataCurrent->begin()->second.begin()->second << endl;
+			if(swarm_->options.verbosity >=4){
+				cout << "first: " << e->second->dataCurrent->begin()->first << endl;
+				cout << "second " <<  e->second->dataCurrent->begin()->second.begin()->first << endl;
+				cout << " third " << e->second->dataCurrent->begin()->second.begin()->second << endl;
+			}
 			for (std::map<std::string, std::map<double,double> >::iterator exp_col = e->second->dataCurrent->begin(); exp_col != e->second->dataCurrent->end(); ++exp_col) {
 				// Loop through timepoints of column.  Iterator points to a timepoint/value pair
 
@@ -1523,13 +1540,44 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 
 					//double exp = timepoint->second;
 					//cout << "exp: " << exp << endl;
+					if ( dataFiles_.at(mid).at(e->first).at(swarm_->options.smoothing)->dataCurrent->find(exp_col->first) == dataFiles_.at(mid).at(e->first).at(swarm_->options.smoothing)->dataCurrent->end() ) {
+					  // not found
+						if(swarm_->options.verbosity >=4){
+							cout << "EXPERIMENTAL KEY NOT FOUND IN SIM GDAT FILE, exp_col: " << exp_col->first << " SKIPING..." << endl;
+
+						}
+						notfoundCount++;
+
+						if((unsigned)notfoundCount>=e->second->dataCurrent->size()){
+							if(swarm_->options.verbosity >=4){
+								cout << "Went through all EXP columns and didn't find any result in the SIM GDAT, skipping this failed simulation." << endl;
+							}
+
+							totalSum=9999;
+
+						}
+
+						continue;
+					}
+
+					if ( dataFiles_.at(mid).at(e->first).at(swarm_->options.smoothing)->dataCurrent->at(exp_col->first).find(timepoint->first) == dataFiles_.at(mid).at(e->first).at(swarm_->options.smoothing)->dataCurrent->at(exp_col->first).end() ) {
+					  // not found
+						if(swarm_->options.verbosity >=4){
+							cout << "EXPERIMENTAL KEY NOT FOUND IN SIM GDAT FILE, time_point: " << timepoint->first << " SKIPING..." << endl;
+						}
+						continue;
+					}
 
 					if (swarm_->options.smoothing == 1) {
 						//cout << "sim: " << dataFiles_.at(e->first).at(swarm_->options.smoothing)->dataCurrent->at(exp_col->first).at(timepoint->first) << endl;
+
+
 					}
 					else {
 						//cout << "sim: " << dataFiles_.at(e->first).at(swarm_->options.smoothing + 1)->dataCurrent->at(exp_col->first).at(timepoint->first) << endl;
 					}
+
+
 
 					if (usingSD) {
 						divisor = e->second->standardDeviations.at(exp_col->first).at(timepoint->first);
@@ -1541,6 +1589,25 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 					if (swarm_->options.smoothing == 1) {
 						if(swarm_->options.verbosity >=4){
 							cout << "trying smoothing" << endl;
+							cout << "MID: " << mid << " data files size: " << dataFiles_.size() << " e->first: " << e->first << " dataFiles_.at(mid) size: " << dataFiles_.at(mid).size() << " exp_col->first: " << exp_col->first << endl;
+							cout << "exp_col->first: " << exp_col->first << " timepoint->first: " << timepoint->first << endl;
+
+
+
+						}
+
+						if(swarm_->options.verbosity >=9){
+
+							for(auto keys=dataFiles_.at(mid).at(e->first).begin(); keys!=dataFiles_.at(mid).at(e->first).end(); ++keys){
+
+								cout << "keys: " << keys->first << endl;
+								cout << "keys: " << keys->second << endl;
+
+							}
+						}
+
+						if(swarm_->options.verbosity >=5){
+							cout << "print: " << dataFiles_.at(mid).at(e->first).at(swarm_->options.smoothing+1)->dataCurrent->at(exp_col->first).at(timepoint->first) << endl;
 						}
 						sim = dataFiles_.at(mid).at(e->first).at(swarm_->options.smoothing)->dataCurrent->at(exp_col->first).at(timepoint->first);
 						//cout << dataCurrent->at(exp_col->first).at(timepoint->first) << endl;

@@ -130,7 +130,8 @@ public:
 	std::string getsConf(unsigned int mid) { return sConf_.at(mid); }
 
 	vector<pair<int,float>> resultChecking(); //Raquel: result checking function added
-	void processLateParticles(int subParID, bool breed, int currGen);
+	//void processLateParticles(int subParID, bool breed, int currGen);
+	void processLateParticles(std::map<std::string, double> simPar, int subParID, bool breed, int currGen);
 
 #else
 	void addExp(std::string path);
@@ -198,6 +199,18 @@ public:
 	float fitCompareTolerance;
 	bool commInit;
 	bool verbose;  //razi added for debug
+
+
+	// Holds the current parameter set being used by each particle
+	std::map<unsigned int, std::vector<double>> particleCurrParamSets_;
+	std::map<unsigned int, std::vector<double>> particleCurrParamSets_copy;
+
+	// Holds the running best parameter set for each particle
+	//razi changed, so we keep currrent parameters for each model separately
+	std::map<unsigned int, std::map<unsigned int, std::vector<double>>> subparticleCurrParamSets_;   //razi: PID, MID, PARAMA VALUESS
+	std::map<unsigned int, std::map<unsigned int, std::vector<double>>> subparticleCurrParamSets_copy;   //razi: PID, MID, PARAMA VALUESS
+
+public:
 
 	struct SwarmOpts {
 		std::string jobName;	// name of the job
@@ -483,9 +496,6 @@ private:
 	// razi: Counts how many iterations each particle/subparticle has performed
 	std::map<unsigned int, std::map<unsigned int, unsigned int>> particleIterationCounter_; //std::map<PID, MID, Iteration>> particleIterationCounter_
 
-	// Holds the running best parameter set for each particle
-	//razi changed, so we keep currrent parameters for each model separately
-	std::map<unsigned int, std::map<unsigned int, std::vector<double>>> subparticleCurrParamSets_;   //razi: PID, MID, PARAMA VALUESS
 
 	std::vector<std::map<unsigned int, unsigned int>> freeParamMapping; //razi this keeps the mapping from models free parameters to the full list of free parameters
 	//Ex: for two models we may have <<1,1>,<2,2>,<3,3>, <4,5>, <1,2>,<2,3>, <3,4>, <4,6>> which means there are 4 free paramas in model1 and 4 free paramas in model 2 with the given ordering
@@ -511,22 +521,25 @@ private:
 	// Maybe we can change them to vectors, too
 	std::map<unsigned int, double> particleBestFits_;
 	std::map<unsigned int, double> subparticleBestFits_; //Raquel added support to subparticles
+	std::map<unsigned int, double> subparticleBestFits_copy; //Raquel added support to subparticles
 
 	std::multimap<double, unsigned int> particleBestFitsByFit_;
+	std::multimap<double, unsigned int> particleBestFitsByFit_copy;
 	std::multimap<double, unsigned int> subparticleBestFitsByFit_; //Raquel added support to subparticles
+	std::multimap<double, unsigned int> subparticleBestFitsByFit_copy; //Raquel added support to subparticles
+
 	std::multimap<double, unsigned int> currentsubparticleBestFitsByFit_; //Raquel added support to subparticles
+	std::multimap<double, unsigned int> currentsubparticleBestFitsByFit_copy; //Raquel added support to subparticles
 
 	std::multimap<double, unsigned int> swarmBestFits_;
 	std::multimap<double, unsigned int> subswarmBestFits_; //Raquel added support to subparticles
 	std::multimap<double, unsigned int> currentsubswarmBestFits_; //Raquel added support to subparticles
+	std::multimap<double, unsigned int> currentsubswarmBestFits_copy; //Raquel added support to subparticles
 
 	std::map<unsigned int, std::vector<double>> particleParamVelocities_;
 
 	// Holds the running best parameter set for each particle
 	std::map<unsigned int, std::vector<double>> particleBestParamSets_;
-
-	// Holds the current parameter set being used by each particle
-	std::map<unsigned int, std::vector<double>> particleCurrParamSets_;
 
 
 	// Holds particle weights for use in enhancedStop stop criteria
@@ -599,6 +612,8 @@ private:
 	}
 
 	Timer tmr_;
+	Timer generationTime_; //Raquel adding walltime functionality
+
 };
 
 

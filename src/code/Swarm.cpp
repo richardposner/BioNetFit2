@@ -1971,6 +1971,7 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 		// Insert into best fit lists, erasing in the case of the map with fits as keys
 		particleBestFits_[pID] = fit;
 		subparticleBestFits_[subParID] = fit; //Raquel added support to subparticles
+		subparticleBestFits_copy[subParID] = fit;
 
 		map<double, unsigned int>::iterator toDelIt = particleBestFitsByFit_.end();
 
@@ -1988,6 +1989,7 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 		}
 
 		particleBestFitsByFit_.insert(pair<double, unsigned int>(fit, pID));
+		particleBestFitsByFit_copy.insert(pair<double, unsigned int>(fit, pID));
 
 		unsigned int i = 0;
 		for (auto param = params.begin(); param != params.end(); ++param) {
@@ -2012,6 +2014,7 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 			}
 			// Insert into best fit lists, erasing in the case of the map with fits as keys
 			subparticleBestFits_[subParID] = fit; //Raquel added support to subparticles
+			subparticleBestFits_copy[subParID] = fit;
 
 			map<double, unsigned int>::iterator toDelIt2 = subparticleBestFitsByFit_.end();
 
@@ -2028,10 +2031,10 @@ void Swarm::processParamsPSO(vector<double> &params, unsigned int subParID, doub
 			}
 
 
-			cout << "Adding " << fit << " to the fit values of subpar " << subParID << endl;
+			//cout << "Adding " << fit << " to the fit values of subpar " << subParID << endl;
 			subparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, subParID)); //Raquel added support to subparticles
 			currentsubparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, subParID)); //Raquel added support to subparticles
-
+			currentsubparticleBestFitsByFit_copy.insert(pair<double, unsigned int>(fit, subParID));
 			for(unsigned int mid = 0; mid < options.models.size(); mid++){
 				update_cur_particle_params(pID, mid, true);
 			}
@@ -2142,6 +2145,7 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 
 		// Insert into best fit lists, erasing in the case of the map with fits as keys
 		subparticleBestFits_[subParID] = fit; //Raquel added support to subparticles
+		subparticleBestFits_copy[subParID] = fit; //Raquel added support to subparticles
 
 		map<double, unsigned int>::iterator toDelIt2 = subparticleBestFitsByFit_.end();
 		if (options.verbosity >= 3) {
@@ -2167,7 +2171,9 @@ void Swarm::processParamsDE(vector<double> &params, unsigned int subParID, doubl
 			cout << "done" << endl;
 		}
 		subparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, subParID));//Raquel added support to subparticles
+		subparticleBestFitsByFit_copy.insert(pair<double, unsigned int>(fit, subParID));//Raquel added support to subparticles
 		currentsubparticleBestFitsByFit_.insert(pair<double, unsigned int>(fit, subParID));//Raquel added support to subparticles
+		currentsubparticleBestFitsByFit_copy.insert(pair<double, unsigned int>(fit, subParID));//Raquel added support to subparticles
 
 		//unsigned int i = 0;
 		//for (auto param = params.begin(); param != params.end(); ++param) {
@@ -2289,6 +2295,8 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 
 	}
 
+	generationTime_.reset(); //Raquel implementing walltime
+
 	while (finishedSubParticles_.size() < maxSubPar ) { //&& runningSubParticles_.size() < maxSubPar) { //razi: loop over particles, each particle includes nModels subPArticles
 
 		while (runningSubParticles_.size()< options.parallelCount && sp < maxSubPar) {//razi: make sure the number of subparticles don't exceed parallel count limit
@@ -2330,6 +2338,16 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 			tries = 0;
 		}
 
+	}
+
+	if(options.verbosity >= 2) {
+
+		cout << "Total time to run generation: " << generationTime_.elapsed() << " seconds." << endl;
+		cout << "Max fit time: " << options.maxFitTime << endl;
+		int convertedMaxFitTime = convertTimeToSeconds(options.maxFitTime);
+
+
+		cout << "Max fit time converted: " << convertedMaxFitTime << endl;
 	}
 	finishedParticles_.clear();
 	finishedSubParticles_.clear(); //Raquel added to solve problem of less and less result files as generations go
@@ -2491,9 +2509,9 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 
 
 
-void Swarm::processLateParticles(int subParID, bool breed, int currGen) {
+void Swarm::processLateParticles(map<string, double> simParams_, int subParID, bool breed, int currGen) {
 
-		int found = 0;
+		//int found = 0;
 			//for(auto i = 1; i<=options.swarmSize; i++){
 			//	found = 0;
 				//for(auto k = 0; k<options.models.size(); k++){
@@ -2521,27 +2539,83 @@ void Swarm::processLateParticles(int subParID, bool breed, int currGen) {
 							vector<string> paramVals;
 							vector<string> paramVecStr;
 
-							auto best = allGenFits.begin();
-							split(best->second, paramVals);
+							//auto best = allGenFits.begin();
 
-							auto fp = this->getFreeParams_().begin();
-							for (unsigned int i = 1; i < paramVals.size(); i++) {
-								paramSet.insert(pair<string, double> (fp->first, stod(paramVals[i])));
-								++fp;
+							//allGenFits.insert(pair<double, string>(fitCalc, order_params(paramsString, mid)));
+							//swarmBestFits_.insert(pair<double, unsigned int>(fitCalc, pID));
+							//subswarmBestFits_.insert(pair<double, unsigned int>(fitCalc, subParID));
+							//currentsubswarmBestFits_.insert(pair<double, unsigned int>(fitCalc, subParID));
 
-								paramVecStr.push_back(paramVals[i]);
+							int bestSP = 0;
+							int bestMD = -1;
+							int bestP = 0;
+
+							//int mysize = subparticleBestFits_.size();
+							//cout << "SIZE1 " << mysize << endl;
+							//mysize = swarmBestFits_.size();
+							//cout << "SIZE2 " << mysize << endl;
+
+							if(simParams_.size()==0){
+
+								//Raquel: we gotta fix this, make this loop work and discover why the variables are getting erased.
+								for(auto pi = subparticleBestFits_.begin(); pi != subparticleBestFits_.end(); pi++){
+
+									bestMD = fcalcMID(pi->second, options.models.size());
+									if(bestMD == mid){
+										bestSP = pi->second;
+										bestP = fcalcParID(bestSP, options.models.size());
+										break;
+									}
+
+								}
+
+
+								//split(best->second, paramVals);
+
+								auto fp = options.models.at(mid)->freeParams_.begin();
+								for (unsigned int i = 1; i < subparticleCurrParamSets_[pID][mid].size(); i++) {
+									//paramSet.insert(pair<string, double> (fp->first, subparticleCurrParamSets_[bestP][mid][i])); //make this work later, to clone the best particle
+									paramSet.insert(pair<string, double> (fp->first, subparticleCurrParamSets_[pID][mid][i]));
+
+									++fp;
+
+									paramVecStr.push_back(toString(subparticleCurrParamSets_[bestP][mid][i]));
+								}
+
+
+
+
+							}else{
+
+								for (auto i = simParams_.begin(); i != simParams_.end(); ++i) {
+									//paramSet.insert(pair<string, double> (fp->first, subparticleCurrParamSets_[bestP][mid][i])); //make this work later, to clone the best particle
+									paramSet.insert(pair<string, double> (i->first, i->second));
+
+									paramVecStr.push_back(toString(i->second));
+								}
 							}
 
-							subparticleCurrParamSets_[pID][mid];
 							if(breed){
 								swarmComm->sendToSwarm(0, subParID, SEND_FINAL_PARAMS_TO_PARTICLE, false, paramVecStr);
 							}
-							cout << "@@@@@@@@@@@@@@@@@@@@@@@@ LATE SUBPARTICLE " << subParID << " @@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+							if(options.verbosity>=3){
+								cout << "@@@@@@@@@@@@@@@@@@@@@@@@ LATE SUBPARTICLE " << subParID << " @@@@@@@@@@@@@@@@@@@@@@@@@@@" << " paramvals size: " << paramVals.size() << " freeparam names size: " << options.models.at(mid)->freeParams_.size() << endl;
+							}
 							for (unsigned int r = 1; r <= options.smoothing; ++r) {
 								string outputDir = options.jobOutputDir + toString(currGen) + "/";
 								string bnglFilename = getModelName(mid, false)+"_" + toString(pID) + "_" + toString(r) + ".bngl";
 								string suffix = toString(pID) + "_" + toString(r) ;
-								options.models[mid]->outputModelWithParams(paramSet, outputDir, bnglFilename, suffix, false, true, true, false, false);
+								//options.models[mid]->outputModelWithParams(paramSet, outputDir, bnglFilename, suffix, false, false, true, false, false);
+
+								if (options.models[mid]->getHasGenerateNetwork()){
+									// If we're using ODE solver, output .net file
+									bnglFilename = boost::regex_replace(bnglFilename, boost::regex("bngl$"), string("net"));
+									options.models[mid]->outputModelWithParams(simParams_, outputDir, bnglFilename, suffix,  false, false, true, false, false);
+								}
+								else {
+									// If we're using network free simulation, output .bngl
+									options.models[mid]->outputModelWithParams(simParams_, outputDir, bnglFilename, suffix, false, false, false, false, false);
+								}
 
 
 							}
@@ -2919,6 +2993,9 @@ for (auto ii=subparticleCurrParamSets_.begin(); ii!=subparticleCurrParamSets_.en
 			if(options.verbosity >= 5) {
 
 cout<<i <<" Params collected for one subparticle: "<<paramsString<<endl; //mypause();
+subparticleCurrParamSets_copy = subparticleCurrParamSets_;
+particleCurrParamSets_copy = particleCurrParamSets_;
+
 			}
 			update_cur_particle_params(pID, mid, true); //razi: TODO  the same procedure should be done in other places, the slave sends theliust of free parameters for subparticle that should be reordered for particles
 
@@ -2937,6 +3014,8 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 			swarmBestFits_.insert(pair<double, unsigned int>(fitCalc, pID));
 			subswarmBestFits_.insert(pair<double, unsigned int>(fitCalc, subParID));
 			currentsubswarmBestFits_.insert(pair<double, unsigned int>(fitCalc, subParID));
+			currentsubswarmBestFits_copy.insert(pair<double, unsigned int>(fitCalc, subParID));
+
 			if(options.verbosity>=3){
 
 				cout << "@@@@@@@@@@@@@@@@@ currentsubswarmBestFits_ size A " << currentsubswarmBestFits_.size() << " @@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
@@ -3053,7 +3132,7 @@ cout << "add to allGenFits fitCalc: " << fitCalc <<" params:" << paramsString<<e
 
 
 void Swarm::addRunningParticle(int subParID) {
-	int pID = fcalcParID(subParID, options.models.size());
+	//int pID = fcalcParID(subParID, options.models.size());
 	runningSubParticles_.insert(subParID);
 
 	vector<unsigned int> newPar = update_finished_running_particles();
@@ -5764,6 +5843,7 @@ multimap<double, unsigned int> subparticleFitIDMap;
 if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de") {
 
 	 subparticleFitIDMap = currentsubswarmBestFits_;
+	 currentsubswarmBestFits_copy = currentsubswarmBestFits_;
 	 if(options.verbosity >= 3){
 		 cout << "@@@@@@@@@@@@@@@@@@@@@ FIT SIZE @@@@@@@@@@@@@@@@@" << currentsubswarmBestFits_.size() << endl;
 	 }
@@ -7572,7 +7652,10 @@ std::vector<unsigned int> Swarm::update_finished_running_particles(){
 
 
 	if (finishedSubParticles_.empty()){
-		cout<<"finished subPartcile list is empty ...."<<endl;
+		if(options.verbosity>=1){
+			cout<<"finished subPartcile list is empty ...."<<endl;
+
+		}
 	}else{
 
 

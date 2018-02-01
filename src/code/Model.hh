@@ -73,6 +73,9 @@ public:
 	// Map key contains the action prefix, map value contains the action information
 	std::map<std::string, action> actions;
 
+	std::map<std::string, FreeParam*> freeParams_;
+
+
 private:
 	friend class boost::serialization::access;
 
@@ -85,7 +88,6 @@ private:
 	std::vector<std::string> netContents_;
 
 	bool hasGenerateNetwork_;
-	std::map<std::string, FreeParam*> freeParams_;
 
 	template<typename Archive>
 	void serialize(Archive& ar, const unsigned version) {

@@ -10,6 +10,7 @@
 #include "Model.hh"
 #include "Setting.hh"
 
+
 using namespace std;
 
 Model::Model(Swarm * swarm, string path) {
@@ -261,6 +262,9 @@ void Model::outputModelWithParams(map<string, double> params, string path, strin
 					}
 					else {
 						string newLine = *line;
+						//Raquel fixing problem that would remove space after closing parenthesis, making the rules from example 4 not work
+						string fixedLine = boost::regex_replace(newLine, boost::regex("\\)\\w"), string(") \\w"));
+						newLine = fixedLine;
 
 						bool inParameterBlock = true;
 						int numReplacedParams = 0;
@@ -274,16 +278,47 @@ void Model::outputModelWithParams(map<string, double> params, string path, strin
 							inParameterBlock = false;
 							//cout << "out of parameter block" << endl;
 						}
+						if (swarm_->options.verbosity >= 9) {
 
-						//cout << *line << endl;
+							cout << *line << endl;
+							cout << numReplacedParams << " " << numParamsToReplace << endl;
+						}
 						if (inParameterBlock) {
 							// Replace free param with generated param
+							if (swarm_->options.verbosity >= 9) {
+
+								cout << "in parameter block" << endl;
+
+							}
 							if (boost::regex_search(*line, matches, boost::regex("(\\s+|=\\s*)(\\w+)__FREE__"))) {
 								// Older version of C++ don't support double overload to toString, so we have to cast to long double
-								//cout << "found a FP: " << matches[2] << endl;
-								newLine = boost::regex_replace(*line, boost::regex("\\w+__FREE__"), toString(params[matches[2]]));
-								//cout << "replacing with: " << params[matches[2]] << endl;
+								if (swarm_->options.verbosity >= 9) {
+
+									cout << "found a FP: " << matches[2] << endl;
+									cout << "OPTIONS USED:" << stopAtNetGen << "," << onlyActions << "," << netAndBngl << "," << usePipe << "," << isNetFile << endl;
+								}
+								newLine = boost::regex_replace(*line, boost::regex("(\\w+)__FREE__"), toString(params[matches[2]]));
+
+								if (swarm_->options.verbosity >= 9) {
+
+									cout << "replacing with: " << params[matches[2]] << endl;
+								}
 								++numReplacedParams;
+							}else if(boost::regex_search(*line, matches, boost::regex("\\w+__FREE__"))){
+								if (swarm_->options.verbosity >= 3) {
+
+									cout << "found a FP2: " << matches[2] << endl;
+								}
+								newLine = boost::regex_replace(*line, boost::regex("\\w+__FREE__"), toString(params[matches[2]]));
+								if (swarm_->options.verbosity >= 3) {
+
+									cout << "replacing with: " << params[matches[2]] << endl;
+								}
+							}
+						}else{
+							if (swarm_->options.verbosity >= 3) {
+
+								cout << "out of parmeter block" << endl;
 							}
 						}
 						// Add in the unique suffix

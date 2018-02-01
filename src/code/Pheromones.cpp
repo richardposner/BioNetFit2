@@ -7,6 +7,7 @@
 // Description :
 //============================================================================*/
 #include "Pheromones.hh"
+#include "Swarm.hh"
 
 namespace mpi = boost::mpi;
 using namespace boost::interprocess;
@@ -543,8 +544,9 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 
 					if(tag == DONE_BREEDING && stoi(smessage.tag) == SIMULATION_END ){
 
-						std::cout << "SENDER REINSERTED = " << smessage.sender << endl;
-
+						if(swarm_->options.verbosity >= 3){
+							std::cout << "SENDER REINSERTED = " << smessage.sender << endl;
+						}
 						swarm_->fixRunningParticle(smessage.sender);
 
 						std::vector<unsigned int> NewlyFinishedParticles = swarm_->checkMasterMessages();
@@ -552,8 +554,23 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 						for(auto i = NewlyFinishedParticles.begin(); i!=NewlyFinishedParticles.end(); ++i){
 							if (swarm_->options.verbosity>=3) {
 						    	std::cout << "@@@@@@@@@@@@@@@@@@@@@@@ PROCESSING LATE PAR: " << *i << std::endl;
+						    	std::cout << "from pheromones: " << swarm_->subparticleCurrParamSets_.size() << std::endl;
 						    }
-							swarm_->processLateParticles(*i, true, 0);
+							std::map<std::string,double> mysimParams;
+							int mid = fcalcMID(*i, swarm_->options.models.size());
+							int pID = fcalcParID(*i, swarm_->options.models.size());
+
+							auto fp = swarm_->options.models.at(mid)->freeParams_.begin();
+
+							for (unsigned int j = 0; j < swarm_->subparticleCurrParamSets_[pID][mid].size(); j++) {
+//								std::map<unsigned int, std::map<unsigned int, std::vector<double>>> subparticleCurrParamSets_;   //razi: PID, MID, PARAMA VALUESS
+
+								//paramSet.insert(pair<string, double> (fp->first, subparticleCurrParamSets_[bestP][mid][i])); //make this work later, to clone the best particle
+								mysimParams.insert(pair<std::string, double> (fp->first, swarm_->subparticleCurrParamSets_[pID][mid][j]));
+
+								++fp;
+							}
+							swarm_->processLateParticles(mysimParams, *i, true, 0);
 
 						}
 

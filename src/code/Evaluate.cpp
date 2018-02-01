@@ -322,6 +322,7 @@ float evaluateResults(string inputFile1, string inputFile2, map<int,string> cons
 
 float constraintDist;
 float result;
+float constraintDistC;
 //added new model checking method
 float fulfilledConstrants = 0;
 int first = 0;
@@ -399,8 +400,15 @@ vector<string> consList;
         	 	 if(result<=1 && result>0){
 
         	 		 fulfilledConstrants+=result;
+
+        	 		 if(result<1){
+        	 		    constraintDistC+=constraintDist*0.05;
+        	 		 }
+
         	 		 if(result==1){
             	 		 consList.push_back(constraintValue1[i]+constraintOp[i]+constraintValue2[i]);
+            	 		 //outFile << constraintValue1[i]<< constraintOp[i] << constraintValue2[i]<< " " << ;
+
         	 		 }
         	 		 result = 0;
         	 		 constraintDist = 0;
@@ -421,10 +429,10 @@ vector<string> consList;
         	 		 //cout << j+1 << "\t";
 
         	 	 }
-        	 	 //cout << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << "\t";
-        	 	 //cout << result << endl; //old mode
-        	 	 //outFile << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << "\t"; //old mode
-        	 	 //outFile << result << endl; //old mode
+        	 	 cout << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << "\t";
+        	 	 cout << result <<endl; //old mode
+        	 	 outFile << constraintValue1[i] << constraintOp[i] << constraintValue2[i] << "\t"; //old mode
+        	 	 outFile << result << endl; //old mode
 
 
 
@@ -449,7 +457,7 @@ vector<string> consList;
 
 
  }
- 	 outFile << endl;
+ 	 outFile << constraintDistC << endl;
 
  	consList.clear();
 

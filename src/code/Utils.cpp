@@ -68,6 +68,22 @@ string convertToAbsPath(string relPath) {
         return fullPath.string();
 }
 
+
+int convertTimeToSeconds(string time){ //Raquel adding this function for walltime calculation
+
+	int h, m, s=0;
+	if (sscanf(time.c_str(), "%d:%d:%d", &h, &m, &s) >= 2) {
+	  int secs = h *3600 + m*60 + s;
+	  return secs;
+
+	}else{
+		cout << "Error converting maxFitTime to seconds, please check the sintax of your input value. Ignoring MaxFitTime." << endl;
+	}
+
+	return 0;
+}
+
+
 /*
 string mainpath(){  //razi addede
 	string curdirstr;
