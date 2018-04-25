@@ -36,12 +36,15 @@
 
 # Installation on MacOS
 1. Install Homebrew package manager if it is not already present (https;//brew.sh)
+
 	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 2. Install Open-MPI
+
 	brew install open-mpi
 	
 3. Compile boost and BioNetFit2
+
 	make clean boost macos_install
 
 
