@@ -4,6 +4,7 @@
 
 	Linux, tested on Ubuntu and Red Hat
 	Windows, tested in Windows 7 and Windows 10 with 64bit cygwin
+	MacOS, tested with High Sierra 10.13.3
 	
 # Requirements
 
@@ -32,6 +33,17 @@
 	cd BioNetFit2
 	make clean
 	make
+
+# Installation on MacOS
+1. Install Homebrew package manager if it is not already present (https;//brew.sh)
+	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+2. Install Open-MPI
+	brew install open-mpi
+	
+3. Compile boost and BioNetFit2
+	make clean boost macos_install
+
 
 # New Features in the .conf file
 
