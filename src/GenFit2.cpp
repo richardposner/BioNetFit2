@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
 		cout << "Failed moving to the main directory....\n";
 	}
 
-	Swarm *s;
+	Swarm *s = NULL;
 	if (type == "master") {
 		Config myconfig(configFile);
 		if (verbose){

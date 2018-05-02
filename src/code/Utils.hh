@@ -51,7 +51,7 @@ std::string toString (unsigned long theNumber);
 #ifdef VER2
 	void mypause();
 	int convertTimeToSeconds(std::string time); //Raquel added
-	int readCommandLine(int argc, const char *argv[], std::map<std::string,std::vector<std::string>> &cmdLine);
+	int readCommandLine(int argc, const char *argv[], std::map<std::string,std::vector<std::string> > &cmdLine);
 	std::string mainpath();
 	bool CheckFullPath(std::string inputpath);
 	std::string tolinux(std::string inputpath);

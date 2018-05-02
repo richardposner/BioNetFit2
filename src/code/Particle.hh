@@ -40,11 +40,11 @@ public:
 	void generateParams();
 
 #ifdef VER2
-	std::vector<std::map<std::string, double>> simParams_;
+	std::vector<std::map<std::string, double> > simParams_;
 	void setParam(std::pair<std::string, double> myParams, unsigned int mid);
 	std::map<std::string,double> getParams(unsigned int mid) { return simParams_[mid]; }
 	void setModel(Model * model, unsigned int mid);
-	std::vector<std::map<int, double>> fitCalcs;
+	std::vector<std::map<int, double> > fitCalcs;
 
 	unsigned int calcsubParID(unsigned int mid);
 	unsigned int calcParID(unsigned int subParID, unsigned int mid);
@@ -67,7 +67,7 @@ public:
 	void runModel(unsigned int id = 0, bool localSearch = false);
 
 #ifdef VER2
-	void runNelderMead(std::map<double, std::vector<double>> simplex, unsigned int mid);
+	void runNelderMead(std::map<double, std::vector<double> > simplex, unsigned int mid);
 	void checkMessagesGenetic(unsigned int mid);
 	void checkMessagesPSO(unsigned int mid);
 	bool checkMessagesDE(unsigned int mid);
@@ -79,7 +79,7 @@ public:
 	void smoothRuns(unsigned int mid);
 
 #else //VER2
-	void runNelderMead(std::map<double, std::vector<double>> simplex);
+	void runNelderMead(std::map<double, std::vector<double> > simplex);
 	void checkMessagesGenetic();
 	void checkMessagesPSO();
 	bool checkMessagesDE();
@@ -87,7 +87,7 @@ public:
 	void finalizeSim();
 	void smoothRuns();
 #endif //VER2
-	std::vector<double> getCentroid(std::vector<std::vector<double>>);
+	std::vector<double> getCentroid(std::vector<std::vector<double> >);
 
 	double objFunc_chiSquare(double sim, double exp, double stdev);
 	double objFunc_sumOfSquares(double sim, double exp, double dummyvar);
@@ -113,11 +113,11 @@ public:
 	void removeSubParticle(unsigned int subParIndex){subParticles.erase(subParticles.begin()+subParIndex);}
 	std::vector<Model *> models;
 	void doParticle(unsigned int mid);
-	std::vector<std::map<std::string, std::map<int, Data*>>> dataFiles_;
+	std::vector<std::map<std::string, std::map<int, Data*> > > dataFiles_;
 #else //VER2
 	Model * model_;
 	void doParticle();
-	std::map<std::string, std::map<int, Data*>> dataFiles_;
+	std::map<std::string, std::map<int, Data*> > dataFiles_;
 #endif //VER2
 
 	Swarm * swarm_;
@@ -156,7 +156,7 @@ public:
 	Model * model;
 	unsigned int subParID_; //global subParticleID  =1+ (parID-1)*(number of models) + model_id
 
-	void runNelderMead(std::map<double, std::vector<double>> simplex);
+	void runNelderMead(std::map<double, std::vector<double> > simplex);
 	void doParticle();
 	void setModel(Model * model);
 	void setParam(std::pair<std::string, double> myParams);

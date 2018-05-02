@@ -1,6 +1,6 @@
 CXX=mpic++
 CFLAGS=-Wall -g -I../include -std=c++11
-LFLAGS=-L../lib ../lib/libboost_iostreams.a ../lib/libboost_regex.a ../lib/libboost_mpi.a ../lib/libboost_program_options.a ../lib/libboost_filesystem.a ../lib/libboost_system.a ../lib/libboost_serialization.a -lz -lbz2 -lmpi
+LFLAGS=../lib/libboost_iostreams.a ../lib/libboost_regex.a ../lib/libboost_mpi.a ../lib/libboost_program_options.a ../lib/libboost_filesystem.a ../lib/libboost_system.a ../lib/libboost_serialization.a -lz -lbz2 -lmpi
 
 .PHONY: all clean
 

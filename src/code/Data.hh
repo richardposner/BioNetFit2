@@ -23,7 +23,7 @@ public:
 #else
 	Data(std::string path, Swarm * swarm, bool isExp);
 #endif
-	Data(std::map<std::string, std::map<double, double>> &dataSet);
+	Data(std::map<std::string, std::map<double, double> > &dataSet);
 	Data();
 
 	void parseData();
@@ -35,8 +35,8 @@ public:
 	void logTransformData();
 
 	// Column->timepoint, value
-	std::map<std::string, std::map<double, double>> * dataCurrent; // This points to the most recently modified version of the data
-	std::map<std::string, std::map<double, double>> standardDeviations;
+	std::map<std::string, std::map<double, double> > * dataCurrent; // This points to the most recently modified version of the data
+	std::map<std::string, std::map<double, double> > standardDeviations;
 	std::map<std::string, double> colAverages;
 
 #ifdef VER2

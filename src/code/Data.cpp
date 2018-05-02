@@ -71,7 +71,7 @@ Data::Data(std::string path, Swarm * swarm, bool isExp) {
 //cout<<"Data::Data   AAA-4"<<endl; mypause();
 }
 
-Data::Data(map<string, map<double, double>> &dataSet) {
+Data::Data(map<string, map<double, double> > &dataSet) {
 	dataOrig_ = dataSet;
 	dataCurrent = &dataOrig_;
 	isExp_ = false;
@@ -79,7 +79,7 @@ Data::Data(map<string, map<double, double>> &dataSet) {
 }
 
 Data::Data() {
-	map<string, map<double, double>> dummySet;
+	map<string, map<double, double> > dummySet;
 	dataOrig_ = dummySet;
 	dataCurrent = 0;
 	isExp_ = false;

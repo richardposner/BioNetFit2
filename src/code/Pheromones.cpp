@@ -563,7 +563,7 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 							auto fp = swarm_->options.models.at(mid)->freeParams_.begin();
 
 							for (unsigned int j = 0; j < swarm_->subparticleCurrParamSets_[pID][mid].size(); j++) {
-//								std::map<unsigned int, std::map<unsigned int, std::vector<double>>> subparticleCurrParamSets_;   //razi: PID, MID, PARAMA VALUESS
+//								std::map<unsigned int, std::map<unsigned int, std::vector<double> > > subparticleCurrParamSets_;   //razi: PID, MID, PARAMA VALUESS
 
 								//paramSet.insert(pair<string, double> (fp->first, subparticleCurrParamSets_[bestP][mid][i])); //make this work later, to clone the best particle
 								mysimParams.insert(pair<std::string, double> (fp->first, swarm_->subparticleCurrParamSets_[pID][mid][j]));

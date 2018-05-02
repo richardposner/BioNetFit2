@@ -588,7 +588,7 @@ std::pair <std::unordered_multimap<string,string>::iterator, std::unordered_mult
 	if(pairs.find("bootstrap") != pairs.end()) {
 		swarm_->options.bootstrap = stoi(pairs.find("bootstrap")->second);
 		if (swarm_->options.bootstrap) {
-			vector<map<string, map<string, map<double, unsigned int>>>> bootstrapMaps;
+			vector<map<string, map<string, map<double, unsigned int> > > > bootstrapMaps;
 			swarm_->generateBootstrapMaps(bootstrapMaps);
 			swarm_->bootstrapMaps = bootstrapMaps;
 			if (checkIfFileExists(swarm_->options.outputDir + "/" + swarm_->options.jobName + "_bootstrap")) {
@@ -627,7 +627,7 @@ std::pair <std::unordered_multimap<string,string>::iterator, std::unordered_mult
 		//cout<<"checking model["<<cnt<<"]: "<< swarm_->options.models.at(mid)->getName() <<"="<< swarm_->getModel(mid) <<"., press a key to continue ....";
 		curmodel = swarm_->options.models.at(mid);
 		for (map<string, Model::action>::iterator i = curmodel->actions.begin(); i != curmodel->actions.end();++i) {
-			cout << "The action item["<<i->first<<"] for model:"<<  swarm_->getModel(mid) <<"exists. press a key to continue ...\n"; cin>>input;
+			cout << "The action item["<<i->first<<"] for model:"<<  swarm_->getModel(mid) <<"exists. press a key to continue ...\n"; cin> >input;
 		}
 	}
 

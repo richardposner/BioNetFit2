@@ -108,8 +108,8 @@ Swarm::Swarm() {
 
 	/*
 	std::map<int, double> particleBestFits_;
-	std::map<int, std::vector<double>> particleBestParamSets_;
-	std::map<int, std::vector<double>> particleCurrParamSets_;
+	std::map<int, std::vector<double> > particleBestParamSets_;
+	std::map<int, std::vector<double> > particleCurrParamSets_;
 	std::map<int, double> particleWeights_;
 	std::map<double, int> particleBestFitsByFit_;
 	 */
@@ -722,10 +722,10 @@ void Swarm::initFit () {  //razi: modified version
 		}
 
 		for (int particle = 1; particle <= options.swarmSize; ++particle) {
-			particleCurrParamSets_.insert(pair<int, vector<double>>(particle, params));
+			particleCurrParamSets_.insert(pair<int, vector<double> >(particle, params));
 
 			//razi: init for each subparticle
-			map<unsigned int, vector<double>> zmap;
+			map<unsigned int, vector<double> > zmap;
 			for (unsigned int mid = 0; mid < options.models.size(); ++mid){
 				vector<double> zvec(options.models[mid]->getNumFreeParams());	//razi: dummy vector t contain free parameter values
 				zmap.insert(make_pair(mid, zvec));
@@ -1208,10 +1208,10 @@ Particle * Swarm::createParticle(unsigned int pID) {
 	return p;
 }
 
-vector<vector<unsigned int>> Swarm::generateTopology(unsigned int populationSize) {
+vector<vector<unsigned int> > Swarm::generateTopology(unsigned int populationSize) {
 	Timer tmr;
 
-	vector<vector<unsigned int>> allParticles (populationSize + 1);
+	vector<vector<unsigned int> > allParticles (populationSize + 1);
 
 	if (options.fitType == "pso" || options.fitType == "de") {
 
@@ -1280,7 +1280,7 @@ vector<vector<unsigned int>> Swarm::generateTopology(unsigned int populationSize
 			// Construct a matrix of dimension length x width
 			// and fill it with particles
 			int p = 0;
-			vector<vector<unsigned int>> matrix(length, vector<unsigned int>(width));
+			vector<vector<unsigned int> > matrix(length, vector<unsigned int>(width));
 			for (unsigned int x = 0; x < length; ++x) {
 				for (unsigned int y = 0; y < width; ++y) {
 					matrix[x][y] = ++p;
@@ -1337,7 +1337,7 @@ vector<vector<unsigned int>> Swarm::generateTopology(unsigned int populationSize
 			// Construct a matrix of dimensions length x width
 			// and fill it with particles
 			unsigned int p = 0;
-			vector<vector<unsigned int>> matrix(length, vector<unsigned int>(width));
+			vector<vector<unsigned int> > matrix(length, vector<unsigned int>(width));
 			for (unsigned int x = 0; x < length; ++x) {
 				for (unsigned int y = 0; y < width; ++y) {
 					matrix[x][y] = ++p;
@@ -1394,7 +1394,7 @@ vector<vector<unsigned int>> Swarm::generateTopology(unsigned int populationSize
 				++numLevels;
 			}
 
-			vector<vector<unsigned int>> tree(numLevels, vector<unsigned int>());
+			vector<vector<unsigned int> > tree(numLevels, vector<unsigned int>());
 			usedParticles = 1;
 			currentLevel = 1;
 			unsigned int currentParticle = 2;
@@ -1474,7 +1474,7 @@ vector<vector<unsigned int>> Swarm::generateTopology(unsigned int populationSize
 
 void Swarm::processParticlesPSO(vector<unsigned int> particles, bool newFlight) {
 
-	map<unsigned int, std::vector<double>> particleNewParamSets;
+	map<unsigned int, std::vector<double> > particleNewParamSets;
 
 	// Create the output directory for the next generation
 	if (!checkIfFileExists(options.jobOutputDir + toString(currentGeneration))) {
@@ -2266,8 +2266,8 @@ void Swarm::runGeneration () {   //razi: modified to include subparticles
 
 	unsigned int numFinishedParticles = 0;
 
-//	vector<unsigned int, vector<bool>> runningParticles;
-//vector<unsigned int, vector<bool>> finishedParticles;
+//	vector<unsigned int, vector<bool> > runningParticles;
+//vector<unsigned int, vector<bool> > finishedParticles;
 //	vector<unsigned int> runningSubParticles;
 //	vector<unsigned int> finishedSubParticles;
 
@@ -2394,8 +2394,8 @@ void Swarm::runAsyncGeneration() {   //Raquel: added new function to run assynch
 
 	//unsigned int numFinishedParticles = 0;
 
-//	vector<unsigned int, vector<bool>> runningParticles;
-//vector<unsigned int, vector<bool>> finishedParticles;
+//	vector<unsigned int, vector<bool> > runningParticles;
+//vector<unsigned int, vector<bool> > finishedParticles;
 //	vector<unsigned int> runningSubParticles;
 //	vector<unsigned int> finishedSubParticles;
 
@@ -3151,14 +3151,14 @@ void Swarm::fixRunningParticle(int subParID){
 }
 
 
-unordered_map<unsigned int, vector<double>> Swarm::checkMasterMessagesDE() {
+unordered_map<unsigned int, vector<double> > Swarm::checkMasterMessagesDE() {
 
 	unsigned int pID, subParID, mid=0; //Removed newlyFinishedParticles
 	if (options.verbosity >= 3) { //razi: TODO test for multiple models
 		//cout << "Checking messages DE, may need some modifications/test to support sbParticle" << endl;
 	}
 
-	unordered_map<unsigned int, vector<double>> subParticleParams;
+	unordered_map<unsigned int, vector<double> > subParticleParams;
 
 	// First let's check interswarm communication
 	int numMessages = swarmComm->recvMessage(-1, 0, -1, false, swarmComm->univMessageReceiver);
@@ -3271,7 +3271,7 @@ unordered_map<unsigned int, vector<double>> Swarm::checkMasterMessagesDE() {
 			}
 			 */
 
-			subParticleParams.insert(pair<unsigned int, vector<double>>(subParID, paramsVec)); //razi: params for subparticle, then translate to particle params
+			subParticleParams.insert(pair<unsigned int, vector<double> >(subParID, paramsVec)); //razi: params for subparticle, then translate to particle params
 			//cout << "done processing particle " << pID << endl;
 		}
 
@@ -3309,7 +3309,7 @@ unordered_map<unsigned int, vector<double>> Swarm::checkMasterMessagesDE() {
 
 			// Increment our finished counter
 			//finishedParticles.push_back(pID);
-			subParticleParams.insert(pair<unsigned int, vector<double>>(subParID, vector<double>()));  //razi: params for subparticle, then translate to particle params
+			subParticleParams.insert(pair<unsigned int, vector<double> >(subParID, vector<double>()));  //razi: params for subparticle, then translate to particle params
 		}
 
 		swarmComm->univMessageReceiver.clear();
@@ -3851,7 +3851,7 @@ void Swarm::outputError(string errorMessage) {
 
 
 
-void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int>> islandTopology, map<unsigned int, vector<vector<double>>> &migrationSets) {
+void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int> > islandTopology, map<unsigned int, vector<vector<double> > > &migrationSets) {
 	if (options.verbosity >= 3) {
 		cout << "Sending migration set from island " << island << endl;
 	}
@@ -3914,7 +3914,7 @@ void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int>>
 	}
 }
 
-void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vector<double>>> &migrationSets) {
+void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vector<double> > > &migrationSets) {
 	// If we have any sets to receive..
 	if (migrationSets.find(island) != migrationSets.end() && migrationSets.at(island).size()) {
 
@@ -3930,7 +3930,7 @@ void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vec
 		//Raquel: if the user provided constraints, then use the ranks calculated from the fit values and constraints combined in order to select the best particle
 		if(options.constraints_.size()>0){
 			//Raquel: this will receive the particles with the worst fit to migrate
-			for (vector<pair<int,float>>::reverse_iterator fitIt = subParRankFinal.rbegin(); fitIt != subParRankFinal.rend(); ++fitIt) {
+			for (vector<pair<int,float> >::reverse_iterator fitIt = subParRankFinal.rbegin(); fitIt != subParRankFinal.rend(); ++fitIt) {
 				if (options.verbosity >= 3) {
 					cout << fitIt->first << endl;
 				}
@@ -4240,7 +4240,7 @@ void Swarm::runSDE() {
 	if (options.verbosity >= 3) {
 		cout << "Generating island topology" << endl;
 	}
-	vector<vector<unsigned int>> islandTopology;
+	vector<vector<unsigned int> > islandTopology;
 	if (!resumingSavedSwarm) {
 		// Generate all particles that will be present in the swarm
 		islandTopology = generateTopology(options.numIslands);
@@ -4269,11 +4269,11 @@ void Swarm::runSDE() {
 	//	cout << "Launching first generation" << endl;
 	//}
 
-	unordered_map<unsigned int, vector<double>> finishedParticles;
+	unordered_map<unsigned int, vector<double> > finishedParticles;
 	bool stopCriteria = false;
 	vector<unsigned int> islandFinishedParticles(options.numIslands + 1, 0);
 
-	map<unsigned int, vector<vector<double>>> migrationSets;
+	map<unsigned int, vector<vector<double> > > migrationSets;
 
 	bool trialLoop = false;
 
@@ -4339,7 +4339,7 @@ void Swarm::runSDE() {
 
 		outputRunSummary(outputPath);
 
-		unordered_map<unsigned int, vector<double>> finished;
+		unordered_map<unsigned int, vector<double> > finished;
 
 
 		for (int i = 1; i <= options.swarmSize; i++){
@@ -4761,7 +4761,7 @@ void Swarm::runADE() {
 	if (options.verbosity >= 3) {
 		cout << "Generating island topology" << endl;
 	}
-	vector<vector<unsigned int>> islandTopology;
+	vector<vector<unsigned int> > islandTopology;
 	if (!resumingSavedSwarm) {
 		// Generate all particles that will be present in the swarm
 		islandTopology = generateTopology(options.numIslands);
@@ -4789,11 +4789,11 @@ void Swarm::runADE() {
 	//	cout << "Launching first generation" << endl;
 	//}
 
-	unordered_map<unsigned int, vector<double>> finishedParticles;
+	unordered_map<unsigned int, vector<double> > finishedParticles;
 	bool stopCriteria = false;
 	vector<unsigned int> islandFinishedParticles(options.numIslands + 1, 0);
 
-	map<unsigned int, vector<vector<double>>> migrationSets;
+	map<unsigned int, vector<vector<double> > > migrationSets;
 
 	bool trialLoop = false;
 
@@ -4869,7 +4869,7 @@ void Swarm::runADE() {
 
 		outputRunSummary(outputPath);
 
-		unordered_map<unsigned int, vector<double>> finished;
+		unordered_map<unsigned int, vector<double> > finished;
 
 
 		for (int i = 1; i <= options.swarmSize; i++){
@@ -5016,7 +5016,7 @@ void Swarm::runASA() {
 	vector<float> particleFs = generateParticleFs();
 	vector<float> particleCRs = generateParticleCRs();
 	vector<float> cpuToParticle = vector<float>(options.swarmSize + 1, 0);
-	vector<vector<float>> trialParams = vector<vector<float>>(options.swarmSize + 1, vector<float>(2, 0));
+	vector<vector<float> > trialParams = vector<vector<float> >(options.swarmSize + 1, vector<float>(2, 0));
 	map<unsigned int, unsigned int> particleToController;
 
 	// Launch the initialization population and map
@@ -5027,8 +5027,8 @@ void Swarm::runASA() {
 		particleToController[p] = p;
 	}
 
-	unordered_map<unsigned int, vector<double>> finishedParticles;
-	unordered_map<unsigned int, vector<double>> initFinishedParticles;
+	unordered_map<unsigned int, vector<double> > finishedParticles;
+	unordered_map<unsigned int, vector<double> > initFinishedParticles;
 	int numFinishedParticles = 0;
 
 	// Wait for initialization population to finish simulations
@@ -5211,7 +5211,7 @@ void Swarm::runSSA() {
 	vector<float> particleFs = generateParticleFs();
 	vector<float> particleCRs = generateParticleCRs();
 	vector<float> cpuToParticle = vector<float>(options.swarmSize + 1, 0);
-	vector<vector<float>> trialParams = vector<vector<float>>(options.swarmSize + 1, vector<float>(2, 0));
+	vector<vector<float> > trialParams = vector<vector<float> >(options.swarmSize + 1, vector<float>(2, 0));
 
 	// Launch the initialization population and map
 	// CPUs to particles
@@ -5220,7 +5220,7 @@ void Swarm::runSSA() {
 		cpuToParticle[p] = p;
 	}
 
-	unordered_map<unsigned int, vector<double>> finishedParticles;
+	unordered_map<unsigned int, vector<double> > finishedParticles;
 	int numFinishedParticles = 0;
 
 	// Wait for initialization population to finish simulations
@@ -5376,7 +5376,7 @@ void Swarm::swapTR(vector<double> particleRadii, vector<double> particleTemps) {
 		particleRadii[r2] = r1Radius;
 	}
 }
-vector<double> Swarm::generateTrialPointSA(unsigned int controller, unsigned int receiver, vector<double> particleRadii, vector<float>particleCRs, vector<float>particleFs, vector<vector<float>> &trialParams) {
+vector<double> Swarm::generateTrialPointSA(unsigned int controller, unsigned int receiver, vector<double> particleRadii, vector<float>particleCRs, vector<float>particleFs, vector<vector<float> > &trialParams) {
 	vector<double> currParams = normalizeParams(particleCurrParamSets_.at(controller));
 	vector<double> testParams = deNormalizeParams(currParams);
 
@@ -5437,15 +5437,15 @@ vector<double> Swarm::generateTrialPointSA(unsigned int controller, unsigned int
 	return deNormalizeParams(newParams);
 }
 
-void Swarm::generateBootstrapMaps(vector<map<string, map<string, map<double,unsigned int>>>> &bootStrapMaps) {
+void Swarm::generateBootstrapMaps(vector<map<string, map<string, map<double,unsigned int> > > > &bootStrapMaps) {
 	for (unsigned int i = 0; i < options.bootstrap; ++i) {
 		//cout << "i: " << i << endl;
 		// For each .exp file
-		map<string, map<string, map<double, unsigned int>>> maps;
+		map<string, map<string, map<double, unsigned int> > > maps;
 		for (auto dataSet = options.expFiles.begin(); dataSet != options.expFiles.end(); ++dataSet) {
 			//cout << "set: " << dataSet->first << endl;
 			// For each column
-			map<string, map<double, unsigned int>> bsMap;
+			map<string, map<double, unsigned int> > bsMap;
 			for (auto col = dataSet->second->dataCurrent->begin(); col != dataSet->second->dataCurrent->end(); ++col) {
 				//cout << "col: " << col->first << endl;
 				// Fill the map with 0's
@@ -5466,10 +5466,10 @@ void Swarm::generateBootstrapMaps(vector<map<string, map<string, map<double,unsi
 				}
 
 				// Insert this column into the map
-				bsMap.insert(pair<string, map<double, unsigned int>>(col->first, colVals));
+				bsMap.insert(pair<string, map<double, unsigned int> >(col->first, colVals));
 			}
 			// Insert this dataset into the maps set
-			maps.insert(pair<string, map<string, map<double, unsigned int>>>(dataSet->first, bsMap));
+			maps.insert(pair<string, map<string, map<double, unsigned int> > >(dataSet->first, bsMap));
 		}
 		// Insert this set of maps into the master set
 		bootStrapMaps.push_back(maps);
@@ -5722,7 +5722,7 @@ void Swarm::outputRunSummary(string outputPath) {
 
 	string paramString;
 
-	map<unsigned int, map<unsigned int, map<string, double>>> alignedResults;   //Raquel: Particle -> Model -> Parameter -> value
+	map<unsigned int, map<unsigned int, map<string, double> > > alignedResults;   //Raquel: Particle -> Model -> Parameter -> value
 
 	//cout<<"Swarm::outputRunSummary(string outputPath) may need some modifications ...."<<endl; //mypause(); //razi TODO: later test
 
@@ -5937,7 +5937,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 	 				cout << "CONSTRAINT WEIGHT DIFFERENT OF ZERO: " << options.constraintWeight << endl;
 	 			}
 		 //this variable will store the number of constraints fulfilled per subparticle
-		 vector<pair<int,float>> constraintsCount;
+		 vector<pair<int,float> > constraintsCount;
 		 int mid = 0;
 		 constraintsCount = resultChecking();
 
@@ -5949,7 +5949,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 		 int constraintRank=0;
 		 int previous=-1;
 
-		 vector<pair<int,float>> subParRankCons;
+		 vector<pair<int,float> > subParRankCons;
 
 		 //rank the results based on the number of constraints
 		 for (unsigned int i = 0 ; i < constraintsCount.size(); i++){
@@ -5967,7 +5967,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 		     cout << subParRankCons[i].first << " " << subParRankCons[i].second << "\n";
 		 }
 
-		 vector<pair<int,float>> fitCount;
+		 vector<pair<int,float> > fitCount;
 
 		 fcounter = 0;
 
@@ -5989,7 +5989,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 		 int fitRank=0;
 		 float previousFit=-1;
 
-		 vector<pair<int,float>> subParRankFit;
+		 vector<pair<int,float> > subParRankFit;
 
 		 //rank the results based on the Fit value
 		 for (unsigned int i = 0 ; i < fitCount.size(); i++){
@@ -6009,7 +6009,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 		 }
 
 
-		 vector<pair<int,float>> finalScore;
+		 vector<pair<int,float> > finalScore;
 		 float consWeight = options.constraintWeight; //Here it defines how important the consraints will be
 		 //put a large consWeight number = the constraint ranks will prevail
 		 //put a small consWeight number = the fit ranks will prevail
@@ -6088,7 +6088,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 		 fitRank=0;
 		 previousFit=-1;
 
-		 //vector<pair<int,float>> subParRankFinal;
+		 //vector<pair<int,float> > subParRankFinal;
 		 subParRankFinal.clear();
 		 //rank the results based on the Fit value
 		 for (unsigned int i = 0 ; i < finalScore.size(); i++){
@@ -6182,7 +6182,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 		 int maxPar = fcalcParID(allGenFits.size(), options.models.size());
 
 
-		 vector<pair<int,float>> sortedFits;
+		 vector<pair<int,float> > sortedFits;
 		 for (auto itr = allGenFits.begin(); itr != allGenFits.end(); ++itr){
 			 sortedFits.push_back(*itr);
 		 }
@@ -6231,7 +6231,7 @@ if(options.fitType == "ga" || options.fitType == "pso" || options.fitType == "de
 
 
 //Raquel: result checking function, will call Evaluate.cpp
-vector<pair<int,float>> Swarm::resultChecking(){
+vector<pair<int,float> > Swarm::resultChecking(){
 float result = 0;
 	string outdir = options.outputDir + "/" + options.jobName + "/" + toString(currentGeneration-1) + "/";
 
@@ -6244,7 +6244,7 @@ float result = 0;
 
 	string outname;
 
-	vector<pair<int,float>> constraintsCount;
+	vector<pair<int,float> > constraintsCount;
 	map<int,string> constraint;
 
 	int pnumber;
@@ -7042,7 +7042,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 		cout << "RAQUEL swarmsize: " << options.swarmSize << endl;
 		cout << "RAQUEL children.size: " << children.size() << endl;
 	}
-	std::map<unsigned int, std::vector<double>> particleNewParamSets;
+	std::map<unsigned int, std::vector<double> > particleNewParamSets;
 
 	// Create the output directory for the next generation
 	if (!checkIfFileExists(options.jobOutputDir + toString(currentGeneration))) {
@@ -7161,7 +7161,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 
 			//Raquel, if we are using constraints, select parents with the best final rank (Fit and constraints combined)
 			if(options.constraints_.size()>=1){
-				//vector<pair<int,float>> subParRankFinal;
+				//vector<pair<int,float> > subParRankFinal;
 				int index = 0;
 				int bestSubparID = subParRankFinal[index].first;
 				index++;
@@ -7602,7 +7602,7 @@ void Swarm::runNelderMead(unsigned int it, unsigned int cpu) {
 	// then send it to the CPU..
 
 	// calc -> params
-	map<double, vector<double>> simplex {pair<double, vector<double>>(particleBestFits_.at(it), normalizeParams(particleCurrParamSets_.at(it)))};
+	map<double, vector<double> > simplex {pair<double, vector<double> >(particleBestFits_.at(it), normalizeParams(particleCurrParamSets_.at(it)))};
 
 	// Get our nearest neighbors in parameter space
 	map<double, unsigned int> neighbors = getNearestNeighbors(it, this->getNumFreeParams());//map<double, unsigned int> neighbors = getNearestNeighbors(it, options.model->getNumFreeParams());
@@ -8067,7 +8067,7 @@ void Swarm::initFit () {
 		}
 
 		for (unsigned int particle = 1; particle <= options.swarmSize; ++particle) {
-			particleCurrParamSets_.insert(pair<int, vector<double>>(particle, params));
+			particleCurrParamSets_.insert(pair<int, vector<double> >(particle, params));
 		}
 
 		if (options.fitType == "pso") {
@@ -8461,10 +8461,10 @@ Particle * Swarm::createParticle(unsigned int pID) {
 	return p;
 }
 
-vector<vector<unsigned int>> Swarm::generateTopology(unsigned int populationSize) {
+vector<vector<unsigned int> > Swarm::generateTopology(unsigned int populationSize) {
 	Timer tmr;
 
-	vector<vector<unsigned int>> allParticles (populationSize + 1);
+	vector<vector<unsigned int> > allParticles (populationSize + 1);
 
 	if (options.fitType == "pso" || options.fitType == "de") {
 
@@ -8533,7 +8533,7 @@ vector<vector<unsigned int>> Swarm::generateTopology(unsigned int populationSize
 			// Construct a matrix of dimension length x width
 			// and fill it with particles
 			int p = 0;
-			vector<vector<unsigned int>> matrix(length, vector<unsigned int>(width));
+			vector<vector<unsigned int> > matrix(length, vector<unsigned int>(width));
 			for (unsigned int x = 0; x < length; ++x) {
 				for (unsigned int y = 0; y < width; ++y) {
 					matrix[x][y] = ++p;
@@ -8590,7 +8590,7 @@ vector<vector<unsigned int>> Swarm::generateTopology(unsigned int populationSize
 			// Construct a matrix of dimensions length x width
 			// and fill it with particles
 			unsigned int p = 0;
-			vector<vector<unsigned int>> matrix(length, vector<unsigned int>(width));
+			vector<vector<unsigned int> > matrix(length, vector<unsigned int>(width));
 			for (unsigned int x = 0; x < length; ++x) {
 				for (unsigned int y = 0; y < width; ++y) {
 					matrix[x][y] = ++p;
@@ -8647,7 +8647,7 @@ vector<vector<unsigned int>> Swarm::generateTopology(unsigned int populationSize
 				++numLevels;
 			}
 
-			vector<vector<unsigned int>> tree(numLevels, vector<unsigned int>());
+			vector<vector<unsigned int> > tree(numLevels, vector<unsigned int>());
 			usedParticles = 1;
 			currentLevel = 1;
 			unsigned int currentParticle = 2;
@@ -9489,13 +9489,13 @@ vector<unsigned int> Swarm::checkMasterMessages() {
 }
 */
 
-unordered_map<unsigned int, vector<double>> Swarm::checkMasterMessagesDE() {
+unordered_map<unsigned int, vector<double> > Swarm::checkMasterMessagesDE() {
 
 	if (options.verbosity >= 3) {
 		//cout << "Checking messages" << endl;
 	}
 
-	unordered_map<unsigned int, vector<double>> particleParams;
+	unordered_map<unsigned int, vector<double> > particleParams;
 
 	// First let's check interswarm communication
 	int numMessages = swarmComm->recvMessage(-1, 0, -1, false, swarmComm->univMessageReceiver);
@@ -9598,7 +9598,7 @@ unordered_map<unsigned int, vector<double>> Swarm::checkMasterMessagesDE() {
 			}
 			 */
 
-			particleParams.insert(pair<unsigned int, vector<double>>(pID, paramsVec));
+			particleParams.insert(pair<unsigned int, vector<double> >(pID, paramsVec));
 			//cout << "done processing particle " << pID << endl;
 		}
 
@@ -9618,7 +9618,7 @@ unordered_map<unsigned int, vector<double>> Swarm::checkMasterMessagesDE() {
 			}
 			// Increment our finished counter
 			//finishedParticles.push_back(pID);
-			particleParams.insert(pair<unsigned int, vector<double>>(pID, vector<double>()));
+			particleParams.insert(pair<unsigned int, vector<double> >(pID, vector<double>()));
 
 			cout << "Particle " << pID << " failed in gen " << currentGeneration << endl;
 
@@ -10056,7 +10056,7 @@ void Swarm::outputError(string errorMessage) {
 
 
 
-void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int>> islandTopology, map<unsigned int, vector<vector<double>>> &migrationSets) {
+void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int> > islandTopology, map<unsigned int, vector<vector<double> > > &migrationSets) {
 	if (options.verbosity >= 3) {
 		cout << "Sending migration set from island " << island << endl;
 	}
@@ -10097,7 +10097,7 @@ void Swarm::sendMigrationSetDE(unsigned int island, vector<vector<unsigned int>>
 	}
 }
 
-void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vector<double>>> &migrationSets) {
+void Swarm::recvMigrationSetDE(unsigned int island, map<unsigned int, vector<vector<double> > > &migrationSets) {
 	// If we have any sets to receive..
 	if (migrationSets.find(island) != migrationSets.end() && migrationSets.at(island).size()) {
 
@@ -10273,7 +10273,7 @@ void Swarm::runSDE() {
 	if (options.verbosity >= 3) {
 		cout << "Generating island topology" << endl;
 	}
-	vector<vector<unsigned int>> islandTopology;
+	vector<vector<unsigned int> > islandTopology;
 	if (!resumingSavedSwarm) {
 		// Generate all particles that will be present in the swarm
 		islandTopology = generateTopology(options.numIslands);
@@ -10296,11 +10296,11 @@ void Swarm::runSDE() {
 	//	cout << "Launching first generation" << endl;
 	//}
 
-	unordered_map<unsigned int, vector<double>> finishedParticles;
+	unordered_map<unsigned int, vector<double> > finishedParticles;
 	bool stopCriteria = false;
 	vector<unsigned int> islandFinishedParticles(options.numIslands + 1, 0);
 
-	map<unsigned int, vector<vector<double>>> migrationSets;
+	map<unsigned int, vector<vector<double> > > migrationSets;
 
 	bool trialLoop = false;
 
@@ -10357,7 +10357,7 @@ void Swarm::runSDE() {
 				launchParticle(p++, trialLoop);
 			}
 
-			unordered_map<unsigned int, vector<double>> finished = checkMasterMessagesDE();
+			unordered_map<unsigned int, vector<double> > finished = checkMasterMessagesDE();
 
 			if (finished.size()) {
 				finishedParticles.insert(finished.begin(), finished.end());
@@ -10369,7 +10369,7 @@ void Swarm::runSDE() {
 */
 
 
-		unordered_map<unsigned int, vector<double>> finished;
+		unordered_map<unsigned int, vector<double> > finished;
 
 
 		for (int i = 1; i <= options.swarmSize; i++){
@@ -10716,7 +10716,7 @@ void Swarm::runADE() {
 		cout << "Generating island topology" << endl;
 	}
 
-	vector<vector<unsigned int>> islandTopology;
+	vector<vector<unsigned int> > islandTopology;
 	vector<bool> islandIsTrial = vector<bool>(options.numIslands + 1, false);
 
 	if (!resumingSavedSwarm) {
@@ -10741,11 +10741,11 @@ void Swarm::runADE() {
 		cout << "Launching first generation" << endl;
 	}
 
-	unordered_map<unsigned int, vector<double>> finishedParticles;
+	unordered_map<unsigned int, vector<double> > finishedParticles;
 	bool stopCriteria = false;
 	vector<unsigned int> islandFinishedParticles(options.numIslands + 1, 0);
 	vector<unsigned int> islandGenerationCounter(options.numIslands + 1, 1);
-	map<unsigned int, vector<vector<double>>> migrationSets;
+	map<unsigned int, vector<vector<double> > > migrationSets;
 
 	for (unsigned int p = 1; p <= options.swarmSize; ++p) {
 		launchParticle(p);
@@ -10890,7 +10890,7 @@ void Swarm::runASA() {
 	vector<float> particleFs = generateParticleFs();
 	vector<float> particleCRs = generateParticleCRs();
 	vector<float> cpuToParticle = vector<float>(options.swarmSize + 1, 0);
-	vector<vector<float>> trialParams = vector<vector<float>>(options.swarmSize + 1, vector<float>(2, 0));
+	vector<vector<float> > trialParams = vector<vector<float> >(options.swarmSize + 1, vector<float>(2, 0));
 	map<unsigned int, unsigned int> particleToController;
 
 	// Launch the initialization population and map
@@ -10901,8 +10901,8 @@ void Swarm::runASA() {
 		particleToController[p] = p;
 	}
 
-	unordered_map<unsigned int, vector<double>> finishedParticles;
-	unordered_map<unsigned int, vector<double>> initFinishedParticles;
+	unordered_map<unsigned int, vector<double> > finishedParticles;
+	unordered_map<unsigned int, vector<double> > initFinishedParticles;
 	unsigned int numFinishedParticles = 0;
 
 	// Wait for initialization population to finish simulations
@@ -11085,7 +11085,7 @@ void Swarm::runSSA() {
 	vector<float> particleFs = generateParticleFs();
 	vector<float> particleCRs = generateParticleCRs();
 	vector<float> cpuToParticle = vector<float>(options.swarmSize + 1, 0);
-	vector<vector<float>> trialParams = vector<vector<float>>(options.swarmSize + 1, vector<float>(2, 0));
+	vector<vector<float> > trialParams = vector<vector<float> >(options.swarmSize + 1, vector<float>(2, 0));
 
 	// Launch the initialization population and map
 	// CPUs to particles
@@ -11094,7 +11094,7 @@ void Swarm::runSSA() {
 		cpuToParticle[p] = p;
 	}
 
-	unordered_map<unsigned int, vector<double>> finishedParticles;
+	unordered_map<unsigned int, vector<double> > finishedParticles;
 	unsigned int numFinishedParticles = 0;
 
 	// Wait for initialization population to finish simulations
@@ -11250,7 +11250,7 @@ void Swarm::swapTR(vector<double> particleRadii, vector<double> particleTemps) {
 		particleRadii[r2] = r1Radius;
 	}
 }
-vector<double> Swarm::generateTrialPointSA(unsigned int controller, unsigned int receiver, vector<double> particleRadii, vector<float>particleCRs, vector<float>particleFs, vector<vector<float>> &trialParams) {
+vector<double> Swarm::generateTrialPointSA(unsigned int controller, unsigned int receiver, vector<double> particleRadii, vector<float>particleCRs, vector<float>particleFs, vector<vector<float> > &trialParams) {
 	vector<double> currParams = normalizeParams(particleCurrParamSets_.at(controller));
 	vector<double> testParams = deNormalizeParams(currParams);
 
@@ -11311,15 +11311,15 @@ vector<double> Swarm::generateTrialPointSA(unsigned int controller, unsigned int
 	return deNormalizeParams(newParams);
 }
 
-void Swarm::generateBootstrapMaps(vector<map<string, map<string, map<double,unsigned int>>>> &bootStrapMaps) {
+void Swarm::generateBootstrapMaps(vector<map<string, map<string, map<double,unsigned int> > > > &bootStrapMaps) {
 	for (unsigned int i = 0; i < options.bootstrap; ++i) {
 		//cout << "i: " << i << endl;
 		// For each .exp file
-		map<string, map<string, map<double, unsigned int>>> maps;
+		map<string, map<string, map<double, unsigned int> > > maps;
 		for (auto dataSet = options.expFiles.begin(); dataSet != options.expFiles.end(); ++dataSet) {
 			//cout << "set: " << dataSet->first << endl;
 			// For each column
-			map<string, map<double, unsigned int>> bsMap;
+			map<string, map<double, unsigned int> > bsMap;
 			for (auto col = dataSet->second->dataCurrent->begin(); col != dataSet->second->dataCurrent->end(); ++col) {
 				//cout << "col: " << col->first << endl;
 				// Fill the map with 0's
@@ -11340,10 +11340,10 @@ void Swarm::generateBootstrapMaps(vector<map<string, map<string, map<double,unsi
 				}
 
 				// Insert this column into the map
-				bsMap.insert(pair<string, map<double, unsigned int>>(col->first, colVals));
+				bsMap.insert(pair<string, map<double, unsigned int> >(col->first, colVals));
 			}
 			// Insert this dataset into the maps set
-			maps.insert(pair<string, map<string, map<double, unsigned int>>>(dataSet->first, bsMap));
+			maps.insert(pair<string, map<string, map<double, unsigned int> > >(dataSet->first, bsMap));
 		}
 		// Insert this set of maps into the master set
 		bootStrapMaps.push_back(maps);
@@ -12062,7 +12062,7 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 		}
 	}
 
-	std::map<unsigned int, std::vector<double>> particleNewParamSets;
+	std::map<unsigned int, std::vector<double> > particleNewParamSets;
 
 	// Create the output directory for the next generation
 	if (!checkIfFileExists(options.jobOutputDir + toString(currentGeneration))) {
@@ -12312,7 +12312,7 @@ void Swarm::runNelderMead(unsigned int it, unsigned int cpu) {
 	// then send it to the CPU..
 
 	// calc -> params
-	map<double, vector<double>> simplex {pair<double, vector<double>>(particleBestFits_.at(it), normalizeParams(particleCurrParamSets_.at(it)))};
+	map<double, vector<double> > simplex {pair<double, vector<double> >(particleBestFits_.at(it), normalizeParams(particleCurrParamSets_.at(it)))};
 
 	// Get our nearest neighbors in parameter space
 	map<double, unsigned int> neighbors = getNearestNeighbors(it, options.model->getNumFreeParams());

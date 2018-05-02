@@ -114,13 +114,13 @@ public:
 	typedef swarmMsgHolder::iterator swarmMsgHolderIt;
 
 	void sendToSwarm(int senderID, signed int receiverID, int tag, bool block, std::vector<std::string> &message, int messageID = -1);
-	//int recvMessage(signed int senderID, const int receiverID, int tag, bool block, std::vector<std::vector<std::string>> &messageHolder, bool eraseMessage = true);
+	//int recvMessage(signed int senderID, const int receiverID, int tag, bool block, std::vector<std::vector<std::string> > &messageHolder, bool eraseMessage = true);
 	int recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage = true, int messageID = -1);
 
 	int getRank();
 
 	std::vector<std::string> univMessageSender;
-	//std::vector<std::vector<std::string>> univMessageReceiver;
+	//std::vector<std::vector<std::string> > univMessageReceiver;
 	swarmMsgHolder univMessageReceiver;
 
 

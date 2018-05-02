@@ -129,7 +129,7 @@ public:
 	void setsConf(std::string sConf, int mid);
 	std::string getsConf(unsigned int mid) { return sConf_.at(mid); }
 
-	vector<pair<int,float>> resultChecking(); //Raquel: result checking function added
+	vector<pair<int,float> > resultChecking(); //Raquel: result checking function added
 	//void processLateParticles(int subParID, bool breed, int currGen);
 	void processLateParticles(std::map<std::string, double> simPar, int subParID, bool breed, int currGen);
 
@@ -144,7 +144,7 @@ public:
 	void setfitType(std::string type);
 	void addMutate(std::string mutateString);
 	void setJobOutputDir(std::string dir);
-	void generateBootstrapMaps(std::vector<std::map<std::string, std::map<std::string, std::map<double,unsigned int>>>> &bootStrapMaps);
+	void generateBootstrapMaps(std::vector<std::map<std::string, std::map<std::string, std::map<double,unsigned int> > > > &bootStrapMaps);
 
 	void outputError(std::string errorMessage);
 
@@ -186,7 +186,7 @@ public:
 	Pheromones *swarmComm;
 
 	std::multimap<double, std::string> allGenFits;
-	std::vector<std::map<std::string, std::map<std::string, std::map<double,unsigned int>>>> bootstrapMaps;
+	std::vector<std::map<std::string, std::map<std::string, std::map<double,unsigned int> > > > bootstrapMaps;
 
 
 	bool isMaster;
@@ -202,13 +202,13 @@ public:
 
 
 	// Holds the current parameter set being used by each particle
-	std::map<unsigned int, std::vector<double>> particleCurrParamSets_;
-	std::map<unsigned int, std::vector<double>> particleCurrParamSets_copy;
+	std::map<unsigned int, std::vector<double> > particleCurrParamSets_;
+	std::map<unsigned int, std::vector<double> > particleCurrParamSets_copy;
 
 	// Holds the running best parameter set for each particle
 	//razi changed, so we keep currrent parameters for each model separately
-	std::map<unsigned int, std::map<unsigned int, std::vector<double>>> subparticleCurrParamSets_;   //razi: PID, MID, PARAMA VALUESS
-	std::map<unsigned int, std::map<unsigned int, std::vector<double>>> subparticleCurrParamSets_copy;   //razi: PID, MID, PARAMA VALUESS
+	std::map<unsigned int, std::map<unsigned int, std::vector<double> > > subparticleCurrParamSets_;   //razi: PID, MID, PARAMA VALUESS
+	std::map<unsigned int, std::map<unsigned int, std::vector<double> > > subparticleCurrParamSets_copy;   //razi: PID, MID, PARAMA VALUESS
 
 public:
 
@@ -421,7 +421,7 @@ private:
 	void outputRunSummary();
 	void outputBootstrapSummary();
 	void killAllParticles(int tag);
-	std::unordered_map<unsigned int, std::vector<double>> checkMasterMessagesDE();
+	std::unordered_map<unsigned int, std::vector<double> > checkMasterMessagesDE();
 	//std::vector<unsigned int> checkMasterMessages();
 	void checkExternalMessages();
 	void resetVariables();
@@ -456,8 +456,8 @@ private:
 	std::vector<double> mutateParticleDE(unsigned int particle, float mutateFactor = 0);
 	std::vector<double> mutateParticleSA(unsigned int particle, float mutateFactor = 0);
 	std::vector<double> crossoverParticleDE(unsigned int particle, std::vector<double> mutationSet, float cr = 0, bool normalize = false);
-	void sendMigrationSetDE(unsigned int island, std::vector<std::vector<unsigned int>> islandTopology, std::map<unsigned int, std::vector<std::vector<double>>> &migrationSets);
-	void recvMigrationSetDE(unsigned int island, std::map<unsigned int, std::vector<std::vector<double>>> &migrationSets);
+	void sendMigrationSetDE(unsigned int island, std::vector<std::vector<unsigned int> > islandTopology, std::map<unsigned int, std::vector<std::vector<double> > > &migrationSets);
+	void recvMigrationSetDE(unsigned int island, std::map<unsigned int, std::vector<std::vector<double> > > &migrationSets);
 
 	std::vector<double> generateParticleTemps();
 	std::vector<double> generateParticleRadii();
@@ -466,7 +466,7 @@ private:
 	unsigned int pickWeightedSA();
 	bool metropolisSelection(unsigned int particle, double fit, float particleTemp);
 	void swapTR(std::vector<double> particleRadii, std::vector<double> particleTemps);
-	std::vector<double> generateTrialPointSA(unsigned int controller, unsigned int receiver, std::vector<double> particleRadii, std::vector<float>particleCRs, std::vector<float>particleFs, std::vector<std::vector<float>> &trialParams);
+	std::vector<double> generateTrialPointSA(unsigned int controller, unsigned int receiver, std::vector<double> particleRadii, std::vector<float>particleCRs, std::vector<float>particleFs, std::vector<std::vector<float> > &trialParams);
 	double normalizeParam(double oldParam, double min, double max, bool log);
 	double deNormalizeParam(double oldParam, double min, double max, bool log);
 
@@ -488,17 +488,17 @@ private:
 	//std::set<unsigned int>::iterator finishedParticlesIterator_;
 
 
-	vector<pair<int,float>> subParRankFinal; //Raquel added this variable to store the model checging results as a global variable
+	vector<pair<int,float> > subParRankFinal; //Raquel added this variable to store the model checging results as a global variable
 
-	std::map<unsigned int, std::vector<std::string>> expPaths_;
+	std::map<unsigned int, std::vector<std::string> > expPaths_;
 	std::vector<std::string> sConf_;
 
 	// razi: Counts how many iterations each particle/subparticle has performed
-	std::map<unsigned int, std::map<unsigned int, unsigned int>> particleIterationCounter_; //std::map<PID, MID, Iteration>> particleIterationCounter_
+	std::map<unsigned int, std::map<unsigned int, unsigned int> > particleIterationCounter_; //std::map<PID, MID, Iteration> > particleIterationCounter_
 
 
-	std::vector<std::map<unsigned int, unsigned int>> freeParamMapping; //razi this keeps the mapping from models free parameters to the full list of free parameters
-	//Ex: for two models we may have <<1,1>,<2,2>,<3,3>, <4,5>, <1,2>,<2,3>, <3,4>, <4,6>> which means there are 4 free paramas in model1 and 4 free paramas in model 2 with the given ordering
+	std::vector<std::map<unsigned int, unsigned int> > freeParamMapping; //razi this keeps the mapping from models free parameters to the full list of free parameters
+	//Ex: for two models we may have <<1,1>,<2,2>,<3,3>, <4,5>, <1,2>,<2,3>, <3,4>, <4,6> > which means there are 4 free paramas in model1 and 4 free paramas in model 2 with the given ordering
 	// model1: k1,k2,k3,k5, model2: k2,k3,k4,k6,   Full list :K1,K2,K3,K4,k5,k6
 
 
@@ -536,10 +536,10 @@ private:
 	std::multimap<double, unsigned int> currentsubswarmBestFits_; //Raquel added support to subparticles
 	std::multimap<double, unsigned int> currentsubswarmBestFits_copy; //Raquel added support to subparticles
 
-	std::map<unsigned int, std::vector<double>> particleParamVelocities_;
+	std::map<unsigned int, std::vector<double> > particleParamVelocities_;
 
 	// Holds the running best parameter set for each particle
-	std::map<unsigned int, std::vector<double>> particleBestParamSets_;
+	std::map<unsigned int, std::vector<double> > particleBestParamSets_;
 
 
 	// Holds particle weights for use in enhancedStop stop criteria
@@ -548,10 +548,10 @@ private:
 
 	// In DE, maps islands and particles together
 	std::vector<unsigned int> particleToIsland_; // particle -> island
-	std::vector<std::vector<unsigned int>> islandToParticle_; // island -> particle
+	std::vector<std::vector<unsigned int> > islandToParticle_; // island -> particle
 
 	// Holds the current parameter set being used by each particle
-	std::map<unsigned int, std::vector<double>> particleTrialParamSets_;
+	std::map<unsigned int, std::vector<double> > particleTrialParamSets_;
 
 	unsigned int permanenceCounter_; // 0
 	unsigned int flightCounter_; // 0

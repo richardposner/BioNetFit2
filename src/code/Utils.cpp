@@ -164,22 +164,22 @@ string removeCygwinAlias(string inputpath){ //convert /cygdrive/X/myfolder to X:
 string convertToAbsPath(string relPath) {
 	string fullPath;
 
-//cout<<"1-converting to canonical path format, Input:"<<relPath<<endl;
+cout<<"1-converting to canonical path format, Input:"<<relPath<<endl;
 	relPath=tolinux(relPath);
-//cout<<"2-converting to canonical path format, Input [Linux]:"<<relPath<<endl;
+cout<<"2-converting to canonical path format, Input [Linux]:"<<relPath<<endl;
 	if (CheckFullPath(relPath)){
-//cout<<"3-converting to canonical path format, Already in canonical format:"<<relPath<<endl;
+cout<<"3-converting to canonical path format, Already in canonical format:"<<relPath<<endl;
 		fullPath = relPath;
 	}else{
 		string basic_path = mainpath();
-//cout<<"4-converting to canonical path format, Reference Path:"<<basic_path<<endl;
+cout<<"4-converting to canonical path format, Reference Path:"<<basic_path<<endl;
 		fullPath = basic_path + "/" + relPath;
 
 	#ifndef WIN_VER //Raquel: added this block to solve compatibility issues with Linux
 		path fullPath2 = canonical(relPath); //Raquel: retrieves full path for relative directory
 		fullPath = fullPath2.string(); //Raquel: converts path to string
 	#endif
-//cout<<"5-converting to canonical path format, Full Path:"<<fullPath<<endl;
+cout<<"5-converting to canonical path format, Full Path:"<<fullPath<<endl;
 	}
 	if (!exists(fullPath)){
 		string errMsg = "Error in convertToAbsPath: Can't find the file: " + fullPath;
@@ -405,7 +405,7 @@ void outputHelp() {
 }
 
 
-int readCommandLine(int argc, const char *argv[], map<string,vector<string>> &cmdLine){  //razi added
+int readCommandLine(int argc, const char *argv[], map<string,vector<string> > &cmdLine){  //razi added
 	int i, j=0; string sw; string temp;
 	string s;
 	for (i=1; i<argc; i++){

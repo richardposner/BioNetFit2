@@ -33,7 +33,7 @@ Particle::Particle(Swarm * swarm, int id) {
 	fitCalcs.clear();
 
 	//razi: fill with dummay fileds
-	std::map<std::string, std::map<int, Data*>> dummyFile;
+	std::map<std::string, std::map<int, Data*> > dummyFile;
 	std::map<std::string, double> dummyParam;
 	std::map<int, double> dummy_fit;
 	for (unsigned int i=0; i< nModel; i++){
@@ -90,7 +90,7 @@ double Particle::objFunc_divByMean(double sim, double exp, double mean) {
 	return pow(((abs(sim) - exp) / mean), 2);
 }
 
-vector<double> Particle::getCentroid(vector<vector<double>> centroidVectors) {
+vector<double> Particle::getCentroid(vector<vector<double> > centroidVectors) {
 	vector<double> centroid;
 
 	for (unsigned int d = 0; d < centroidVectors[0].size(); ++d) {
@@ -216,13 +216,13 @@ void Particle::generateParams() {
 
 
 #ifdef VER2
-void Particle::runNelderMead(map<double, vector<double>> simplex, unsigned int mid) {
+void Particle::runNelderMead(map<double, vector<double> > simplex, unsigned int mid) {
 
 	std::map<std::string, double> simParams = simParams_.at(mid);
 	auto curPar = getSubParticle(mid);
 
 #else //VER2
-void Particle::runNelderMead(map<double, vector<double>> simplex) {
+void Particle::runNelderMead(map<double, vector<double> > simplex) {
 	std::map<std::string, double> simParams = simParams_;
 	auto curPar = this;
 #endif //VER2
@@ -247,7 +247,7 @@ void Particle::runNelderMead(map<double, vector<double>> simplex) {
 		cout << "best is: " << best->first << endl;
 		bool invalid = false;
 
-		vector<vector<double>> centroidVectors;
+		vector<vector<double> > centroidVectors;
 		for (auto params = simplex.begin(); params != worst; ++params) {
 			centroidVectors.push_back(swarm_->normalizeParams(params->second));
 		}
@@ -307,7 +307,7 @@ void Particle::runNelderMead(map<double, vector<double>> simplex) {
 			if (swarm_->options.verbosity >= 3) {
 				cout << "sim size: " << simplex.size() << endl;
 			}
-			simplex.insert(pair<double, vector<double>> (rCalc, R));
+			simplex.insert(pair<double, vector<double> > (rCalc, R));
 			if (swarm_->options.verbosity >= 3) {
 				cout << "inserting rCalc of " << rCalc << endl;
 			}
@@ -366,13 +366,13 @@ void Particle::runNelderMead(map<double, vector<double>> simplex) {
 			if (eCalc < rCalc) {
 				cout << "expansion was better than reflection. looping." << endl;
 				simplex.erase(worst);
-				simplex.insert(pair<double, vector<double>> (eCalc, E));
+				simplex.insert(pair<double, vector<double> > (eCalc, E));
 				continue;
 			}
 			else {
 				cout << "expansion was worse than reflection. looping." << endl;
 				simplex.erase(worst);
-				simplex.insert(pair<double, vector<double>> (rCalc, R));
+				simplex.insert(pair<double, vector<double> > (rCalc, R));
 				continue;
 			}
 		}
@@ -435,7 +435,7 @@ void Particle::runNelderMead(map<double, vector<double>> simplex) {
 			if (cCalc < worst->first) {
 				cout << "contraction was better than worst. looping." << endl;
 				simplex.erase(worst);
-				simplex.insert(pair<double, vector<double>> (cCalc, C));
+				simplex.insert(pair<double, vector<double> > (cCalc, C));
 				continue;
 			}
 			else {
@@ -469,7 +469,7 @@ void Particle::runNelderMead(map<double, vector<double>> simplex) {
 
 
 /*
-bool Particle::checkNelderMeadTerminationCriteria(vector<vector<double>> simplex, unsigned int numEvaluations, unsigned int numIterations) {
+bool Particle::checkNelderMeadTerminationCriteria(vector<vector<double> > simplex, unsigned int numEvaluations, unsigned int numIterations) {
 	if (swarm_->options.maxLocalEvaluations && numEvaluations >= swarm_->options.maxLocalEvaluations) {
 		return true;
 	}
@@ -1404,7 +1404,7 @@ bool Particle::checkMessagesDE(unsigned int mid) {
 				std::stringstream iss;
 				iss.str(smhRange.first->second.message[0]); // Simplex is serialized in the first indice of the message vector
 				boost::archive::text_iarchive ia(iss);
-				map<double, vector<double>> simplex;
+				map<double, vector<double> > simplex;
 				ia >> simplex;
 				if (swarm_->options.verbosity >= 3) {
 					cout << "running search" << endl;
@@ -1736,7 +1736,7 @@ void Particle::smoothRuns(unsigned int mid) {
 		cout << "Smoothing simulation outputs for particle:"<<id_<<" subParticle: "<<subParID<<endl;
 	}
 
-	map<string, map<double, double>> dataSet;
+	map<string, map<double, double> > dataSet;
 	// For each action/prefix/exp file
 	for (auto action = dataFiles_.at(mid).begin(); action != dataFiles_.at(mid).end(); ++action) {
 		// For each column
@@ -1762,7 +1762,7 @@ void Particle::smoothRuns(unsigned int mid) {
 				timePair = make_pair(time->first, average);
 				timePairs.insert(timePair);
 			}
-			dataSet.insert(pair<string, map<double, double>>(col->first, timePairs));
+			dataSet.insert(pair<string, map<double, double> >(col->first, timePairs));
 		}
 		action->second.insert(pair<int, Data*>(swarm_->options.smoothing + 1, new Data(dataSet)));
 		dataSet.clear();
@@ -1831,7 +1831,7 @@ void Particle::addSubParticle(subParticle* subparticle, unsigned int mid, bool o
 	if(overwrite || !(subParticles.at(mid)))
 		subParticles.at(mid)=subparticle;//	subParticles.at(mid)=.insert(subparticle);
 
-	std::map<std::string, std::map<int, Data*>> dummyFile;
+	std::map<std::string, std::map<int, Data*> > dummyFile;
 	gap= mid+1 - dataFiles_.size();
 	if (gap>0)
 		for (int i=0; i < gap; i++)
@@ -1903,7 +1903,7 @@ unsigned int Particle::calcParID(unsigned int subParID, unsigned int mid){
 
 
 
-void subParticle::runNelderMead(std::map<double, std::vector<double>> simplex){
+void subParticle::runNelderMead(std::map<double, std::vector<double> > simplex){
 	parParticle->runNelderMead(simplex, mid_);
 }
 void subParticle::doParticle() {
@@ -2553,7 +2553,7 @@ bool Particle::checkMessagesDE() {
 				std::stringstream iss;
 				iss.str(smhRange.first->second.message[0]); // Simplex is serialized in the first indice of the message vector
 				boost::archive::text_iarchive ia(iss);
-				map<double, vector<double>> simplex;
+				map<double, vector<double> > simplex;
 				ia >> simplex;
 
 				cout << "running search" << endl;
@@ -2759,7 +2759,7 @@ void Particle::smoothRuns() {
 		cout << "Smoothing simulation outputs" << endl;
 	}
 
-	map<string, map<double, double>> dataSet;
+	map<string, map<double, double> > dataSet;
 	// For each action/prefix/exp file
 	for (auto action = dataFiles_.begin(); action != dataFiles_.end(); ++action) {
 		// For each column
@@ -2785,7 +2785,7 @@ void Particle::smoothRuns() {
 				timePair = make_pair(time->first, average);
 				timePairs.insert(timePair);
 			}
-			dataSet.insert(pair<string, map<double, double>>(col->first, timePairs));
+			dataSet.insert(pair<string, map<double, double> >(col->first, timePairs));
 		}
 		action->second.insert(pair<int, Data*>(swarm_->options.smoothing + 1, new Data(dataSet)));
 		dataSet.clear();
