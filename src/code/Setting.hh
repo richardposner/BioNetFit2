@@ -25,7 +25,6 @@
 // developing subparticle object to support multiple connected models
 // message passing based on subparticle id (particle id + model index)
 // consolidate free parameters among models and check consistency between exp ad model files
-#define VER2
 
 
 

@@ -12,12 +12,8 @@
 
 using namespace std;
 
-#ifdef VER2
 Data::Data(std::string path, Swarm * swarm, bool isExp, unsigned int mid) {
 	mid_=mid;
-#else
-Data::Data(std::string path, Swarm * swarm, bool isExp) {
-#endif
 
 	swarm_ = swarm;
 	isExp_ = isExp;
@@ -97,12 +93,8 @@ void Data::parseData(){  //parsing .exp file
 	vector<string> allLines;
 	double value;
 	Model * mdl=0;
-#ifdef VER2
 	if ((mid_ >= 0)&& ( (unsigned) mid_ < swarm_->getNumModels())) //Raquel Fixing unsigned vs signed warnings
 		mdl=swarm_->options.models[mid_];
-#else
-	mdl=swarm_->options.model;
-#endif
 
 //int ii; Raquel fixing unised variable warnings
 //cout<<"Data::parseData AAA1. File:"<< dataPath <<".  Enter a number..."; mypause();
@@ -180,7 +172,6 @@ void Data::parseData(){  //parsing .exp file
 			if(mdl){
 				scanParam = (mdl->actions.find(basename) != mdl->actions.end()) && (*col == mdl->actions.at(basename).scanParam);
 			}
-#ifdef VER2
 			else if((!mdl) && (mid_==-1)){ //check all models
 				for(unsigned int m =0; m < swarm_->options.models.size(); m++){
 					if((swarm_->options.models.at(m)->actions.find(basename) != swarm_->options.models.at(m)->actions.end()) && (*col == swarm_->options.models.at(m)->actions.at(basename).scanParam)){
@@ -189,7 +180,6 @@ void Data::parseData(){  //parsing .exp file
 					}
 				}
 			}
-#endif
 			else{
 				swarm_->outputError("Data parsing error. Model is not specified. All models are not requested either. ..."); exit(0);
 			}

@@ -370,7 +370,6 @@ void Model::outputModelWithParams(map<string, double> params, string path, strin
 		close(fd);
 	}
 }
-#ifdef VER2 //razi added to check consistency among the parallel models
 bool check_model_consistency(std::vector<Model *> models){
 	if (models.size()==0){
 		outputError("There is no models to compare. Add at least one model. I am quitting....\n");
@@ -390,4 +389,3 @@ bool check_model_consistency(std::vector<Model *> models){
 	}
 	return 0; //Raquel Fixing warnings
 }
-#endif

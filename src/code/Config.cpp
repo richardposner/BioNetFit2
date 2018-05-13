@@ -92,7 +92,6 @@ Swarm * Config::createSwarmFromConfig () {
 		swarm_->outputError("Error: Couldn't open config file " + configPath_ + " for parsing.");
 	}
 
-#ifdef VER2
 	if(verbose){
 		cout <<endl<<"================================================================================================"<<endl;
 		     cout << "=                                  CONFIG FILE CONTENT                                         ="<<endl;
@@ -102,7 +101,6 @@ Swarm * Config::createSwarmFromConfig () {
 		}
 		cout << "================================================================================================"<<endl<<endl;
 	}
-#endif
 
 	// Set verbosity
 	if(pairs.find("verbosity") != pairs.end()) {
@@ -115,13 +113,9 @@ Swarm * Config::createSwarmFromConfig () {
 		if(swarm_->options.verbosity >= 3 ){
 			cout << "Processing models include:" << pairs.find("model")->second<< endl;
 		}
-#ifdef VER2
 		
 
 		swarm_->setModels(cpath.parent_path().string(), pairs.find("model")->second, true);
-#else
-		swarm_->setModel(pairs.find("model")->second);
-#endif
 	}
 
 	// Update the swarm type
@@ -288,10 +282,8 @@ Swarm * Config::createSwarmFromConfig () {
        		}
 		swarm_->options.outputDir = convertToAbsPath(pairs.find("output_dir")->second);
 #if 0
-#ifdef VER2
 		swarm_->options.outputDir = tolinux(swarm_->options.outputDir);    //razi added for consistency between Linux and Windows
 		swarm_->options.outputDir = removeLastSlash(swarm_->options.outputDir);  //razi added later check for linux, works for windows
-#endif
 #endif
 	}
 
@@ -301,7 +293,7 @@ Swarm * Config::createSwarmFromConfig () {
 	}
 
 	// Set the job output directory
-#if(defined (VER2) && defined(PC_VER))
+#if(defined(PC_VER))
 	swarm_->setJobOutputDir(swarm_->options.outputDir + "/" + swarm_->options.jobName);
 #else
 	swarm_->setJobOutputDir(swarm_->options.outputDir + "/" + swarm_->options.jobName + "/");
@@ -492,9 +484,7 @@ Swarm * Config::createSwarmFromConfig () {
 	/////////////////////////RAQUEL adding weight parameter for ranking models by constraint/////////////////////
 
 
-#ifdef VER2
 	swarm_->consolidate_model_params();
-#endif
 
 	int constraintIndex = 0; //Raquel added a constraint index integer
 	// Add any init param generation options
@@ -571,19 +561,10 @@ Swarm * Config::createSwarmFromConfig () {
 	}
 std::pair <std::unordered_multimap<string,string>::iterator, std::unordered_multimap<string,string>::iterator> it;
 
-#ifdef VER2   //razi added to include multiple exp and bngl files in the swarm object, [one exp file per model to avoid ambiguity] 2017-1-7
 	if(pairs.find("exp_file") != pairs.end()){
 		if(verbose) cout<<"Config::createSwarmFromConfig: EXPs files: "<<pairs.find("exp_file")->second<<".\n";
 		swarm_->setExpPath(cpath.parent_path().string(),pairs.find("exp_file")->second,-1);
 	}
-#else
-
-	// Add any .exp files to the swarm
-	it = pairs.equal_range("exp_file");
-	for (unordered_multimap<string,string>::iterator exp = it.first; exp != it.second; ++exp) {
-		swarm_->addExp(exp->second);
-	}
-#endif
 
 	if(pairs.find("bootstrap") != pairs.end()) {
 		swarm_->options.bootstrap = stoi(pairs.find("bootstrap")->second);
@@ -614,7 +595,6 @@ std::pair <std::unordered_multimap<string,string>::iterator, std::unordered_mult
 	// Remove any .1exp files that aren't pointed to in the model file
 	// And Remove any Model::actions without corresponding .exp files specified in the .conf file
 
-#ifdef VER2
 	vector<string> prefixedActions;
 	vector<vector<string> > prefixedActionsMatrix;
 	Model * curmodel;
@@ -681,35 +661,6 @@ std::pair <std::unordered_multimap<string,string>::iterator, std::unordered_mult
 		}
 	}
 
-#else
-	vector<string> prefixedActions;
-	vector<Model::action> toDeleteActs;
-
-	for (map<string, Model::action>::iterator i = swarm_->options.model->actions.begin(); i != swarm_->options.model->actions.end();) {
-		prefixedActions.push_back(i->first);
-
-		if (swarm_->options.expFiles.count(i->first) == 1) {
-			if (swarm_->options.verbosity >=3 ) {
-				cout << "Linking action " << i->first << " with exp file: " << swarm_->options.expFiles[i->first]->getPath() << endl;
-			}
-			i->second.dataSet = swarm_->options.expFiles[i->first];
-			++i;
-		}
-		else { // Have a prefix but no .exp file
-			cout << "Warning: The model file specifies an action with the prefix '" << i->first << "' but there isn't a matching .exp file specified in your .conf file. We will ignore this action command." << endl;
-			swarm_->options.model->actions.erase(++i);
-		}
-	}
-
-	for (map<string, Data*>::iterator i = swarm_->options.expFiles.begin(); i != swarm_->options.expFiles.end(); ++i) {
-
-		// Have exp but no prefix
-		if(std::find(prefixedActions.begin(), prefixedActions.end(), i->first) == prefixedActions.end() ) {
-			cout << "Warning: The .conf file specifies an .exp file '" << i->first << "' but there isn't a matching action command in your model file specified with the prefix=> argument." << endl;
-			swarm_->options.expFiles.erase(++i);
-		}
-	}
-#endif
 
 	/*
 	// TODO: Make sure we have either min fit, max time, or max sims when doing an asynchronous fit
@@ -759,15 +710,9 @@ void Config::checkConsistency() {
 	if (swarm_->options.fitType != "ga" && swarm_->options.fitType != "sa" && swarm_->options.fitType != "de" && swarm_->options.fitType != "pso") {
 		swarm_->outputError("Error: Unrecognized fit_type. Quitting.");
 	}
-#ifdef VER2
 	if (swarm_->options.models.size() < 1) {
 		swarm_->outputError("Error: You didn't specify a model in your .conf file. Refer to the documentation with help on setting this option. Quitting.");
 	}
-#else
-	if (swarm_->options.model == 0) {
-		swarm_->outputError("Error: You didn't specify a model in your .conf file. Refer to the documentation with help on setting this option. Quitting.");
-	}
-#endif
 	if (swarm_->options.expFiles.empty()) {
 		swarm_->outputError("Error: You didn't specify any .exp files in your .conf file. Refer to the documentation with help on setting this option. Quitting.");
 	}
@@ -837,15 +782,9 @@ void Config::checkConsistency() {
 
 
 	if (swarm_->options.fitType == "sa") {
-#ifdef VER2
 		if ((unsigned) swarm_->options.swarmSize < (swarm_->options.models[0]->getNumFreeParams() + 1)) {
 			swarm_->outputError("Error: You are using simulated annealing but your swarm size is less than N+1, where N is the number of free parameters in your model. Quitting.");
 		}
-#else
-		if (swarm_->options.swarmSize < (swarm_->options.model->getNumFreeParams() + 1)) {
-			swarm_->outputError("Error: You are using simulated annealing but your swarm size is less than N+1, where N is the number of free parameters in your model. Quitting.");
-		}
-#endif
 		if (swarm_->options.synchronicity) {
 			swarm_->outputError("Error: Simulated annealing does not support synchronous fitting. Quitting.");
 		}
@@ -857,12 +796,10 @@ void Config::checkConsistency() {
 		}
 	}
 
-#ifdef VER2
 	//razi: check consistency between the model and exp files.
 	//TODO more checks may be needed here
 	if (!swarm_->check_model_exp_consistency()){
 		swarm_->outputError("Error: Models are not consistent with exp files.");
 	}
-#endif
 
 }

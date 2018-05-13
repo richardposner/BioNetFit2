@@ -48,7 +48,6 @@ std::string toString (float theNumber);
 std::string toString (double theNumber);
 std::string toString (unsigned long theNumber);
 
-#ifdef VER2
 	void mypause();
 	int convertTimeToSeconds(std::string time); //Raquel added
 	int readCommandLine(int argc, const char *argv[], std::map<std::string,std::vector<std::string> > &cmdLine);
@@ -67,7 +66,6 @@ std::string toString (unsigned long theNumber);
 	unsigned int fcalcMID(unsigned int subParID, unsigned int nModels);
 	unsigned int fcalcParID(unsigned int subParID, unsigned int nModels);
 	std::string commonPath( const std::vector<std::string> & dirs , char separator );
-#endif //VER2
 
 
 

@@ -18,11 +18,7 @@ class Swarm;
 class Data {
 
 public:
-#ifdef VER2
 	Data(std::string path, Swarm * swarm, bool isExp, unsigned int mid);
-#else
-	Data(std::string path, Swarm * swarm, bool isExp);
-#endif
 	Data(std::map<std::string, std::map<double, double> > &dataSet);
 	Data();
 
@@ -39,9 +35,7 @@ public:
 	std::map<std::string, std::map<double, double> > standardDeviations;
 	std::map<std::string, double> colAverages;
 
-#ifdef VER2
 	int mid_; //Raquel removing Wsigned warnings
-#endif
 
 private:
 	friend class boost::serialization::access;

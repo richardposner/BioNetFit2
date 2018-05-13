@@ -19,7 +19,6 @@ string executableName;
 
 
 
-#ifdef VER2
 void mypause(){
 	int ii;
 	cin>>ii;
@@ -318,24 +317,6 @@ unsigned int fcalcParID(unsigned int subParID, unsigned int nModels){
 
 
 
-#else
-  //previous version
-string convertToAbsPath(string relPath) {
-	path fullPath;
-
-	try{
-		fullPath = canonical(relPath);
-	}
-	catch(...){}
-
-	if (!exists(fullPath)){
-		string errMsg = "Error: Can't find the file: " + relPath;
-		outputError(errMsg);
-	}
-
-	return fullPath.string();
-}
-#endif
 
 
 
@@ -371,7 +352,6 @@ string getFilename(string path) {
 	return boost::filesystem::path(path).stem().string();
 }
 
-#ifdef VER2
 void outputHelp() {
 	cout << "BioNetFit Usage:" << endl;
 	cout << "BioNetFit switch [for example -a]  [information for example: run] ...\n";
@@ -467,12 +447,6 @@ string commonPath( const std::vector<std::string> & dirs , char separator ) {
 }
 
 
-#else
-void outputHelp() {
-	cout << "GenFit2 Usage:" << endl;
-	cout << "GenFit2 [config_file]" << endl;
-}
-#endif
 
 
 

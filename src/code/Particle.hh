@@ -23,12 +23,10 @@ class FreeParam;
 class Data;
 class Pheromones;
 class Particle;
-#ifdef VER2
 	class subParticle;  //razi added to support multiple files in parallel
 //	unsigned int fcalcsubParID(unsigned int ParID, unsigned int mid, unsigned int nModels){return 1+mid+(ParID-1)* nModels;} //razi: moved to Utils.hh
 //	unsigned int fcalcMID(unsigned int subParID, unsigned int nModels){return (unsigned int)((subParID-1) % nModels);} //razi: moved to Utils.hh
 //	unsigned int fcalcParID(unsigned int subParID, unsigned int nModels){return (unsigned int)((subParID-1)/ nModels)+1;} //razi: moved to Utils.hh
-#endif //VER2
 
 class Particle {
 public:
@@ -39,7 +37,6 @@ public:
 
 	void generateParams();
 
-#ifdef VER2
 	std::vector<std::map<std::string, double> > simParams_;
 	void setParam(std::pair<std::string, double> myParams, unsigned int mid);
 	std::map<std::string,double> getParams(unsigned int mid) { return simParams_[mid]; }
@@ -51,13 +48,6 @@ public:
 	unsigned int calcModelID(unsigned int subParID);
 
 
-#else //VER2
-	std::map<std::string, double> simParams_;
-	void setParam(std::pair<std::string, double> myParams);
-	std::map<std::string,double> getParams() { return simParams_; }
-	void setModel(Model * model);
-	std::map<int, double> fitCalcs;
-#endif //VER2
 
 
 
@@ -66,7 +56,6 @@ public:
 	friend class boost::serialization::access;
 	void runModel(unsigned int id = 0, bool localSearch = false);
 
-#ifdef VER2
 	void runNelderMead(std::map<double, std::vector<double> > simplex, unsigned int mid);
 	void checkMessagesGenetic(unsigned int mid);
 	void checkMessagesPSO(unsigned int mid);
@@ -78,15 +67,6 @@ public:
 	void finalizeSim(unsigned int mid);
 	void smoothRuns(unsigned int mid);
 
-#else //VER2
-	void runNelderMead(std::map<double, std::vector<double> > simplex);
-	void checkMessagesGenetic();
-	void checkMessagesPSO();
-	bool checkMessagesDE();
-	void calculateFit(bool local = false);
-	void finalizeSim();
-	void smoothRuns();
-#endif //VER2
 	std::vector<double> getCentroid(std::vector<std::vector<double> >);
 
 	double objFunc_chiSquare(double sim, double exp, double stdev);
@@ -101,7 +81,6 @@ public:
 
 	unsigned int id_;
 
-#ifdef VER2  //razi added 2017-1-7
 	std::vector <subParticle *> subParticles;
 	std::vector <unsigned int> subParIDs;
 
@@ -114,11 +93,6 @@ public:
 	std::vector<Model *> models;
 	void doParticle(unsigned int mid);
 	std::vector<std::map<std::string, std::map<int, Data*> > > dataFiles_;
-#else //VER2
-	Model * model_;
-	void doParticle();
-	std::map<std::string, std::map<int, Data*> > dataFiles_;
-#endif //VER2
 
 	Swarm * swarm_;
 	unsigned int currentGeneration_;
@@ -129,12 +103,8 @@ public:
 	template<typename Archive>
 	void serialize(Archive& ar, const unsigned version) {
 
-#ifdef VER2
 		ar & models;
 		ar & subParIDs;
-#else //VER2
-		ar & model_;
-#endif //VER2
 		ar & simParams_;
 		ar & id_;
 		ar & swarm_;
@@ -144,7 +114,6 @@ public:
 
 
 
-#ifdef VER2
 class subParticle{
 public:
 	subParticle(Particle * p, unsigned int modelId, unsigned int subParID);
@@ -173,6 +142,5 @@ public:
 	}
 
 };
-#endif /* VER2 */
 
 #endif /* PARTICLE_HH_ */

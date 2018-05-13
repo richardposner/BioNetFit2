@@ -88,7 +88,6 @@ public:
 	void setExePath(std::string path) { exePath_ = path; }
 	void setConfigPath(std::string path) { configPath_ = path; }
 
-#ifdef VER2	//razi added to support multiple files
 	void addExp(std::string path, int mid);
 	void setExpPath(std::string prefixPath, std::string path, int mid);  //call addExp
 	void setModels(std::string prefixPath, std::string path, bool overwrite);
@@ -133,13 +132,6 @@ public:
 	//void processLateParticles(int subParID, bool breed, int currGen);
 	void processLateParticles(std::map<std::string, double> simPar, int subParID, bool breed, int currGen);
 
-#else
-	void addExp(std::string path);
-	void setModel(std::string path);
-
-	void setsConf(std::string sConf) { sConf_ = sConf; }
-	std::string getsConf() { return sConf_; }
-#endif
 
 	void setfitType(std::string type);
 	void addMutate(std::string mutateString);
@@ -220,14 +212,10 @@ public:
 		std::string bngCommand;	// Path to simulators
 		std::map<std::string,Data*> expFiles; // experimental data file
 		std::map<std::string, FreeParam*> freeParams_;
-#ifdef VER2
 		std::vector<Model *> models; 			// the model files
 		int defaultModel;
 		std::map<int,string> constraints_; //Raquel: added constraint options support
 		float constraintWeight = 0; //Raquel: added constraint weight option support
-#else
-		Model * model; 			// the model file
-#endif
 
 		// General options
 		unsigned int verbosity;		// terminal output verbosity
@@ -316,15 +304,11 @@ public:
 			ar & jobOutputDir;
 			ar & bngCommand;
 			ar & expFiles;
-#ifdef VER2
 			ar & freeParams_;
 			ar & models;
 			ar & defaultModel;
 			ar & constraints_;
 			ar & constraintWeight;
-#else
-			ar & model;
-#endif
 			ar & verbosity;
 			ar & synchronicity;
 			ar & maxGenerations;
@@ -403,10 +387,8 @@ private:
 	void initFit();
 	std::vector<std::vector<unsigned int> > generateTopology(unsigned int populationSize);
 	void launchParticle(unsigned int pID, bool nextGen = false);
-#ifdef VER2
 	void launchSubParticle(unsigned int pID, unsigned int mid, bool nextGen);
 	std::vector<unsigned int> update_finished_running_particles();
-#endif
 	void runGeneration();
 	void runAsyncGeneration();
 
@@ -474,7 +456,6 @@ private:
 	std::string exePath_;
 	std::string configPath_;
 
-#ifdef VER2	//razi added
 	std::set<unsigned int> runningSubParticles_;
 	std::set<unsigned int>::iterator runningSubParticlesIterator_;
 
@@ -502,14 +483,6 @@ private:
 	// model1: k1,k2,k3,k5, model2: k2,k3,k4,k6,   Full list :K1,K2,K3,K4,k5,k6
 
 
-#else
-	std::string sConf_;
-
-	// Counts how many iterations each particle has performed
-	std::map<unsigned int, unsigned int> particleIterationCounter_;
-
-
-#endif
 	std::set<unsigned int> runningParticles_;
 	std::set<unsigned int>::iterator runningParticlesIterator_;
 
@@ -576,13 +549,11 @@ private:
 		ar & resumingSavedSwarm;
 		ar & hasMutate;
 
-#ifdef VER2	//razi added
 		ar & runningSubParticles_;
 		ar & failedSubParticles_;
 		ar & finishedSubParticles_;
 		ar & finishedParticles_;
 		ar & freeParamMapping; //razi this keeps the mapping from models free parameters to the full list of free parameters
-#endif
 		ar & runningParticles_;
 		ar & failedParticles_;
 
