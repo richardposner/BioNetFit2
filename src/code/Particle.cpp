@@ -1473,7 +1473,6 @@ void Particle::calculateFit(bool local, unsigned int mid) {
 	double setSum;
 	double totalSum;
 	double divisor;
-	std::vector <double> totalSumAll[subParticles.size()]; //razi: o store sums for each subparticle
 
 
 	//razi: loop over all subparticles associated with models

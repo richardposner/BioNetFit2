@@ -322,7 +322,7 @@ float evaluateResults(string inputFile1, string inputFile2, map<int,string> cons
 
 float constraintDist;
 float result;
-float constraintDistC;
+float constraintDistC = 0;
 //added new model checking method
 float fulfilledConstrants = 0;
 int first = 0;

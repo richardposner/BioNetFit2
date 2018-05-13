@@ -3768,7 +3768,7 @@ void Swarm::saveSwarmState() {
 	if (ofs.is_open()) {
 
 		boost::archive::binary_oarchive ar(ofs);
-		ar & this;
+		ar & *this;
 		ofs.close();
 	}
 	else {
