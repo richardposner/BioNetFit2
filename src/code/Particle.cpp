@@ -8,7 +8,6 @@
 //============================================================================*/
 
 
-
 // TODO: Let's replace all the static_cast's with a custom function that converts ints/doubles to strings using stringstream
 
 #include "Particle.hh"
@@ -548,14 +547,17 @@ void Particle::doParticle(unsigned int mid) {
 
 			if (swarm_->isMaster){
 				for (unsigned int j=0; j<=swarm_->getNumModels(); j++){
-					if (getSubParticle(j))
-						if (swarm_->options.smoothing > 1)
+					if (getSubParticle(j)) {
+						if (swarm_->options.smoothing > 1) {
 							smoothRuns(j);
+						}
 						finalizeSim(j);
+					}
 				}
 			}else{
-				if (getSubParticle(mid))
+				if (getSubParticle(mid)) {
 					smoothRuns(mid);
+				}
 				finalizeSim(mid);
 			}
 		}
@@ -644,7 +646,7 @@ void Particle::setParam(pair<std::string, double> myParams, unsigned int mid){
 			simParams_.push_back(dummyParam);//simParams_.push_back(std::map<std::string, double> dummyParam);
 	}*/
 
-	if (mid>=simParams_.size())  outputError("setModel failed. Invalid model id:"+toString(mid)+". I am quitting....");
+	if (mid>=simParams_.size())  outputError("setParam failed. Invalid model id:"+toString(mid)+". I am quitting....");
 		//Raquel: this code check with the master whether the parameter exists in model
 	for (auto p = swarm_->options.models.at(mid)->getFreeParams_().begin(); p != swarm_->options.models.at(mid)->getFreeParams_().end(); ++p) {
 		if(p->first == myParams.first) {
@@ -1695,17 +1697,26 @@ subParticle::subParticle(Particle * p, unsigned int modelId, unsigned int subPar
 
 
 void subParticle::setModel(unsigned int mid){
-	if (!parParticle)
-		cout<<"Particle::setModel Error: Parent Particle is not set yet. I'm quitting ....\n"; exit(0);
+	if (!parParticle) {
+		cout<<"Particle::setModel Error: Parent Particle is not set yet. I'm quitting ....\n";
+		exit(0);
+	}
 
-	if (!parParticle->swarm_)
-		cout<<"Particle::setModel Error: Swarm object is not set yet. I'm quitting ....\n"; exit(0);
+	if (!parParticle->swarm_) {
+		cout<<"Particle::setModel Error: Swarm object is not set yet. I'm quitting ....\n";
+		exit(0);
+	}
 
-	if (mid_!=mid)
+	if (mid_!=mid) {
 		parParticle->swarm_->outputError("Particle::setModel Error: Trying to set invalid model id. I'm quitting ....");
+		exit(0);
+	}
 
-	if ((mid<0) || (mid >= parParticle->swarm_->options.models.size()))
+	if ((mid<0) || (mid >= parParticle->swarm_->options.models.size())) {
 		parParticle->swarm_->outputError("Particle::setModel Error: Particle model out of range. I'm quitting ....");
+		exit(0);
+	}
+
 	model = parParticle->swarm_->options.models.at(mid);
 	//parParticle->swarm_->setParticleModelId(id_, mid);
 }
