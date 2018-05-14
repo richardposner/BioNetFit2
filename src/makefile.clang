@@ -1,6 +1,9 @@
+OMPI_CC=clang-6.0
+OMPI_CXX=clang++-6.0
+CC=mpicc
 CXX=mpic++
-CFLAGS=-Wall -g -I../include -D__GXX_EXPERIMENTAL_CXX0X__ -std=c++0x
-LFLAGS=-Wl,-Bstatic -L../lib -lboost_iostreams -lboost_regex -lboost_mpi -lboost_program_options -lboost_filesystem -lboost_system -lboost_serialization -Wl,-Bdynamic -pthread -lrt
+CFLAGS=-Wall -g  -std=c++17 -Wall -pedantic
+LFLAGS=-lboost_iostreams -lboost_regex -lboost_mpi -lboost_program_options -lboost_filesystem -lboost_system -lboost_serialization -lz -lbz2 -lmpi -lrt
 
 .PHONY: all clean
 

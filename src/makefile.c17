@@ -1,6 +1,6 @@
 CXX=mpic++
-CFLAGS=-Wall -g -I../include -D__GXX_EXPERIMENTAL_CXX0X__ -std=c++0x
-LFLAGS=-Wl,-Bstatic -L../lib -lboost_iostreams -lboost_regex -lboost_mpi -lboost_program_options -lboost_filesystem -lboost_system -lboost_serialization -Wl,-Bdynamic -pthread -lrt
+CFLAGS=-g -I../include -std=c++17 -Wall -pedantic
+LFLAGS=-L../lib -lboost_iostreams -lboost_regex -lboost_mpi -lboost_program_options -lboost_filesystem -lboost_system -lboost_serialization -Wl,-Bdynamic -pthread -lrt
 
 .PHONY: all clean
 

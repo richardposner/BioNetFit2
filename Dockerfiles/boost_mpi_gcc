@@ -1,0 +1,40 @@
+# For developing BioNetFit2 with gcc
+# 
+# To build image, run inside BioNetFit2 directory (only need to do this one time):
+#   docker build -t boost-mpi-gcc -f Dockerfiles/boost_mpi_gcc .
+# To run image, run inside BioNetFit2 directory:
+#   docker run -it --rm -v $(pwd):/project boost-mpi-gcc
+#
+# From inside image, run the following commands to compile Network3 if needed:
+#   cd /project/Simulators/Network3
+#   ./configure --enable-static --disable-shared
+#   make clean all 
+#   cp /project/Simulators/Network3/bin/run_network /project/Simulators/bin/run_network_x86_64_linux
+#
+# From inside docker image, run the following command to compile BioNetFit2:
+#   cd /project
+#   make ubuntu_install
+
+FROM ubuntu
+
+ENV BNFROOT="/project"
+
+WORKDIR ${BNFROOT}
+
+ENV PATH="${BNFROOT}/bin:${PATH}"
+
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    file \
+    libboost-all-dev \
+    libbz2-dev \
+    libopenmpi-dev \
+    libz-dev \
+    perl \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Start from a Bash prompt
+CMD [ "/bin/bash" ]

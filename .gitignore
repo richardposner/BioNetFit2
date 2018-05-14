@@ -2,3 +2,8 @@
 *.d
 *.Po
 *.Plo
+libtool
+config.log
+sundials-config
+sundials_config.h
+config.status

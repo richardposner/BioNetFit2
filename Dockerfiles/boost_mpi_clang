@@ -1,0 +1,47 @@
+# For developing BioNetFit2 with clang
+# 
+# To build image, run inside BioNetFit2 directory (only need to do this one time):
+#   docker build -t boost-mpi-clang -f boost_mpi_clang .
+# To run image, run inside BioNetFit2 directory:
+#   docker run -it --rm -v $(pwd):/project boost-mpi-clang
+#
+# From inside image, run the following commands to compile Network3 if needed:
+#   cd /project/Simulators/Network3
+#   ./configure --enable-static --disable-shared
+#   make clean all 
+#   cp /project/Simulators/Network3/bin/run_network /project/Simulators/bin/run_network_x86_64_linux
+#
+# From inside docker image, run the following command to compile BioNetFit2:
+#   cd /project
+#   make clang_install
+
+FROM ubuntu
+
+ENV BNFROOT="/project"
+
+WORKDIR ${BNFROOT}
+
+ENV PATH="${BNFROOT}/bin:${PATH}"
+
+ENV CC=mpicc
+ENV CXX=mpic++
+ENV OMPI_CC=clang-6.0
+ENV OMPI_CXX=clang++-6.0
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    clang-6.0 \
+    curl \
+    file \
+    lldb \
+    libboost-all-dev \
+    libbz2-dev \
+    libopenmpi-dev \
+    libz-dev \
+    perl \
+    python-six \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Start from a Bash prompt
+CMD [ "/bin/bash" ]

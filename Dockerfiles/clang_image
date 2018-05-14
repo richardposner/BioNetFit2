@@ -1,0 +1,46 @@
+# Self contained image for running BioNetFit
+# To build image, run inside BioNetFit2 directory (only need to do this one time):
+#   docker build -t bionetfit2-clang-image -f Dockerfiles/clang_image .
+#
+# Image can be run anywhere, just be sure to mount you experiment files
+#   docker run -it --rm -v $(pwd):/project bionetfit2-clang-image
+
+FROM ubuntu
+
+ENV BNFROOT="/BNF2"
+
+ADD . ${BNFROOT}
+
+WORKDIR ${BNFROOT}
+
+ENV PATH="${BNFROOT}/bin:${PATH}"
+
+ENV CC=mpicc
+ENV CXX=mpic++
+ENV OMPI_CC=clang-6.0
+ENV OMPI_CXX=clang++-6.0
+
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  clang-6.0 \
+  curl \
+  file \
+  lldb \
+  libboost-all-dev \
+  libbz2-dev \
+  libopenmpi-dev \
+  libz-dev \
+  perl \
+  python-six \
+  vim \
+  && rm -rf /var/lib/apt/lists/* \
+  && cd Simulators/Network3 && ./configure --enable-static --disable-shared && make clean all && cd - \
+  && cp Simulators/Network3/bin/run_network Simulators/bin/run_network_x86_64_linux && make clean \
+  && make clang_install \
+  && make docker_clean \
+  && rm -rf boost_1_65_0
+
+WORKDIR /project
+
+# Start from a Bash prompt
+CMD [ "/bin/bash" ]
