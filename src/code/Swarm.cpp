@@ -1265,8 +1265,10 @@ vector<vector<unsigned int> > Swarm::generateTopology(unsigned int populationSiz
 
 			unsigned int desiredArea = populationSize;
 			unsigned int divisor = ceil(sqrt(desiredArea));
-			while(desiredArea % divisor != 0) {
-				++divisor;
+			if (divisor != 0) {
+			  while(desiredArea % divisor != 0) {
+				  ++divisor;
+			  }
 			}
 			unsigned int length = divisor;
 			unsigned int width = desiredArea / divisor;
@@ -1322,8 +1324,10 @@ vector<vector<unsigned int> > Swarm::generateTopology(unsigned int populationSiz
 		else if (options.topology == "toroidal") {
 			unsigned int desiredArea = populationSize;
 			unsigned int divisor = ceil(sqrt(desiredArea));
-			while(desiredArea % divisor != 0) {
-				++divisor;
+			if (divisor != 0) {
+			  while(desiredArea % divisor != 0) {
+				  ++divisor;
+			  }
 			}
 			unsigned int length = divisor;
 			unsigned int width = desiredArea / divisor;
@@ -1458,12 +1462,12 @@ vector<vector<unsigned int> > Swarm::generateTopology(unsigned int populationSiz
 	}
 	 */
 
-	return allParticles;
-
 	double t = tmr.elapsed();
 	if (options.verbosity >= 3) {
 		cout << "Particle creation took " << t << " seconds" << endl;
 	}
+
+	return allParticles;
 }
 
 void Swarm::processParticlesPSO(vector<unsigned int> particles, bool newFlight) {
@@ -4399,7 +4403,7 @@ void Swarm::runSDE() {
 			}
 			if (!stopCriteria) {
 				// Send/receive migration sets
-				if (currentGeneration % options.migrationFrequency == 0) {
+				if ((options.migrationFrequency != 0) && (currentGeneration % options.migrationFrequency == 0)) {
 
 					for (unsigned int island = 1; island <= options.numIslands; ++island) {
 						sendMigrationSetDE(island, islandTopology, migrationSets);
@@ -4934,7 +4938,7 @@ void Swarm::runADE() {
 
 			if (!stopCriteria) {
 				// Send/receive migration sets
-				if (currentGeneration % options.migrationFrequency == 0) {
+				if ((options.migrationFrequency != 0) && (currentGeneration % options.migrationFrequency == 0)) {
 
 					for (unsigned int island = 1; island <= options.numIslands; ++island) {
 						sendMigrationSetDE(island, islandTopology, migrationSets);
@@ -5112,7 +5116,7 @@ void Swarm::runASA() {
 				}
 			}
 
-			if (++flightCounter_ && flightCounter_ % options.outputEvery == 0) {
+			if ((options.outputEvery != 0) && (++flightCounter_ && flightCounter_ % options.outputEvery == 0)) {
 				string outputPath = options.jobOutputDir + toString(flightCounter_) + "_summary.txt";
 				outputRunSummary(outputPath);
 				//cout << "fc is " << flightCounter_ << ", outputting" << endl;
@@ -5420,7 +5424,14 @@ void Swarm::generateBootstrapMaps(vector<map<string, map<string, map<double,unsi
 				// Select datapoints at random. If a datapoint is selected,
 				// increment it's integer value in the vals map
 				for (unsigned int o = 0; o < col->second.size(); ++o) {
-					int i = rand() % (col->second.size() - 1);
+					int i;
+					if (col->second.size() > 1) {
+					  i = rand() % (col->second.size() - 1);
+					}
+					else
+					{
+					  i = 0;
+					}
 					auto it = col->second.begin();
 					advance(it, i);
 					colVals[it->first] += 1;
