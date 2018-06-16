@@ -7355,7 +7355,10 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 							cout << "c1 final: " << p2Param << endl;
 						}
 						c2Vec.push_back(p1Param);
-						particleNewParamSets[children[childCounter]].push_back(stod(p1Param));
+						if (childCounter < children.size())
+						{
+							particleNewParamSets[children[childCounter]].push_back(stod(p1Param));
+						}
 					}else{cout << "Error p2param or p1Param are not numbers" << endl;}
 			}
 			else {
@@ -7371,7 +7374,10 @@ void Swarm::breedGenerationGA(vector<unsigned int> children) {
 				if(p2Param.find_first_not_of("-01234567890.") == string::npos){
 
 				c2Vec.push_back(p2Vec[pi]);
-				particleNewParamSets[children[childCounter]].push_back(stod(p2Vec[pi]));
+				if (childCounter < children.size())
+				{
+					particleNewParamSets[children[childCounter]].push_back(stod(p2Vec[pi]));
+				}
 				}else{cout << "Error p2param or p1Param are not numbers" << endl;}
 				if(options.verbosity>=3){
 
