@@ -1,7 +1,7 @@
 # For developing BioNetFit2 with clang
 # 
 # To build image, run inside BioNetFit2 directory (only need to do this one time):
-#   docker build -t boost-mpi-clang -f boost_mpi_clang .
+#   docker build -t boost-mpi-clang -f Dockerfiles/boost_mpi_clang .
 # To run image, run inside BioNetFit2 directory:
 #   docker run -it --rm -v $(pwd):/project boost-mpi-clang
 #

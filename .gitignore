@@ -7,3 +7,7 @@ config.log
 sundials-config
 sundials_config.h
 config.status
+/output
+/boost_1_67_0
+/include
+/lib

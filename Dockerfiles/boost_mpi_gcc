@@ -28,6 +28,8 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
     file \
+    gcc \
+    gdb \
     libboost-all-dev \
     libbz2-dev \
     libopenmpi-dev \
