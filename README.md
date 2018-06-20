@@ -33,52 +33,6 @@
 	make clean
 	make
 
-# Installation on MacOS with precompiled OpenMPI (Only works with latest version of MacOS)
-	# 0. Make sure XCode is installed, run the following commands from Terminal
-
-	# 1. Install Homebrew package manager if it is not already present (https;//brew.sh)
-	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-
-	# 2. Install Open-MPI
-	brew install open-mpi
-	
-	# 3. Download BioNetFit2 package
-	git clone https://github.com/richardposner/BioNetFit2.git
-
-	# 3. Go into source directory, Compile boost and BioNetFit2
-	cd BioNetFit2
-	make clean boost macos_install
-
-
-# Installation on MacOS compiling OpenMPI from scratch
-	# 0. If XCode is not already installed, install command line only tools by running the following command and following the dialog boxes
-	xcode-select --install
-
-	# 1. Download Open-MPI package
-	curl https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.1.tar.bz2 > openmpi-3.0.1.tar.bz2
-
-	# 2. Unpack tar file
-	tar xf openmpi-3.0.1.tar.bz2
-
-	# 3. Go into source directory, configure, make, install openmpi package, then return to previous directory
-	cd openmpi-3.0.1
-	./configure --prefix=/opt/openmpi 2>&1 | tee config.out
-	make -j 4 2>&1 | tee make.out
-	sudo make install 2>&1 | tee install.out
-	cd -
-
-	# 4. Add Open MPI tools to path
-	echo 'export PATH="/opt/openmpi/bin:$PATH"' >> ~/.bash_profile
-	source ~/.bash_profile
-
-	# 4. Download BioNetFit2 source
-	git clone https://github.com/richardposner/BioNetFit2.git
-
-	# 5. Go into source directory, build boost and BioNetFit2
-	cd BioNetFit2
-	make clean boost macos_install
-
-
 # New Features in the .conf file
 
 The implementation for multiple models and model checking is complete for the GA, PSO, and DE. So they can be used as templates to update the SA algorithm.
