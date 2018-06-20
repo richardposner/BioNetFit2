@@ -38,8 +38,11 @@ all: $(EXES)
 clean:
 	rm -rf ../bin/BioNetFit2 $(OFILES) $(EXES)
 
+docker_clean:
+	rm $(OFILES)
+
 BioNetFit2: $(HFILES) $(OFILES) Makefile
-	$(CXX) -o ../bin/BioNetFit2 $(OFILES) $(LFLAGS)
+	$(CXX) -o ../bin/BioNetFit2 $(OPTION) $(OFILES) $(LFLAGS)
 
 %.o: %.cpp $(HFILES)
-	$(CXX) $(CFLAGS) -o $*.o -c $*.cpp
+	$(CXX) $(OPTION) $(CFLAGS) -o $*.o -c $*.cpp

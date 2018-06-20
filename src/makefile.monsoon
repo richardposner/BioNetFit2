@@ -1,11 +1,6 @@
-OMPI_CC=clang-6.0
-OMPI_CXX=clang++-6.0
-CC=mpicc
 CXX=mpic++
-CFLAGS=-Wall -g  -std=c++17 -pedantic
-CFLAGS_ASAN=-O1 -fsanitize=address -fno-omit-frame-pointer
-LFLAGS=-g -lboost_iostreams -lboost_regex -lboost_mpi -lboost_program_options -lboost_filesystem -lboost_system -lboost_serialization -lz -lbz2 -lmpi -lrt
-LFLAGS_ASAN=-fsanitize=address
+CFLAGS=-Wall -g -I../include -std=c++11
+LFLAGS=../lib/libboost_iostreams.a ../lib/libboost_regex.a ../lib/libboost_mpi.a ../lib/libboost_program_options.a ../lib/libboost_filesystem.a ../lib/libboost_system.a ../lib/libboost_serialization.a -lz -lbz2 -lmpi -lrt
 
 .PHONY: all clean
 
@@ -43,11 +38,8 @@ all: $(EXES)
 clean:
 	rm -rf ../bin/BioNetFit2 $(OFILES) $(EXES)
 
-docker_clean:
-	rm $(OFILES)
-
 BioNetFit2: $(HFILES) $(OFILES) Makefile
-	$(CXX) -o ../bin/BioNetFit2 $(OPTION) $(OFILES) $(LFLAGS) $(LFLAGS_ASAN)
+	$(CXX) -o ../bin/BioNetFit2 $(OFILES) $(LFLAGS)
 
 %.o: %.cpp $(HFILES)
-	$(CXX) $(OPTION) $(CFLAGS) $(CFLAGS_ASAN) -o $*.o -c $*.cpp
+	$(CXX) $(CFLAGS) -o $*.o -c $*.cpp

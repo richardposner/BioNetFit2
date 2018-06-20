@@ -10,16 +10,15 @@
 
 	gcc compiler (GCC), v5.2.0 and v5.4.0 tested and working
 	mpicc, compiled with the required version of gcc
-	boost library v1.65.0, included and pre-compiled for Linux
+	boost library v1.65.0 or newer, v1.67.0 or newer recommended
 	libc6 or glibc 2.14, not requered for installation, but requered for running
 
 # Installation at NAU's cluster (Red Hat 7 GNU/Linux with GCC v5.2.0)
 
 	module add gcc/5.2.0
 	module add openmpi/1.8.7-gcc-5.2.0
-	cd BioNetFit2/boost_1.65.0
-	./install_boost.sh
-	cd ..
+	cd BioNetFit2
+	make boost
 	make clean
 	make
 
