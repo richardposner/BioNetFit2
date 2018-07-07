@@ -728,6 +728,9 @@ void subParticle::runModel(unsigned int iteration, bool localSearch) {
 	ifstream bngfile(bnglFullPath);
 
 	if(!bngfile){
+		if (swp->options.verbosity >= 2) {
+			cout << "BNGL file not found: " << bnglFullPath << endl;
+		}
 		swp->processLateParticles(parParticle->simParams_.at(mid), subParID, false, parParticle->currentGeneration_);
 		swp->fixRunningParticle(subParID);
 		//cout << "from particle: " << swp->particleCurrParamSets_.size() << endl;
@@ -892,7 +895,7 @@ Model * mdl= models.at(mid);
 		int numCheckedMessages = 0;
 		int numMessages = swarm_->swarmComm->recvMessage(-1, subParID, -1, true, swarm_->swarmComm->univMessageReceiver, true);
 		if (swarm_->options.verbosity >= 4) {
-			cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic" << endl;
+			cout << "RAQUEL inside LOOP ITERATION in checkMessagesGenetic, numMessages = " << numMessages << " and numCheckedMessages = " << numCheckedMessages << endl;
 
 			cout << "RAQUEL entering univMessageReceiver.equal_range(SEND_FINAL_PARAMS_TO_PARTICLE)" << endl;
 		}

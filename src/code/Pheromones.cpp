@@ -9,6 +9,9 @@
 #include "Pheromones.hh"
 #include "Swarm.hh"
 
+#define MAX_SWARM_MESSAGE_SIZE 1000
+#define MAX_SWARM_NUM_MESSAGE 100
+
 namespace mpi = boost::mpi;
 using namespace boost::interprocess;
 using boost::lexical_cast;
@@ -115,10 +118,10 @@ void Pheromones::init(Swarm *s) {
 				message_queue *smq;
 
 				try {
-					smq = new message_queue(create_only, toString(i).c_str(), 100, 1000);
+					smq = new message_queue(create_only, toString(i).c_str(), MAX_SWARM_NUM_MESSAGE, MAX_SWARM_MESSAGE_SIZE);
 				} catch (boost::interprocess::interprocess_exception e) {
 					message_queue::remove(toString(i).c_str());
-					smq = new message_queue(create_only, toString(i).c_str(), 100, 1000);
+					smq = new message_queue(create_only, toString(i).c_str(), MAX_SWARM_NUM_MESSAGE, MAX_SWARM_MESSAGE_SIZE);
 				}
 				smq_.push_back(smq);
 			}
@@ -159,17 +162,15 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 
 			// TODO: Replace this exchange with a world_->sendrecv()
 			smessage.tag = toString(GET_RUNNING_PARTICLES);
-		    if (swarm_->options.verbosity>=3) {
-
-		    	std::cout << "trying to get list of running particles.." << std::endl;
+			if (swarm_->options.verbosity>=3) {
+				std::cout << "trying to get list of running particles.." << std::endl;
 			// First we need to get a list of all running particles from the master
-		    }
+			}
 
 			std::string serializedMessage = serializeSwarmMessage(smessage);
-		    if (swarm_->options.verbosity>=3) {
-
-		    	cout << "RRR sending serializedMessage GET RUNNING PARTICLES 11 = " << serializedMessage << endl;
-		    }
+			if (swarm_->options.verbosity>=3) {
+				cout << "RRR sending serializedMessage GET RUNNING PARTICLES 11 = " << serializedMessage << endl;
+			}
 			//world_->send(0, GET_RUNNING_PARTICLES, serializedMessage);
 			MPI_Send(serializedMessage.c_str(), serializedMessage.length(), MPI_CHAR, 0, GET_RUNNING_PARTICLES, MPI_COMM_WORLD);
 
@@ -177,19 +178,21 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 			//usleep(10000);
 
 			// This swarmMessage will hold the list of running particles received from master
-			serializedMessage.clear();
-			//world_->recv(0, SEND_RUNNING_PARTICLES, serializedMessage);
-			char buffer[256];
 			MPI_Status status;
 
-			MPI_Recv(buffer, serializedMessage.length(), MPI_CHAR, 0, SEND_RUNNING_PARTICLES, MPI_COMM_WORLD, &status);
-		    if (swarm_->options.verbosity>=3) {
-
-		    	std::cout << "received list of running particles.." << std::endl;
-		    }
+			int count;
+			MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
+			MPI_Get_count(&status, MPI_INT, &count);
+			char *buffer = new char[count + 1];
+			MPI_Recv(buffer, count, MPI_CHAR, 0, SEND_RUNNING_PARTICLES, MPI_COMM_WORLD, &status);
+			buffer[count] = '\0';
+			if (swarm_->options.verbosity>=3) {
+				std::cout << "received list of running particles = " << buffer << std::endl;
+			}
 			swarmMessage rsmessage = deserializeSwarmMessage(std::string(buffer));
+			delete [] buffer;
 
-			//for (auto p: runningParticles) {
+			//for (auto p: runningParticles) 
 			for (auto p = rsmessage.message.begin(); p != rsmessage.message.end(); ++p) {
 			    if (swarm_->options.verbosity>=3) {
 
@@ -212,21 +215,16 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 
 		smessage.tag = toString(tag);
 
-		//for (auto m: mpiMessage) {
+		//for (auto m: mpiMessage) 
 		for (auto m = message.begin(); m != message.end(); ++m) {
 			//std::cout << "adding: " << *m << std::endl;
 			smessage.message.push_back(*m);
 		}
 
-		std::string smString;
-		{
-		smString = serializeSwarmMessage(smessage);
+		std::string smString(serializeSwarmMessage(smessage));
+		if (swarm_->options.verbosity>=3) {
+			cout << "send message is smString = '" << smString << "'" << endl;
 		}
-		const char *serializedMessage = smString.c_str();
-	    if (swarm_->options.verbosity>=3) {
-
-	    	cout << "send message is serializedMessage = " << serializedMessage << " or smString = " << smString << endl;
-	    }
 		// Loop through receivers and perform the send operation
 		for (std::vector<int>::iterator i = receivers.begin(); i != receivers.end(); ++i) {
 			// Blocking send
@@ -244,8 +242,6 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 				    	std::cout << "attempting a block send from " << senderID << " to " << receiverID << std::endl;
 				    }
 					try{
-//					world_->send(receiverID, convertedTag, serializedMessage, smString.length());
-						//world_->send(receiverID, convertedTag, smString);
 						MPI_Send(smString.c_str(), smString.length(), MPI_CHAR, receiverID, tag, MPI_COMM_WORLD);
 
 
@@ -261,41 +257,23 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 				}
 				// Non-blocking send
 				else {
-				    if (swarm_->options.verbosity>=3) {
-
-				    	std::cout << "attempting a non-block send from " << senderID << " to " << receiverID << std::endl;
-				    }
-					//MPI_Request req;
-					//recvRequest_ = world_->isend(receiverID, convertedTag, serializedMessage, smString.length());
-					//recvRequest_ = world_->isend(receiverID, convertedTag, smString);
-					//MPI_Isend(smString.c_str(), smString.length(), MPI_CHAR, receiverID, tag, MPI_COMM_WORLD, &req);
-
-					   //for (int p = smString.find("\n"); p != (int) std::string::npos; p = smString.find("\n"))
-						//   smString.erase(p,1);
-
+					if (swarm_->options.verbosity>=3) {
+						std::cout << "attempting a non-block send from " << senderID << " to " << receiverID << std::endl;
+					}
 
 					int result = MPI_Send(smString.c_str(), smString.length(), MPI_CHAR, receiverID, tag, MPI_COMM_WORLD);
-	                if (result == MPI_SUCCESS){
-	            	    if (swarm_->options.verbosity>=3) {
-
-	                	std::cout << "Rank " <<  world_rank << " sent message to " << receiverID << " tag: " << tag << " message: " << smString.c_str() << std::endl;
-	            	    }
-	            	}else{
-	            	    if (swarm_->options.verbosity>=3) {
-
-	            	    	cout << "ERROR MESSAGE NOT SENT!!!" << endl;
-	            	    }
+					if (swarm_->options.verbosity>=3) {
+						if (result == MPI_SUCCESS){
+							std::cout << "Rank " <<  world_rank << " sent message to " << receiverID << " tag: " << tag << " message: " << smString.c_str() << std::endl;
+						}else{
+							cout << "ERROR MESSAGE NOT SENT!!!" << endl;
+						}
+						std::cout << "non-block send from " << senderID << " to " << receiverID << " succeeded" << std::endl;
 					}
-					//MPI_Send(smString.c_str(), smString.length(), MPI_CHAR, receiverID, tag, MPI_COMM_WORLD);
-	        	    if (swarm_->options.verbosity>=3) {
-
-	        	    	std::cout << "non-block send from " << senderID << " to " << receiverID << " succeeded" << std::endl;
-	        	    }
 					//recvStatus_ = recvRequest_.wait();
 					//std::cout << "tag: " << recvStatus_.tag() << std::endl;
 					//std::cout << "error: " << recvStatus_.error() << std::endl;
 				}
-
 			}
 		}
 	}else {
@@ -319,9 +297,12 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 
 			// Serialize the message
 			std::string serializedMessage = serializeSwarmMessage(smessage);
-			serializedMessage.resize(1000);
+			if (serializedMessage.length() > MAX_SWARM_MESSAGE_SIZE) {
+				std::cout << "ERROR: Serialized Message length: " << serializedMessage.length() << " greater than MAX_SWARM_MESSAGE_SIZE" << std::endl;
+				std::abort();
+			}
 
-			smq_[0]->send(serializedMessage.data(), sizeof(serializedMessage), 0);
+			smq_[0]->send(serializedMessage.c_str(), serializedMessage.length(), 0);
 
 			//std::cout << "trying to receive list of running particles.." << std::endl;
 
@@ -330,19 +311,17 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 			message_queue::size_type recvd_size;
 
 			// Receive and de-serialize the message
-			std::stringstream iss;
-			serializedMessage.clear();
-			serializedMessage.resize(1000);
+			char buffer[MAX_SWARM_MESSAGE_SIZE + 1];
 			unsigned int priority;
 
-			smq_[0]->receive(&serializedMessage[0], 1000, recvd_size, priority);
+			smq_[0]->receive(buffer, sizeof(buffer), recvd_size, priority);
 
-			serializedMessage.resize(recvd_size);
-			swarmMessage rsmessage = deserializeSwarmMessage(serializedMessage);
+			buffer[recvd_size] = '\0';
+			swarmMessage rsmessage = deserializeSwarmMessage(buffer);
 
 			//std::cout << "received list of running particles.." << std::endl;
 
-			//for (auto p: runningParticles) {
+			//for (auto p: runningParticles) 
 			for (auto p = rsmessage.message.begin(); p != rsmessage.message.end(); ++p) {
 				//std::cout << "adding receiver: " << *p << std::endl;
 				receivers.push_back(stoi(*p));
@@ -363,7 +342,7 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 		smessage.tag = toString(tag);
 
 		// Add the message array to the swarmMessage
-		//for (auto m: mpiMessage) {
+		//for (auto m: mpiMessage) 
 		for (auto m = message.begin(); m != message.end(); ++m) {
 			//std::cout << senderID << " adding: " << *m << std::endl;
 			smessage.message.push_back(*m);
@@ -378,11 +357,14 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 
 		// Serialize the swarmMessage
 		std::string serializedMessage = serializeSwarmMessage(smessage);
-		serializedMessage.resize(1000);
+		if (serializedMessage.length() > MAX_SWARM_MESSAGE_SIZE) {
+			std::cout << "ERROR: Serialized Message length: " << serializedMessage.length() << " greater than MAX_SWARM_MESSAGE_SIZE" << std::endl;
+			abort();
+		}
 
 		// Loop through receivers and perform the send operation
 		for (std::vector<int>::iterator i = receivers.begin(); i != receivers.end(); ++i) {
-			std::cout << "### " << senderID << " sending " << smessage.tag << " to " << *i	<< ". ser: " << serializedMessage.data() << std::endl;
+			std::cout << "### " << senderID << " sending " << smessage.tag << " to " << *i	<< ". ser: " << serializedMessage << std::endl;
 			//smq_[*i]->send(serializedMessage.data(), serializedMessage.size(), 0);
 			//Raquel: added for debbuging
 			bool sendAttempt2 = smq_[*i]->try_send(serializedMessage.data(), serializedMessage.size(), 0);
@@ -419,7 +401,6 @@ void Pheromones::sendToSwarm(int senderID, signed int receiverID, int tag, bool 
 int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, bool block, swarmMsgHolder &messageHolder, bool eraseMessage, int messageID) {
 	int numMessages = 0;
 	std::string serializedMessage; //Raquel: moved this from inside the loop to here so it's not redeclared
-	serializedMessage.resize(1000);
 	swarmMessage smessage;
 
 	if (swarm_->options.useCluster) {
@@ -429,8 +410,6 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 		std::string msg;
 		MPI_Status status;
 		int flag = 0;
-		//char buffer[256];
-		serializedMessage.resize(1000);
 
 		while (1) {
 			//std::cout << "rcv loop" << std::endl;
@@ -438,46 +417,40 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 
 			MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
 			//MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			//if(status == MPI_SUCCESS){
+			//if(status == MPI_SUCCESS)
 			if (flag==1) {
 				//cout << "status tag: " << recvStatus->tag() << std::endl;
 				//cout << "status source: " << recvStatus->source() << std::endl;
 				//boost::optional<int> msgLength = recvStatus->count<char>();
 				//char smChar[*msgLength];
-				//char smChar[1000];
+				//char smChar[MAX_SWARM_MESSAGE_SIZE];
 				//cout << "recvStatus->tag() " << recvStatus->tag() << " DONE_BREEDING " << DONE_BREEDING << endl;
 				int count;
 
 				MPI_Get_count(&status, MPI_CHAR, &count);
 
 
-				int* pVal = &count;
-				int l = *pVal;
-
-				char *buffer = new char[l];
-			    if (swarm_->options.verbosity>=3) {
-
-			    	cout << "message size " << l << endl;
-			    }
-				//if (block) {
-			    if (swarm_->options.verbosity>=3) {
-
-			    	cout << "trying a blocking receive to receiverID " << receiverID << " from senderID " << senderID  << endl;
-			    }
+				if (swarm_->options.verbosity>=3) {
+					cout << "message size " << count << endl;
+				}
+				//if (block) 
+				if (swarm_->options.verbosity>=3) {
+					cout << "trying a blocking receive to receiverID " << receiverID << " from senderID " << senderID  << endl;
+				}
 				//cout << "Tag: " << tag << "; smChar length: " << sizeof(smChar) << "; *msgLength: " << *msgLength << endl;
 				//world_->recv(senderID, tag, smChar, *msgLength);
 				//world_->recv(senderID, recvStatus->tag(), smChar, *msgLength);
 					//world_->recv(senderID, recvStatus->tag(), msg);
-				MPI_Recv(buffer, l, MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status);
+				char *buffer = new char[count + 1];
+				MPI_Recv(buffer, count, MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status);
+				buffer[count] = '\0';
 				msg = std::string(buffer);
+				delete [] buffer;
 				//cout <<"RRR received message is smChar = " << smChar << endl;
-			    if (swarm_->options.verbosity>=3) {
-
-			    	cout <<"RRR received buffer is = " << buffer << endl;
-			    	cout <<"RRR received message is = " << msg << endl;
-
+				if (swarm_->options.verbosity>=3) {
+					cout <<"RRR received message is = " << msg << endl;
 					cout << "Message size is " << msg.length() << endl;
-			    }
+				}
 				//world_->recv(boost::mpi::any_source, tag, *msgLength);
 				block = false;
 			    if (swarm_->options.verbosity>=3) {
@@ -596,20 +569,23 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 
 			message_queue::size_type recvd_size;
 
+			char buffer[MAX_SWARM_MESSAGE_SIZE];
 			//std::cout << "rcv loop" << std::endl;
 			if (block) {
 //std::cout << "trying a blocking receive to " << receiverID << " from " << senderID << std::endl;
 
-				smq_[receiverID]->receive(&serializedMessage[0], 1000, recvd_size, priority);
+				smq_[receiverID]->receive(buffer, sizeof(buffer), recvd_size, priority);
+				buffer[recvd_size] = '\0';
 
 
 				block = false;
-//std::cout << "blocking receive to " << receiverID << " from " << senderID << " succeeded with recv_size of " << recvd_size << " and message of " << serializedMessage << std::endl;
+//std::cout << "blocking receive to " << receiverID << " from " << senderID << " succeeded with recv_size of " << recvd_size << " and message of " << buffer << std::endl;
 			}
 			else {
 
 //std::cout << "trying a non-blocking receive to " << receiverID << " from " << senderID << std::endl;
-				bool hasMessage = smq_[receiverID]->try_receive(&serializedMessage[0], 1000, recvd_size, priority);
+				bool hasMessage = smq_[receiverID]->try_receive(buffer, sizeof(buffer), recvd_size, priority);
+				buffer[recvd_size] = '\0';
 
 //std::cout << "non-blocking receive to " << receiverID << " from " << senderID << " succeeded with recv_size of " << recvd_size << " and bool of " << hasMessage << std::endl;
 				if (!hasMessage) {
@@ -620,11 +596,8 @@ int Pheromones::recvMessage(signed int senderID, const int receiverID, int tag, 
 			// If we have any messages in our messageHolder, let's process them
 
 			// De-serialize the smessage
-			serializedMessage.resize(recvd_size);
-			swarmMessage smessage = deserializeSwarmMessage(serializedMessage);
+			swarmMessage smessage = deserializeSwarmMessage(buffer);
 
-			serializedMessage.clear();
-			serializedMessage.resize(1000);
 
 sleep(1);
 
@@ -696,7 +669,7 @@ Pheromones::swarmMessage Pheromones::deserializeSwarmMessage(std::string sm) {
 	//char ch = sm.back();
 	//cout << "Last character @" << ch << "@" << endl;
 	if(sm.empty()){
-	//if(ch=='\0'){
+	//if(ch=='\0')
 		//sm.back() = '\n';
     	sm="\n";
 
