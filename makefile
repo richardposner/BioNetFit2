@@ -11,11 +11,8 @@ clang_install:
 ubuntu_install:
 	cd $(SRCDIR); make -f makefile.ubuntu
 
-c17_install:
-	cd $(SRCDIR); OPTIONS=$(OPTIONS) make -f makefile.c17
-
-monsoon_install:
-	cd $(SRCDIR); make -f makefile.monsoon
+monsoon_install: boost
+	cd $(SRCDIR); module purge && module load gcc/6.2.0 openmpi/2.1.0 glibc/2.23 && make -f makefile.static_boost
 
 boost_1_67_0.tmp.downloaded:
 	curl -L https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz > /tmp/boost_1_67_0.tar.gz && touch boost_1_67_0.tmp.downloaded

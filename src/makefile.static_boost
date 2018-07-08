@@ -1,5 +1,5 @@
 CXX=mpic++
-CFLAGS=-Wall -g -I../include -std=c++11
+CFLAGS=-Wall -g -I../include -std=c++17
 LFLAGS=../lib/libboost_iostreams.a ../lib/libboost_regex.a ../lib/libboost_mpi.a ../lib/libboost_program_options.a ../lib/libboost_filesystem.a ../lib/libboost_system.a ../lib/libboost_serialization.a -lz -lbz2 -lmpi -lrt
 
 .PHONY: all clean
@@ -33,6 +33,8 @@ OFILES=\
 	GenFit2.o
 
 EXES=BioNetFit2
+
+
 
 all: $(EXES)
 clean:
